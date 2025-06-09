@@ -383,7 +383,7 @@ void BuildVisitTree(MeshType &dualMesh, int startingFaceInd=0)
   assert(cnt==base.fn);
  
   tri::Clean<MeshType>::RemoveDuplicateVertex(dualMesh);    
-  tri::io::ExporterPLY<MeshType>::Save(dualMesh,"fulltree.ply",tri::io::Mask::IOM_EDGEINDEX);    
+  // tri::io::ExporterPLY<MeshType>::Save(dualMesh,"fulltree.ply",tri::io::Mask::IOM_EDGEINDEX);    
 } 
 
 };
