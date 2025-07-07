@@ -71,8 +71,13 @@ void Tetrahedron(TetraMeshType &in)
  (*fi).V(0)=ivp[3];  (*fi).V(1)=ivp[2]; (*fi).V(2)=ivp[1];
 }
 
+/// Builds a Dodecahedron triangular mesh 
+/// Each pentagonal face is triangulated into three triangles.
+/// Faux edges are correctly marked.
+/// Note that symmetry is not preserved
+
 template <class DodMeshType>
-void DodecahedronTri(DodMeshType & in)
+void Dodecahedron(DodMeshType & in)
 {
 	typedef typename DodMeshType::CoordType CoordType;
 	
@@ -116,10 +121,10 @@ void DodecahedronTri(DodMeshType & in)
 	}
 }
 
-/// builds a Dodecahedron,
-/// (each pentagonal face is composed by 5 triangles)
+/// Builds a Symmetric Dodecahedron triangular mesh 
+/// Each pentagonal face is star triangulated with an additional central vertex and it is composed by 5 triangles
 template <class DodMeshType>
-void Dodecahedron(DodMeshType & in)
+void DodecahedronSym(DodMeshType & in)
 {
  typedef DodMeshType MeshType;
  typedef typename MeshType::CoordType CoordType;
@@ -144,9 +149,14 @@ void Dodecahedron(DodMeshType & in)
     45,38, 56, 56, 38, 60, 60, 38, 52,
     50,41, 60, 60, 41, 56, 56, 41, 47 };
    //A B   E                D       C
-  const ScalarType p=(1.0 + math::Sqrt(5.0)) / 2.0;
-  const ScalarType p2=p*p;
-  const ScalarType p3=p*p*p;
+  ScalarType p=(1.0 + math::Sqrt(5.0)) / 2.0;
+  ScalarType p2=p*p;
+  ScalarType p3=p*p*p;
+  const ScalarType scale = std::sqrt(p2*p2*3);
+  p=p/scale;
+  p2=p2/scale;
+  p3=p3/scale;  
+  
     ScalarType vv[N_points*3]=
     {
    0, 0, 2*p2,     p2, 0, p3,      p, p2, p3,
