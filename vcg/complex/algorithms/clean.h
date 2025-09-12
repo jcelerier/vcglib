@@ -796,7 +796,7 @@ public:
 	};
 
 	/// Removal of faces that were incident on a non manifold edge.
-	static int RemoveNonManifoldFace(MeshType& m)
+	static int RemoveNonManifoldFace(MeshType& m, bool DeleteFacesFlag=true)
 	{
 		FaceIterator fi;
 		int count_fd = 0;
@@ -810,6 +810,9 @@ public:
 				    (!IsManifold(*fi,2)))
 					ToDelVec.push_back(&*fi);
 			}
+
+		if (!DeleteFacesFlag)
+			return ToDelVec.size();
 
 		std::sort(ToDelVec.begin(),ToDelVec.end(),CompareAreaFP());
 
