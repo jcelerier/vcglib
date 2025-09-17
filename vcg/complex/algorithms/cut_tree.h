@@ -135,35 +135,6 @@ bool ExistEdge(KdTree<ScalarType> &kdtree, CoordType &p0, CoordType &p1, PosType
   return false;
 }
 
-// Given two points return true if on the base mesh there exist an edge with that two coords
-// if return true the pos indicate the found edge. 
-bool ExistEdgeOld(KdTree<ScalarType> &kdtree, CoordType &p0, CoordType &p1, PosType &fpos)
-{
-    ScalarType locEps = SquaredDistance(p0,p1)/100000.0;
-    
-    VertexType *v0=0,*v1=0;
-    unsigned int veInd;
-    ScalarType sqdist;
-    kdtree.doQueryClosest(p0,veInd,sqdist);
-    if(sqdist<locEps) 
-        v0 = &base.vert[veInd];
-    kdtree.doQueryClosest(p1,veInd,sqdist);
-    if(sqdist<locEps) 
-        v1 = &base.vert[veInd];
-    if(v0 && v1)
-    {
-        fpos =PosType(v0->VFp(),v0);
-        assert(fpos.V()==v0);
-        PosType startPos=fpos;
-        do
-        {
-            fpos.FlipE(); fpos.FlipF();
-            if(fpos.VFlip()== v1) return true;
-        } while(startPos!=fpos);    
-    }
-    return false;
-}
-
 int findNonVisitedEdgesDuringRetract(VertexType * vp, EdgeType * &ep)
 {
   std::vector<EdgeType *> starVec;
@@ -235,7 +206,7 @@ void Retract(KdTree<ScalarType> &kdtree, MeshType &t)
   assert(unvisitedEdgeNum >0);
   for(size_t i =0; i<t.edge.size();++i){
     PosType fpos;
-    if( ExistEdgeOld(kdtree, t.edge[i].P(0), t.edge[i].P(1), fpos)){
+    if( ExistEdge(kdtree, t.edge[i].P(0), t.edge[i].P(1), fpos)){
       if(fpos.IsBorder()) {
         t.edge[i].SetV();        
       }
