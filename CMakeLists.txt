@@ -32,9 +32,9 @@ endif()
 ### Eigen
 set(VCG_EIGEN_DIR ${CMAKE_CURRENT_LIST_DIR}/eigenlib)
 
-if(VCG_ALLOW_SYSTEM_EIGEN AND EIGEN3_INCLUDE_DIR)
+find_package(Eigen3)
+if(VCG_ALLOW_SYSTEM_EIGEN AND TARGET Eigen3::Eigen)
 	message(STATUS "- Eigen - using system-provided library")
-	set(EIGEN_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 elseif(VCG_ALLOW_BUNDLED_EIGEN AND EXISTS "${VCG_EIGEN_DIR}/Eigen/Eigen")
 	message(STATUS "- Eigen - using bundled source")
 	set(EIGEN_INCLUDE_DIRS ${VCG_EIGEN_DIR})
@@ -291,10 +291,15 @@ set(SOURCES
 if (VCG_HEADER_ONLY)
 	if (NOT TARGET vcglib) # to be sure that vcglib target is created just one time
 		add_library(vcglib INTERFACE)
+		if(TARGET Eigen3::Eigen)
+			target_link_libraries(vcglib INTERFACE Eigen3::Eigen)
+		else()
+			target_include_directories(vcglib INTERFACE ${EIGEN_INCLUDE_DIRS})
+		endif()
 		target_include_directories(
 				vcglib INTERFACE
-				${CMAKE_CURRENT_LIST_DIR}
-				${EIGEN_INCLUDE_DIRS})
+				$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
+				$<INSTALL_INTERFACE:include>)
 		if(OPENMP_FOUND)
 			target_link_libraries(vcglib INTERFACE OpenMP::OpenMP_CXX)
 		endif()
@@ -305,6 +310,27 @@ if (VCG_HEADER_ONLY)
 
 		#just to show headers in ide
 		add_custom_target(vcglib_ide SOURCES ${VCG_HEADERS})
+
+		# Install vcglib
+		install(DIRECTORY vcg wrap DESTINATION include)
+		install(TARGETS vcglib EXPORT vcglibTargets)
+		install(EXPORT vcglibTargets
+			DESTINATION lib/cmake/vcglib
+			NAMESPACE vcglib::
+			FILE vcglibTargets.cmake
+		)
+		include(CMakePackageConfigHelpers)
+		# generate the config file that includes the exports
+		configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
+			"${CMAKE_CURRENT_BINARY_DIR}/vcglibConfig.cmake"
+			INSTALL_DESTINATION lib/cmake/vcglib
+			NO_SET_AND_CHECK_MACRO
+			NO_CHECK_REQUIRED_COMPONENTS_MACRO
+		)
+		install(FILES
+			"${CMAKE_CURRENT_BINARY_DIR}/vcglibConfig.cmake"
+			DESTINATION lib/cmake/vcglib
+		)
 	else()
 		message(STATUS "- VCGLib - jumped - already included")
 	endif()
