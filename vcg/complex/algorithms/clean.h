@@ -436,7 +436,7 @@ public:
 	  Degenerate vertices are vertices that have coords with invalid floating point values,
 	  All the faces incident on deleted vertices are also deleted
 			*/
-	static int RemoveDegenerateVertex(MeshType& m)
+	static int RemoveDegenerateVertex(MeshType& m, bool DeleteVertexFlag=true)
 	{
 		VertexIterator vi;
 		int count_vd = 0;
@@ -447,7 +447,8 @@ public:
 			   math::IsNAN( (*vi).P()[2]) )
 			{
 				count_vd++;
-				Allocator<MeshType>::DeleteVertex(m,*vi);
+				if (DeleteVertexFlag)
+					Allocator<MeshType>::DeleteVertex(m,*vi);
 			}
 
 		FaceIterator fi;
@@ -460,7 +461,8 @@ public:
 				    (*fi).V(2)->IsD() )
 				{
 					count_fd++;
-					Allocator<MeshType>::DeleteFace(m,*fi);
+					if (DeleteVertexFlag)
+						Allocator<MeshType>::DeleteFace(m,*fi);
 				}
 		(void)count_fd;
 		return count_vd;
@@ -474,7 +476,7 @@ public:
 	  We do not take care of topology because when we have degenerate faces the
 	  topology calculation functions crash.
 	  */
-	static int RemoveDegenerateFace(MeshType& m)
+	static int RemoveDegenerateFace(MeshType& m, bool DeleteFacesFlag=true)
 	{
 		int count_fd = 0;
 
@@ -486,13 +488,14 @@ public:
 				   (*fi).V(1) == (*fi).V(2) )
 				{
 					count_fd++;
-					Allocator<MeshType>::DeleteFace(m,*fi);
+					if (DeleteFacesFlag)
+						Allocator<MeshType>::DeleteFace(m,*fi);
 				}
 			}
 		return count_fd;
 	}
 
-	static int RemoveDegenerateEdge(MeshType& m)
+	static int RemoveDegenerateEdge(MeshType& m, bool DeleteEdgesFlag=true)
 	{
 		int count_ed = 0;
 
@@ -502,7 +505,8 @@ public:
 				if((*ei).V(0) == (*ei).V(1) )
 				{
 					count_ed++;
-					Allocator<MeshType>::DeleteEdge(m,*ei);
+					if (DeleteEdgesFlag)
+						Allocator<MeshType>::DeleteEdge(m,*ei);
 				}
 			}
 		return count_ed;
@@ -796,7 +800,7 @@ public:
 	};
 
 	/// Removal of faces that were incident on a non manifold edge.
-	static int RemoveNonManifoldFace(MeshType& m)
+	static int RemoveNonManifoldFace(MeshType& m, bool DeleteFacesFlag=true)
 	{
 		FaceIterator fi;
 		int count_fd = 0;
@@ -810,6 +814,9 @@ public:
 				    (!IsManifold(*fi,2)))
 					ToDelVec.push_back(&*fi);
 			}
+
+		if (!DeleteFacesFlag)
+			return ToDelVec.size();
 
 		std::sort(ToDelVec.begin(),ToDelVec.end(),CompareAreaFP());
 
@@ -835,7 +842,7 @@ public:
 	}
 
 	/* Remove the faces that are out of a given range of area  */
-	static int RemoveFaceOutOfRangeArea(MeshType& m, ScalarType MinAreaThr=0, ScalarType MaxAreaThr=(std::numeric_limits<ScalarType>::max)(), bool OnlyOnSelected=false)
+	static int RemoveFaceOutOfRangeArea(MeshType& m, ScalarType MinAreaThr=0, ScalarType MaxAreaThr=(std::numeric_limits<ScalarType>::max)(), bool OnlyOnSelected=false, bool DeleteFacesFlag=true)
 	{
 		int count_fd = 0;
 		MinAreaThr*=2;
@@ -847,7 +854,8 @@ public:
 					const ScalarType doubleArea=DoubleArea<FaceType>(*fi);
 					if((doubleArea<=MinAreaThr) || (doubleArea>=MaxAreaThr) )
 					{
-						Allocator<MeshType>::DeleteFace(m,*fi);
+						if (DeleteFacesFlag)
+							Allocator<MeshType>::DeleteFace(m,*fi);
 						count_fd++;
 					}
 				}
@@ -855,7 +863,7 @@ public:
 		return count_fd;
 	}
 
-	static int RemoveZeroAreaFace(MeshType& m) { return RemoveFaceOutOfRangeArea(m,0);}
+	static int RemoveZeroAreaFace(MeshType& m, bool DeleteFacesFlag=true) { return RemoveFaceOutOfRangeArea(m,0, (std::numeric_limits<ScalarType>::max)(), false, DeleteFacesFlag); }
 
 
 
