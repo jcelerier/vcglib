@@ -312,25 +312,28 @@ if (VCG_HEADER_ONLY)
 		add_custom_target(vcglib_ide SOURCES ${VCG_HEADERS})
 
 		# Install vcglib
-		install(DIRECTORY vcg wrap DESTINATION include)
-		install(TARGETS vcglib EXPORT vcglibTargets)
-		install(EXPORT vcglibTargets
-			DESTINATION lib/cmake/vcglib
-			NAMESPACE vcglib::
-			FILE vcglibTargets.cmake
-		)
-		include(CMakePackageConfigHelpers)
-		# generate the config file that includes the exports
-		configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
-			"${CMAKE_CURRENT_BINARY_DIR}/vcglibConfig.cmake"
-			INSTALL_DESTINATION lib/cmake/vcglib
-			NO_SET_AND_CHECK_MACRO
-			NO_CHECK_REQUIRED_COMPONENTS_MACRO
-		)
-		install(FILES
-			"${CMAKE_CURRENT_BINARY_DIR}/vcglibConfig.cmake"
-			DESTINATION lib/cmake/vcglib
-		)
+		# but we can't export INTERFACE_INCLUDE_DIRECTORIES prefixed in the source directory
+		if(TARGET Eigen3::Eigen) 
+			install(DIRECTORY vcg wrap DESTINATION include)
+			install(TARGETS vcglib EXPORT vcglibTargets)
+			install(EXPORT vcglibTargets
+				DESTINATION lib/cmake/vcglib
+				NAMESPACE vcglib::
+				FILE vcglibTargets.cmake
+			)
+			include(CMakePackageConfigHelpers)
+			# generate the config file that includes the exports
+			configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
+				"${CMAKE_CURRENT_BINARY_DIR}/vcglibConfig.cmake"
+				INSTALL_DESTINATION lib/cmake/vcglib
+				NO_SET_AND_CHECK_MACRO
+				NO_CHECK_REQUIRED_COMPONENTS_MACRO
+			)
+			install(FILES
+				"${CMAKE_CURRENT_BINARY_DIR}/vcglibConfig.cmake"
+				DESTINATION lib/cmake/vcglib
+			)
+		endif()
 	else()
 		message(STATUS "- VCGLib - jumped - already included")
 	endif()
