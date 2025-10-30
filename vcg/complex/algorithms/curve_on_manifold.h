@@ -43,14 +43,46 @@
 namespace vcg {
 namespace tri {
 /// \ingroup trimesh
-/// \brief A class for managing curves on a 2manifold.
+/// \brief A class for managing curves on a 2-manifold (Curve on Manifold - CoM).
 /**
-This class is used to project/simplify/smooth polylines over a triangulated surface.
-It assumes that the mesh is reasonably nice (2manifold, good triangles etc.)
-The idea is that the class is initaizlied on a mesh and than you pass polylines to be managed by the class.
-
-  
-*/
+ * This class is used to project, simplify, smooth, and snap polylines (represented as edge meshes) 
+ * over a triangulated surface (the "base mesh").
+ * 
+ * \par Overview
+ * The CoM class provides tools to:
+ * - Project polylines onto a surface
+ * - Snap polyline vertices to mesh vertices or edges
+ * - Refine polylines to follow surface features
+ * - Simplify polylines while maintaining surface fidelity
+ * - Split the base mesh along polylines for mesh cutting operations
+ * 
+ * \par Terminology
+ * - **Base mesh**: The triangulated surface mesh (stored in `base`)
+ * - **Polyline/Curve**: An edge mesh passed to the various methods (typically named `poly` in parameters)
+ * - **Snapping**: The process of aligning polyline vertices to mesh vertices or edges using barycentric thresholds
+ * 
+ * \par Requirements
+ * The base mesh should be:
+ * - 2-manifold
+ * - Have reasonable triangle quality
+ * - Have up-to-date topology (FaceFace adjacency)
+ * - Have bounding box correctly set
+ * 
+ * \par Usage Pattern
+ * 1. Initialize the class with a base mesh: `CoM<MeshType> com(baseMesh);`
+ * 2. Call `Init()` to build the spatial acceleration structures
+ * 3. Pass polylines (as edge meshes) to various methods for processing
+ * 4. Adjust parameters via the `par` member for fine control
+ * 
+ * \par Implementation Notes
+ * - The class uses barycentric coordinates to determine if a point of the polyline should snap to vertices or edges
+ * - All spatial queries use a uniform grid for acceleration
+ * - Many operations are iterative and may require multiple passes
+ * 
+ * \note There is some naming inconsistency: methods use both "Curve" and "Polyline" 
+ *       interchangeably to refer to the edge mesh being processed.
+ * 
+ */
 
 template <class MeshType>
 class CoM
@@ -72,20 +104,30 @@ public:
   typedef typename vcg::GridStaticPtr<EdgeType, ScalarType> EdgeGrid;
   typedef typename face::Pos<FaceType> PosType;
   typedef typename tri::UpdateTopology<MeshType>::PEdge PEdge;
+  
+  /**
+   * \brief Parameter class controlling the behavior of CoM algorithms
+   * 
+   * This class contains all the thresholds and tolerances used by the various
+   * curve-on-manifold operations. Default values are computed relative to the
+   * bounding box diagonal of the base mesh.
+   */
   class Param 
   {
   public:
     
-    ScalarType surfDistThr;    // Distance between surface and curve; used in simplify and refine
-    ScalarType minRefEdgeLen;  // Minimal admitted Edge Lenght (used in refine: never make edge shorther than this value) 
-    ScalarType maxSimpEdgeLen; // Maximal admitted Edge Lenght (used in simplify: never make edges longer than this value) 
-    ScalarType maxSmoothDelta; // The maximum movement that is admitted during smoothing.
-    ScalarType maxSnapThr;     // The maximum distance allowed when snapping a vertex of the polyline onto a mesh vertex
-    ScalarType gridBailout;    // The maximum distance bailout used in grid sampling
-    ScalarType barycentricSnapThr;    // The maximum distance bailout used in grid sampling
+    ScalarType surfDistThr;        ///< Max distance between surface and curve; used in simplify and refine
+    ScalarType minRefEdgeLen;      ///< Minimal admitted edge length (used in refine: never make edges shorter than this) 
+    ScalarType maxSimpEdgeLen;     ///< Maximal admitted edge length (used in simplify: never make edges longer than this) 
+    ScalarType maxSmoothDelta;     ///< The maximum movement admitted during smoothing (currently unused)
+    ScalarType maxSnapThr;         ///< The maximum distance allowed when snapping a polyline vertex onto a mesh vertex (currently unused)
+    ScalarType gridBailout;        ///< The maximum distance bailout used in grid-based spatial queries
+    ScalarType barycentricSnapThr; ///< Threshold for snapping barycentric coords to 0 or 1 (controls vertex/edge snapping)
     
+    /// Constructor with default parameter initialization based on mesh size
     Param(MeshType &m) { SetDefault(m);}
     
+    /// Set all parameters to reasonable defaults based on the mesh bounding box
     void SetDefault(MeshType &m)
     {
       surfDistThr        = m.bbox.Diag()/1000.0;
@@ -96,6 +138,8 @@ public:
       gridBailout        = m.bbox.Diag()/20.0;
       barycentricSnapThr = 0.05;
     }
+    
+    /// Print current parameter values to stdout
     void Dump() const
     {
       printf("surfDistThr    = %6.4f\n",surfDistThr   );
@@ -107,14 +151,26 @@ public:
   
   
   
-  // The Data Members
+  // ============================================================================
+  // Data Members
+  // ============================================================================
   
-  MeshType &base; 
-  MeshGrid uniformGrid;
+  MeshType &base;       ///< Reference to the base triangulated surface mesh
+  MeshGrid uniformGrid; ///< Spatial acceleration structure for closest point queries
+  Param par;            ///< Parameters controlling algorithm behavior
   
-  Param par; 
+  /// Constructor: initializes the CoM with a base mesh
   CoM(MeshType &_m) :base(_m),par(_m){}
  
+  // ============================================================================
+  // Spatial Query Methods
+  // ============================================================================
+  
+  /**
+   * \brief Get the closest face to a query point
+   * \param p The query point
+   * \return Pointer to the closest face, or nullptr if none found within gridBailout distance
+   */
   FaceType *GetClosestFace(const CoordType &p)
   {
     ScalarType closestDist;
@@ -122,6 +178,12 @@ public:
     return vcg::tri::GetClosestFaceBase(base,uniformGrid,p, this->par.gridBailout, closestDist, closestP);
   }
   
+  /**
+   * \brief Get the closest face and its barycentric coordinates
+   * \param p The query point
+   * \param ip Output: barycentric coordinates of the closest point on the returned face
+   * \return Pointer to the closest face
+   */
   FaceType *GetClosestFaceIP(const CoordType &p, CoordType &ip)
     {
       ScalarType closestDist;
@@ -129,6 +191,13 @@ public:
       return vcg::tri::GetClosestFaceBase(base,uniformGrid,p, this->par.gridBailout, closestDist, closestP,closestN,ip);
     }
 
+  /**
+   * \brief Get the closest face, barycentric coordinates, and normal
+   * \param p The query point
+   * \param ip Output: barycentric coordinates of the closest point on the returned face
+   * \param in Output: normal at the closest point
+   * \return Pointer to the closest face
+   */
   FaceType *GetClosestFaceIP(const CoordType &p, CoordType &ip, CoordType &in)
     {
       ScalarType closestDist;
@@ -136,18 +205,32 @@ public:
       return vcg::tri::GetClosestFaceBase(base,uniformGrid,p, this->par.gridBailout, closestDist, closestP,in,ip);
     }
 
+  /**
+   * \brief Get the closest face and the closest point on it
+   * \param p The query point
+   * \param closestP Output: the 3D coordinates of the closest point on the surface
+   * \return Pointer to the closest face
+   */
   FaceType *GetClosestFacePoint(const CoordType &p, CoordType &closestP)
   {
     ScalarType closestDist;
     return vcg::tri::GetClosestFaceBase(base,uniformGrid,p, this->par.gridBailout, closestDist, closestP);
   }
-  /** * @brief test if a barycentric coordinate is Well Snapped 
-   * @param ip the barycentric coordinate to be tested
-   * @return true if the barycentric coordinate is well snapped 
+  
+  // ============================================================================
+  // Barycentric Coordinate and Snapping Methods
+  // ============================================================================
+  
+  /** 
+   * \brief Test if a barycentric coordinate is well snapped 
+   * \param ip The barycentric coordinate to test (must sum to 1.0)
+   * \return true if no snapping is needed (all coords are either 0, 1, or far from boundaries)
    * 
-   * It test if there is no need of snapping something. 
+   * A barycentric coordinate is "well snapped" if each component is either:
+   * - Exactly 0.0 or 1.0, OR
+   * - Far enough from 0 and 1 (outside the barycentricSnapThr threshold)
    * 
-   *
+   * This indicates the point doesn't need further snapping adjustment.
    */
   bool IsWellSnapped(const CoordType &ip)
   {
@@ -159,6 +242,15 @@ public:
       return true;
   }
   
+  /**
+   * \brief Check if a barycentric coordinate is snapped to an edge
+   * \param ip The barycentric coordinate (must be snapped)
+   * \param ei Output: index (0,1,2) of the edge opposite to the zero coordinate
+   * \return true if snapped to an edge (exactly one coordinate is 0, other two are positive)
+   * 
+   * Edge snapping means the point lies on one of the three edges of the triangle.
+   * Edge i is the edge from vertex i to vertex (i+1)%3, opposite to vertex (i+2)%3.
+   */
   bool IsSnappedEdge(CoordType &ip, int &ei)
   {
     for(int i=0;i<3;++i)
@@ -170,7 +262,12 @@ public:
     return false;
   }
 
-  // Given a baricentric coordinate finds that we assume that snaps onto an edge, it finds the vertex on which it is snapping 
+  /**
+   * \brief Check if a barycentric coordinate is snapped to a vertex
+   * \param ip The barycentric coordinate (must be snapped)
+   * \param vi Output: index (0,1,2) of the vertex with coordinate == 1.0
+   * \return true if snapped to a vertex (one coordinate is 1.0, others are 0.0)
+   */
   bool IsSnappedVertex(CoordType &ip, int &vi)
   {
     for(int i=0;i<3;++i)
@@ -182,7 +279,12 @@ public:
     return false;
   }
 
-  // Given a baricentric coordinate finds that we assume that snaps onto an edge, it finds the vertex on which it is snapping 
+  /**
+   * \brief Find the vertex pointer for a vertex-snapped barycentric coordinate
+   * \param fp The face containing the point
+   * \param ip The barycentric coordinate (should be snapped to a vertex)
+   * \return Pointer to the snapped vertex, or nullptr if not vertex-snapped
+   */
   VertexPointer FindVertexSnap(FacePointer fp, CoordType &ip)
   {
     for(int i=0;i<3;++i)
@@ -190,15 +292,27 @@ public:
     return 0;
   }
   
-  
+  // ============================================================================
+  // Polyline Tagging and Mesh Cutting Methods
+  // ============================================================================
   
   /**
-   * @brief TagFaceEdgeSelWithPolyLine selects edges of basemesh when they coincide with the polyline ones  *
-   * @param poly
-   * @return true if all the edges of the polyline are snapped onto the mesh. 
+   * \brief Tag face edges of the base mesh that coincide with polyline edges
+   * \param poly The polyline (as edge mesh) to use for tagging
+   * \param markFlag If true, clears all FaceEdgeS flags before tagging (default: true)
+   * \return true if ALL edges of the polyline are fully snapped onto mesh edges
    * 
-   * Use this function together with the CutMeshAlongCrease function to actually cut the mesh with a snapped polyline.
+   * This function marks edges in the base mesh (using FaceEdgeS flag) where they 
+   * coincide with edges from the polyline. The polyline edges must be snapped to 
+   * mesh vertices at both endpoints for this to work.
    * 
+   * \note This is typically used as a preparation step before cutting the mesh
+   *       along the polyline using CutMeshAlongCrease or similar functions.
+   * 
+   * \warning Returns false if any polyline edge is not properly snapped, or if
+   *          the snapped vertices don't form an edge in the base mesh.
+   * 
+   * \sa SplitMeshWithPolyline, CutMeshAlongCrease
    */
     
 bool TagFaceEdgeSelWithPolyLine(MeshType &poly,bool markFlag=true)
@@ -245,6 +359,14 @@ bool TagFaceEdgeSelWithPolyLine(MeshType &poly,bool markFlag=true)
 	return true;
 }
 
+  /**
+   * \brief Find the minimum distance from a sample point to the polyline
+   * \param samplePnt The point to measure distance from
+   * \param edgeGrid Spatial acceleration grid for the polyline edges
+   * \param poly The polyline (as edge mesh)
+   * \param closestPoint Output: the closest point on the polyline
+   * \return The minimum distance from samplePnt to the polyline
+   */
   ScalarType MinDistOnEdge(CoordType samplePnt, EdgeGrid &edgeGrid, MeshType &poly, CoordType &closestPoint)
   {
       ScalarType polyDist;
@@ -252,8 +374,17 @@ bool TagFaceEdgeSelWithPolyLine(MeshType &poly,bool markFlag=true)
       return polyDist;    
   }
   
-  // Given an edge of a mesh, supposedly intersecting the polyline, 
-  // we search on it the closest point to the polyline
+  /**
+   * \brief Find the closest point on a mesh edge to the polyline (static version)
+   * \param v0 First vertex of the mesh edge
+   * \param v1 Second vertex of the mesh edge
+   * \param edgeGrid Spatial acceleration grid for the polyline edges
+   * \param poly The polyline (as edge mesh)
+   * \param closestPoint Output: the point on the edge [v0,v1] closest to the polyline
+   * \return The minimum distance from the edge to the polyline
+   * 
+   * This samples the edge [v0,v1] uniformly and finds which sample is closest to the polyline.
+   */
   static ScalarType MinDistOnEdge(VertexType *v0,VertexType *v1, EdgeGrid &edgeGrid, MeshType &poly, CoordType &closestPoint)
   {
     ScalarType minPolyDist = std::numeric_limits<ScalarType>::max();
@@ -277,12 +408,22 @@ bool TagFaceEdgeSelWithPolyLine(MeshType &poly,bool markFlag=true)
     return minPolyDist;    
   }
   
+  // ============================================================================
+  // Attribute Extraction and Comparison (for Seam Processing)
+  // ============================================================================
   
   /**
-   * @brief ExtractVertex
-   * must extract an unambiguous representation of a vertex 
-   * to be used with attribute_seam.h
+   * \brief Extract vertex attributes for seam processing
+   * \param srcMesh Source mesh (unused but required by interface)
+   * \param f The face containing the vertex
+   * \param whichWedge Which vertex (0,1,2) of the face to extract
+   * \param dstMesh Destination mesh (unused but required by interface)
+   * \param v Output: vertex with copied attributes
    * 
+   * This is a callback function used by the attribute_seam system.
+   * It copies all per-vertex properties and uses the face color.
+   * 
+   * \note This is used when splitting the mesh along seams/polylines.
    */
   static inline void ExtractVertex(const MeshType & srcMesh, const FaceType & f, int whichWedge, const MeshType & dstMesh, VertexType & v)
   {
@@ -294,6 +435,19 @@ bool TagFaceEdgeSelWithPolyLine(MeshType &poly,bool markFlag=true)
       v.C() = f.cC();
   }
   
+  /**
+   * \brief Compare two vertices for seam compatibility
+   * \param m The mesh (unused but required by interface)
+   * \param vA First vertex
+   * \param vB Second vertex
+   * \return true if vertices are compatible across a seam
+   * 
+   * This callback is used by the attribute_seam system to determine if two
+   * vertices can be considered the same across a seam boundary.
+   * Current implementation: Red and Blue colored vertices are considered incompatible.
+   * 
+   * \note This is part of the mesh cutting/seam processing infrastructure.
+   */
   static inline bool CompareVertex(const MeshType & m, const VertexType & vA, const VertexType & vB)
   {
       (void)m;
@@ -303,8 +457,19 @@ bool TagFaceEdgeSelWithPolyLine(MeshType &poly,bool markFlag=true)
       return true;      
   }
   
+  // ============================================================================
+  // Utility Functions
+  // ============================================================================
   
-  
+  /**
+   * \brief Compute quality-weighted linear interpolation between two vertices
+   * \param v0 First vertex
+   * \param v1 Second vertex
+   * \return Interpolated position weighted by inverse quality values
+   * 
+   * Points with higher quality (larger absolute value) contribute less to the result.
+   * This is useful for adaptive refinement based on error metrics stored in quality.
+   */
   static CoordType QLerp(VertexType *v0, VertexType *v1)
   {
     
@@ -444,17 +609,36 @@ bool TagFaceEdgeSelWithPolyLine(MeshType &poly,bool markFlag=true)
     assert(firstVi == poly.vert.end());
   }
   
-
+  // ============================================================================
+  // Mesh Splitting and Refinement for Polyline Integration
+  // ============================================================================
   
-   
   /**
-   * @brief SplitMeshWithPolyline
-   * @param poly
+   * \brief Split the base mesh to make it conforming with the polyline
+   * \param poly The polyline to integrate into the base mesh
    * 
-   * First it splits the base mesh with all the non-snapped points
-   * doing a standard 1 to 3 split;
-   * Then split all the edges of the base mesh that are crossed by the polyline.
-   * At the end of the process there should there be coincident edges between the polyline and the base mesh.
+   * This is a complex two-phase algorithm:
+   * 
+   * **Phase 1: Vertex Insertion**
+   * - Finds all polyline vertices that are NOT snapped to mesh vertices/edges
+   * - Inserts them into the base mesh using 1-to-3 face splits
+   * - This creates new vertices in the mesh at polyline vertex positions
+   * 
+   * **Phase 2: Edge Splitting** (iterative)
+   * - Identifies mesh edges that are crossed by polyline edges
+   * - Splits those edges at the intersection points
+   * - Repeats until no more edges need splitting
+   * 
+   * After completion, the polyline edges should coincide with base mesh edges,
+   * allowing subsequent operations like mesh cutting or constrained triangulation.
+   * 
+   * \note This modifies the base mesh topology! 
+   * \note Calls Init() internally to rebuild spatial structures
+   * \note Calls SnapPolyline() to update polyline after mesh modifications
+   * 
+   * \warning This can significantly increase mesh complexity
+   * 
+   * \sa TagFaceEdgeSelWithPolyLine, SnapPolyline
    */
   
   void SplitMeshWithPolyline(MeshType &poly)
@@ -520,8 +704,22 @@ bool TagFaceEdgeSelWithPolyLine(MeshType &poly,bool markFlag=true)
     } while(edgeToSplitMap.size()>0); // while there are edges to be split
  }
     
-        
+  // ============================================================================
+  // Initialization
+  // ============================================================================
   
+  /**
+   * \brief Initialize the CoM data structures for processing
+   * 
+   * This must be called after construction and whenever the base mesh is modified.
+   * It performs:
+   * - Face normal computation
+   * - Face-Face topology update
+   * - Spatial acceleration structure (uniform grid) construction
+   * 
+   * \note Call this before using any polyline processing methods.
+   * \warning If the base mesh topology changes, call Init() again.
+   */
   void Init()
   {
     // Construction of the uniform grid
@@ -530,6 +728,16 @@ bool TagFaceEdgeSelWithPolyLine(MeshType &poly,bool markFlag=true)
     uniformGrid.Set(base.face.begin(), base.face.end());    
   }
   
+  // ============================================================================
+  // Simplification Methods
+  // ============================================================================
+  
+  /**
+   * \brief Remove duplicate/zero-length edges from a polyline
+   * \param poly The polyline to simplify
+   * 
+   * Removes vertices that have collapsed to the same position.
+   */
   void SimplifyNullEdges(MeshType &poly)
   {
       int cnt=tri::Clean<MeshType>::RemoveDuplicateVertex(poly);
@@ -704,17 +912,38 @@ bool TagFaceEdgeSelWithPolyLine(MeshType &poly,bool markFlag=true)
   }
   
 
-  
   /**
-   * @brief BarycentricSnap
-   * @param ip the baricentric coords to be snapped
-   * @return true if it have been snapped 
+   * \brief Snap barycentric coordinates to 0 or 1 if within threshold
+   * \param ip Input/Output: barycentric coordinates (must sum to 1.0)
+   * \return true if the point was snapped to a vertex or edge (at least one coord became 0)
    * 
-   * This is the VERY important function that is used everywhere. 
-   * Given a barycentric coord of a point inside a triangle it decides 
-   * if it should be "snapped" either onto an edge or on a vertex. 
-   * It relies on the  barycentricSnapThr parameter
+   * **This is one of the MOST IMPORTANT functions in the class** - it's used throughout!
    * 
+   * Given barycentric coordinates of a point in a triangle, this function decides 
+   * whether it should be "snapped" to a vertex or edge based on the 
+   * `par.barycentricSnapThr` threshold.
+   * 
+   * **Algorithm:**
+   * 1. If any coordinate is within `barycentricSnapThr` of 0, snap it to 0
+   * 2. If any coordinate is within `barycentricSnapThr` of 1, snap it to 1
+   * 3. Renormalize to ensure sum = 1.0
+   * 4. If sum is still not exactly 1.0 (due to floating point), adjust the non-snapped coordinate
+   * 
+   * **Snapping Cases:**
+   * - One coord = 1.0, others = 0 → Snapped to a vertex
+   * - One coord = 0, others > 0 → Snapped to an edge
+   * - All coords > 0 and < 1 → Interior point, NOT snapped
+   * 
+   * **Return Value:**
+   * - `true`: Point is on a vertex or edge (at least one coordinate is 0)
+   * - `false`: Point is in the interior of the triangle
+   * 
+   * \note This function MODIFIES the input coordinates in-place!
+   * \note The threshold `par.barycentricSnapThr` (default 0.05) controls snapping sensitivity
+   * 
+   * \warning Side effect: modifies ip parameter! Consider renaming to BarycentricSnapInPlace()
+   * 
+   * \sa IsWellSnapped, IsSnappedVertex, IsSnappedEdge
    */
   bool BarycentricSnap(CoordType &ip)
   {
