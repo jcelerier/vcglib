@@ -22,7 +22,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
-          folder: ../html
-          config_file: doxyfile
+          folder: html
+          config_file: docs/Doxygen/doxyfile
           doxygen_version: 1.9.6
         
