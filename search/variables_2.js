@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['max_0',['max',['../classvcg_1_1Box3.html#a4d25fd6f083de08fc7f86832c564aa3f',1,'vcg::Box3']]],
-  ['min_1',['min',['../classvcg_1_1Box3.html#af38f37de0f6a5c4357b1a4bd40cf9de0',1,'vcg::Box3']]]
+  ['cb_0',['cb',['../classvcg_1_1tri_1_1RedetailSampler.html#ac022758bcc7f35d1af4dfc07fc32e09d',1,'vcg::tri::RedetailSampler']]],
+  ['closestptmesh_1',['closestPtMesh',['../classvcg_1_1tri_1_1HausdorffSampler.html#ab7c1ff53ff16d74c269ed55f04a54170',1,'vcg::tri::HausdorffSampler']]]
 ];

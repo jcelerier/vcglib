@@ -7,5 +7,6 @@ var searchData=
   ['operator_3d_4',['operator=',['../classvcg_1_1Point3.html#a6e0188cdd46d4714cffeff01024cb43a',1,'vcg::Point3::operator=(Point3 const &amp;p)=default'],['../classvcg_1_1Point3.html#a4e2e470272ef258732d7ed930099ce26',1,'vcg::Point3::operator=(Point3&lt; Q &gt; const &amp;p)']]],
   ['operator_3d_3d_5',['operator==',['../classvcg_1_1Box3.html#aa2d231c4493bfa5224461e6699ef7316',1,'vcg::Box3']]],
   ['operator_5e_6',['operator^',['../classvcg_1_1Point3.html#abe21aa7c5d07c6bb156d423e501ba01d',1,'vcg::Point3']]],
-  ['opp_5fvert_7',['opp_vert',['../classvcg_1_1tri_1_1HalfEdgeTopology.html#a862501e9316843dc59ea62ccb3ef9e5d',1,'vcg::tri::HalfEdgeTopology']]]
+  ['opp_5fvert_7',['opp_vert',['../classvcg_1_1tri_1_1HalfEdgeTopology.html#a862501e9316843dc59ea62ccb3ef9e5d',1,'vcg::tri::HalfEdgeTopology']]],
+  ['optional_5fcomponent_8',['optional_component',['../optional_component.html',1,'index']]]
 ];

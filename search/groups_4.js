@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['vertexcomponentgroup_0',['VertexComponentGroup',['../group__VertexComponentGroup.html',1,'']]]
+  ['space_0',['Space',['../group__space.html',1,'']]]
 ];

@@ -10,5 +10,7 @@ var searchData=
   ['edgeinvert_7',['EdgeInvert',['../classvcg_1_1tri_1_1UpdateSelection.html#ae1de0bd3e760c0e95c9a37e2c931ef37',1,'vcg::tri::UpdateSelection']]],
   ['edgemeshuniform_8',['EdgeMeshUniform',['../classvcg_1_1tri_1_1SurfaceSampling.html#aa7f96dbf424a7f6905c32788e0edc3ff',1,'vcg::tri::SurfaceSampling']]],
   ['edgemontecarlo_9',['EdgeMontecarlo',['../classvcg_1_1tri_1_1SurfaceSampling.html#af70e80ea8c7d7f0ba298a694179554b3',1,'vcg::tri::SurfaceSampling']]],
-  ['ext_10',['Ext',['../classvcg_1_1Point3.html#a8faf9902092590dc30fc486cd3408b13',1,'vcg::Point3']]]
+  ['efstarff_10',['EFStarFF',['../namespacevcg_1_1face.html#a25d788feeec110a8a1d13c31cd656acf',1,'vcg::face']]],
+  ['ext_11',['Ext',['../classvcg_1_1Point3.html#a8faf9902092590dc30fc486cd3408b13',1,'vcg::Point3']]],
+  ['extractvertex_12',['ExtractVertex',['../classvcg_1_1tri_1_1CoM.html#ae75be8fe3210f77f2baa0a76cddd2161',1,'vcg::tri::CoM']]]
 ];

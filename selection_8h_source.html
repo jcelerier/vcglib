@@ -110,7 +110,7 @@ $(function() {
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#include &quot;flag.h&quot;</span></div>
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="keyword">namespace </span>vcg {</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespacevcg.html">vcg</a> {</div>
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="keyword">namespace </span>tri {</div>
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> ComputeMeshType&gt;</div>
@@ -358,7 +358,7 @@ $(function() {
 <div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span>        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0;i&lt;f.VN();++i)</div>
 <div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span>        {</div>
 <div class="line"><a id="l00307" name="l00307"></a><span class="lineno">  307</span>            <span class="keywordflow">if</span>(f.IsFaceEdgeS(i)) ++selCnt;</div>
-<div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span>            <span class="keywordflow">if</span>(f.IsFaceEdgeS(i) &amp;&amp; face::IsBorder(f,i)) ++selCnt; <span class="comment">// all FaceEdges are counted twice with the exception of the ones on borders</span></div>
+<div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span>            <span class="keywordflow">if</span>(f.IsFaceEdgeS(i) &amp;&amp; <a class="code hl_function" href="namespacevcg_1_1face.html#a2c84b49d422ed67ff3d9853d83175545">face::IsBorder</a>(f,i)) ++selCnt; <span class="comment">// all FaceEdges are counted twice with the exception of the ones on borders</span></div>
 <div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span>        }       </div>
 <div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span>    });</div>
 <div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span>    <span class="keywordflow">return</span> selCnt/2;</div>
@@ -690,7 +690,7 @@ $(function() {
 <div class="line"><a id="l00664" name="l00664"></a><span class="lineno">  664</span>  <span class="keywordflow">for</span>(<span class="keyword">auto</span> fi=m.face.begin();fi!=m.face.end();++fi) <span class="keywordflow">if</span>(!(*fi).IsD())</div>
 <div class="line"><a id="l00665" name="l00665"></a><span class="lineno">  665</span>  {</div>
 <div class="line"><a id="l00666" name="l00666"></a><span class="lineno">  666</span>    <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0;i&lt;(*fi).VN();++i)</div>
-<div class="line"><a id="l00667" name="l00667"></a><span class="lineno">  667</span>      angleSumH[fi-&gt;V(i)] += face::WedgeAngleRad(*fi,i);</div>
+<div class="line"><a id="l00667" name="l00667"></a><span class="lineno">  667</span>      angleSumH[fi-&gt;V(i)] += <a class="code hl_function" href="namespacevcg_1_1face.html#a11e93c4703b1fb2f1e265a6ad1cdda0d">face::WedgeAngleRad</a>(*fi,i);</div>
 <div class="line"><a id="l00668" name="l00668"></a><span class="lineno">  668</span>  }</div>
 <div class="line"><a id="l00669" name="l00669"></a><span class="lineno">  669</span>  </div>
 <div class="line"><a id="l00670" name="l00670"></a><span class="lineno">  670</span>  <span class="keywordflow">for</span>(<span class="keyword">auto</span> vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="keywordflow">if</span>(!(*vi).IsD())</div>
@@ -771,11 +771,14 @@ $(function() {
 <div class="ttc" id="agroup__trimesh_html_ga24f6314afbfbfe7d053b1cbfbb6acb1d"><div class="ttname"><a href="group__trimesh.html#ga24f6314afbfbfe7d053b1cbfbb6acb1d">vcg::tri::ForEachEdge</a></div><div class="ttdeci">void ForEachEdge(const MeshType &amp;m, Callable action)</div><div class="ttdef"><b>Definition:</b> foreach.h:222</div></div>
 <div class="ttc" id="agroup__trimesh_html_ga41d6e87d2b9988bd38353c64f1cc32fb"><div class="ttname"><a href="group__trimesh.html#ga41d6e87d2b9988bd38353c64f1cc32fb">vcg::tri::ForEachFace</a></div><div class="ttdeci">void ForEachFace(const MeshType &amp;m, Callable action)</div><div class="ttdef"><b>Definition:</b> foreach.h:78</div></div>
 <div class="ttc" id="agroup__trimesh_html_gaa5468c62fb324fa87f551337e95da273"><div class="ttname"><a href="group__trimesh.html#gaa5468c62fb324fa87f551337e95da273">vcg::tri::ForEachVertex</a></div><div class="ttdeci">void ForEachVertex(const MeshType &amp;m, Callable action)</div><div class="ttdef"><b>Definition:</b> foreach.h:126</div></div>
+<div class="ttc" id="anamespacevcg_1_1face_html_a11e93c4703b1fb2f1e265a6ad1cdda0d"><div class="ttname"><a href="namespacevcg_1_1face.html#a11e93c4703b1fb2f1e265a6ad1cdda0d">vcg::face::WedgeAngleRad</a></div><div class="ttdeci">FaceType::ScalarType WedgeAngleRad(FaceType &amp;f, const int i)</div><div class="ttdoc">Return the internal angle (in radians) of the i-th wedge of the triangle.</div><div class="ttdef"><b>Definition:</b> topology.h:118</div></div>
+<div class="ttc" id="anamespacevcg_1_1face_html_a2c84b49d422ed67ff3d9853d83175545"><div class="ttname"><a href="namespacevcg_1_1face.html#a2c84b49d422ed67ff3d9853d83175545">vcg::face::IsBorder</a></div><div class="ttdeci">bool IsBorder(FaceType const &amp;f, const int j)</div><div class="ttdef"><b>Definition:</b> topology.h:55</div></div>
+<div class="ttc" id="anamespacevcg_html"><div class="ttname"><a href="namespacevcg.html">vcg</a></div><div class="ttdef"><b>Definition:</b> color4.h:30</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.9.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated by&#160;<a href="https://www.doxygen.org/index.html">doxygen</a> 1.9.6 on Thu Nov 6 2025 18:14:06
+Generated by&#160;<a href="https://www.doxygen.org/index.html">doxygen</a> 1.9.6 on Thu Nov 6 2025 22:27:25
 </small></address>
 </body>
 </html>

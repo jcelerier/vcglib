@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['volume_0',['volume',['../classvcg_1_1tri_1_1HausdorffSampler.html#a2466a4e79495e21a8e0fd6af3c5b97a7',1,'vcg::tri::HausdorffSampler']]]
+  ['par_0',['par',['../classvcg_1_1tri_1_1CoM.html#a4f0e64a43ae6759b2221980d80bbc149',1,'vcg::tri::CoM']]]
 ];

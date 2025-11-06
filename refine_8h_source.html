@@ -112,7 +112,7 @@ $(function() {
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#include &lt;vcg/space/texcoord2.h&gt;</span></div>
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#include &lt;vcg/space/triangle3.h&gt;</span></div>
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="keyword">namespace </span>vcg{</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespacevcg.html">vcg</a>{</div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="keyword">namespace </span>tri{</div>
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="comment">/* A very short intro about the generic refinement framework,</span></div>
@@ -1071,7 +1071,7 @@ $(function() {
 <div class="line"><a id="l00995" name="l00995"></a><span class="lineno">  995</span>}; <span class="comment">// end class TriSplit</span></div>
 <div class="line"><a id="l00996" name="l00996"></a><span class="lineno">  996</span> </div>
 <div class="line"><a id="l01004" name="l01004"></a><span class="lineno"> 1004</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> MeshType&gt;</div>
-<div class="line"><a id="l01005" name="l01005"></a><span class="lineno"> 1005</span><span class="keywordtype">void</span> TrivialMidPointRefine(MeshType &amp; m, <span class="keywordtype">bool</span> onlySelected=<span class="keyword">false</span>)</div>
+<div class="line"><a id="l01005" name="l01005"></a><span class="lineno"><a class="line" href="namespacevcg_1_1tri.html#a0412bb3c694f537339a2fa718409a1fc"> 1005</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="namespacevcg_1_1tri.html#a0412bb3c694f537339a2fa718409a1fc">TrivialMidPointRefine</a>(MeshType &amp; m, <span class="keywordtype">bool</span> onlySelected=<span class="keyword">false</span>)</div>
 <div class="line"><a id="l01006" name="l01006"></a><span class="lineno"> 1006</span>{</div>
 <div class="line"><a id="l01007" name="l01007"></a><span class="lineno"> 1007</span>  <span class="keyword">typedef</span> <span class="keyword">typename</span> MeshType::VertexIterator VertexIterator;</div>
 <div class="line"><a id="l01008" name="l01008"></a><span class="lineno"> 1008</span>  <span class="keyword">typedef</span> <span class="keyword">typename</span> MeshType::FaceIterator FaceIterator;</div>
@@ -1138,7 +1138,7 @@ $(function() {
 <div class="line"><a id="l01069" name="l01069"></a><span class="lineno"> 1069</span>  printf(<span class="stringliteral">&quot;Vertex unification %i\n&quot;</span>,vd);</div>
 <div class="line"><a id="l01070" name="l01070"></a><span class="lineno"> 1070</span>  <span class="keywordtype">int</span> vu = <a class="code hl_function" href="classvcg_1_1tri_1_1Clean.html#a57758cbd28403a39c00821a813e4b14a">tri::Clean&lt;MeshType&gt;::RemoveUnreferencedVertex</a>(m);</div>
 <div class="line"><a id="l01071" name="l01071"></a><span class="lineno"> 1071</span>  printf(<span class="stringliteral">&quot;Vertex unref %i\n&quot;</span>,vu);</div>
-<div class="line"><a id="l01072" name="l01072"></a><span class="lineno"> 1072</span>  Allocator&lt;MeshType&gt;::CompactEveryVector(m);</div>
+<div class="line"><a id="l01072" name="l01072"></a><span class="lineno"> 1072</span>  <a class="code hl_class" href="classvcg_1_1tri_1_1Allocator.html">Allocator&lt;MeshType&gt;::CompactEveryVector</a>(m);</div>
 <div class="line"><a id="l01073" name="l01073"></a><span class="lineno"> 1073</span>}</div>
 <div class="line"><a id="l01074" name="l01074"></a><span class="lineno"> 1074</span> </div>
 <div class="line"><a id="l01075" name="l01075"></a><span class="lineno"> 1075</span> </div>
@@ -1161,7 +1161,7 @@ $(function() {
 <div class="line"><a id="l01092" name="l01092"></a><span class="lineno"> 1092</span> </div>
 <div class="line"><a id="l01093" name="l01093"></a><span class="lineno"> 1093</span>    <span class="keyword">typedef</span> RefinedFaceData&lt;VertexPointer&gt; RFD;</div>
 <div class="line"><a id="l01094" name="l01094"></a><span class="lineno"> 1094</span>    <span class="keyword">typedef</span> <span class="keyword">typename</span> MESH_TYPE :: template PerFaceAttributeHandle&lt;RFD&gt; HandleType;</div>
-<div class="line"><a id="l01095" name="l01095"></a><span class="lineno"> 1095</span>    HandleType RD  = tri::Allocator&lt;MESH_TYPE&gt;:: template AddPerFaceAttribute&lt;RFD&gt; (m,std::string(<span class="stringliteral">&quot;RefineData&quot;</span>));</div>
+<div class="line"><a id="l01095" name="l01095"></a><span class="lineno"> 1095</span>    HandleType RD  = <a class="code hl_class" href="classvcg_1_1tri_1_1Allocator.html">tri::Allocator&lt;MESH_TYPE&gt;</a>:: template AddPerFaceAttribute&lt;RFD&gt; (m,std::string(<span class="stringliteral">&quot;RefineData&quot;</span>));</div>
 <div class="line"><a id="l01096" name="l01096"></a><span class="lineno"> 1096</span> </div>
 <div class="line"><a id="l01097" name="l01097"></a><span class="lineno"> 1097</span>    MidPoint&lt;MESH_TYPE&gt; mid(&amp;m);</div>
 <div class="line"><a id="l01098" name="l01098"></a><span class="lineno"> 1098</span>    <span class="comment">// Callback stuff</span></div>
@@ -1389,6 +1389,8 @@ $(function() {
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateFlags_html_aa7b38174528ff4f1021f4daec91d74b4"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateFlags.html#aa7b38174528ff4f1021f4daec91d74b4">vcg::tri::UpdateFlags::FaceBorderFromFF</a></div><div class="ttdeci">static void FaceBorderFromFF(MeshType &amp;m)</div><div class="ttdoc">Compute the border flags for the faces using the Face-Face Topology.</div><div class="ttdef"><b>Definition:</b> flag.h:170</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateSelection_html_aaccb65cf344e537b3ae98854ad262836"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateSelection.html#aaccb65cf344e537b3ae98854ad262836">vcg::tri::UpdateSelection::FaceCount</a></div><div class="ttdeci">static size_t FaceCount(const MeshType &amp;m)</div><div class="ttdoc">This function returns the number of selected faces.</div><div class="ttdef"><b>Definition:</b> selection.h:280</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateTopology_html_a506e3895fa279551d02296ed53a2f814"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateTopology.html#a506e3895fa279551d02296ed53a2f814">vcg::tri::UpdateTopology::FaceFace</a></div><div class="ttdeci">static void FaceFace(MeshType &amp;m)</div><div class="ttdoc">Update the Face-Face topological relation by allowing to retrieve for each face what other faces shar...</div><div class="ttdef"><b>Definition:</b> topology.h:395</div></div>
+<div class="ttc" id="anamespacevcg_1_1tri_html_a0412bb3c694f537339a2fa718409a1fc"><div class="ttname"><a href="namespacevcg_1_1tri.html#a0412bb3c694f537339a2fa718409a1fc">vcg::tri::TrivialMidPointRefine</a></div><div class="ttdeci">void TrivialMidPointRefine(MeshType &amp;m, bool onlySelected=false)</div><div class="ttdoc">Trivial function for 1-&gt;4 triangle split.</div><div class="ttdef"><b>Definition:</b> refine.h:1005</div></div>
+<div class="ttc" id="anamespacevcg_html"><div class="ttname"><a href="namespacevcg.html">vcg</a></div><div class="ttdef"><b>Definition:</b> color4.h:30</div></div>
 <div class="ttc" id="astructvcg_1_1tri_1_1BaseInterpolator_html"><div class="ttname"><a href="structvcg_1_1tri_1_1BaseInterpolator.html">vcg::tri::BaseInterpolator</a></div><div class="ttdef"><b>Definition:</b> refine.h:111</div></div>
 <div class="ttc" id="astructvcg_1_1tri_1_1CenterPointBarycenter_html"><div class="ttname"><a href="structvcg_1_1tri_1_1CenterPointBarycenter.html">vcg::tri::CenterPointBarycenter</a></div><div class="ttdef"><b>Definition:</b> refine.h:892</div></div>
 <div class="ttc" id="astructvcg_1_1tri_1_1MidPointArcNaive_html"><div class="ttname"><a href="structvcg_1_1tri_1_1MidPointArcNaive.html">vcg::tri::MidPointArcNaive</a></div><div class="ttdef"><b>Definition:</b> refine.h:255</div></div>
@@ -1403,7 +1405,7 @@ $(function() {
 <!-- HTML footer for doxygen 1.9.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated by&#160;<a href="https://www.doxygen.org/index.html">doxygen</a> 1.9.6 on Thu Nov 6 2025 18:14:06
+Generated by&#160;<a href="https://www.doxygen.org/index.html">doxygen</a> 1.9.6 on Thu Nov 6 2025 22:27:25
 </small></address>
 </body>
 </html>

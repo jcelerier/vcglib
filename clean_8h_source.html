@@ -115,7 +115,7 @@ $(function() {
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="preprocessor">#include &lt;vcg/space/triangle3.h&gt;</span></div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">#include &lt;vcg/complex/append.h&gt;</span></div>
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="keyword">namespace </span>vcg {</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespacevcg.html">vcg</a> {</div>
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="keyword">namespace </span>tri{</div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> ConnectedEdgeMeshType&gt;</div>
@@ -201,7 +201,7 @@ $(function() {
 <div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>        FacePointer fpt=sf.top();</div>
 <div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>        sf.pop();</div>
 <div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> j=0; j&lt;fpt-&gt;VN(); ++j)</div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>            <span class="keywordflow">if</span>( !face::IsBorder(*fpt,j) )</div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>            <span class="keywordflow">if</span>( !<a class="code hl_function" href="namespacevcg_1_1face.html#a2c84b49d422ed67ff3d9853d83175545">face::IsBorder</a>(*fpt,j) )</div>
 <div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>            {</div>
 <div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>                FacePointer l=fpt-&gt;FFp(j);</div>
 <div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>                <span class="keywordflow">if</span>( !tri::IsMarked(*mp,l) )</div>
@@ -789,7 +789,7 @@ $(function() {
 <div class="line"><a id="l00749" name="l00749"></a><span class="lineno">  749</span>                    <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0;i&lt;fp-&gt;VN();++i) {</div>
 <div class="line"><a id="l00750" name="l00750"></a><span class="lineno">  750</span>                        FacePointer ff = fp-&gt;FFp(i);</div>
 <div class="line"><a id="l00751" name="l00751"></a><span class="lineno">  751</span> </div>
-<div class="line"><a id="l00752" name="l00752"></a><span class="lineno">  752</span>                        <span class="keywordflow">if</span>(face::IsManifold(*fp, i) &amp;&amp; !ff-&gt;IsS() &amp;&amp; !ff-&gt;IsV())</div>
+<div class="line"><a id="l00752" name="l00752"></a><span class="lineno">  752</span>                        <span class="keywordflow">if</span>(<a class="code hl_function" href="namespacevcg_1_1face.html#a173ac9366b00f862113b0926564ae840">face::IsManifold</a>(*fp, i) &amp;&amp; !ff-&gt;IsS() &amp;&amp; !ff-&gt;IsV())</div>
 <div class="line"><a id="l00753" name="l00753"></a><span class="lineno">  753</span>                        {</div>
 <div class="line"><a id="l00754" name="l00754"></a><span class="lineno">  754</span>                            ff-&gt;SetS();</div>
 <div class="line"><a id="l00755" name="l00755"></a><span class="lineno">  755</span>                            ff-&gt;SetV();</div>
@@ -813,7 +813,7 @@ $(function() {
 <div class="line"><a id="l00773" name="l00773"></a><span class="lineno">  773</span>                std::vector&lt;FacePointer&gt; faceVec;</div>
 <div class="line"><a id="l00774" name="l00774"></a><span class="lineno">  774</span>                std::vector&lt;int&gt; idxVec;</div>
 <div class="line"><a id="l00775" name="l00775"></a><span class="lineno">  775</span> </div>
-<div class="line"><a id="l00776" name="l00776"></a><span class="lineno">  776</span>                vcg::face::VFStarVF(&amp;v, faceVec, idxVec);</div>
+<div class="line"><a id="l00776" name="l00776"></a><span class="lineno">  776</span>                <a class="code hl_function" href="namespacevcg_1_1face.html#acd70bc38985dd81b1d769cf303871692">vcg::face::VFStarVF</a>(&amp;v, faceVec, idxVec);</div>
 <div class="line"><a id="l00777" name="l00777"></a><span class="lineno">  777</span> </div>
 <div class="line"><a id="l00778" name="l00778"></a><span class="lineno">  778</span>                CoordType delta(0, 0, 0);</div>
 <div class="line"><a id="l00779" name="l00779"></a><span class="lineno">  779</span>                <span class="keywordflow">for</span> (<span class="keyword">auto</span> fp : faceVec)</div>
@@ -1045,7 +1045,7 @@ $(function() {
 <div class="line"><a id="l01045" name="l01045"></a><span class="lineno"> 1045</span>            <span class="keywordflow">if</span>(!(*fi).IsD())</div>
 <div class="line"><a id="l01046" name="l01046"></a><span class="lineno"> 1046</span>                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> k=0; k&lt;3; k++)</div>
 <div class="line"><a id="l01047" name="l01047"></a><span class="lineno"> 1047</span>                    <span class="keywordflow">if</span>( ( fi-&gt;IsF(k) != fi-&gt;cFFp(k)-&gt;IsF(fi-&gt;cFFi(k)) ) ||</div>
-<div class="line"><a id="l01048" name="l01048"></a><span class="lineno"> 1048</span>                        ( fi-&gt;IsF(k) &amp;&amp; face::IsBorder(*fi,k)) )</div>
+<div class="line"><a id="l01048" name="l01048"></a><span class="lineno"> 1048</span>                        ( fi-&gt;IsF(k) &amp;&amp; <a class="code hl_function" href="namespacevcg_1_1face.html#a2c84b49d422ed67ff3d9853d83175545">face::IsBorder</a>(*fi,k)) )</div>
 <div class="line"><a id="l01049" name="l01049"></a><span class="lineno"> 1049</span>                    {</div>
 <div class="line"><a id="l01050" name="l01050"></a><span class="lineno"> 1050</span>                        <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line"><a id="l01051" name="l01051"></a><span class="lineno"> 1051</span>                    }</div>
@@ -1228,7 +1228,7 @@ $(function() {
 <div class="line"><a id="l01249" name="l01249"></a><span class="lineno"> 1249</span>        {</div>
 <div class="line"><a id="l01250" name="l01250"></a><span class="lineno"> 1250</span>            <span class="keywordflow">for</span>(<span class="keywordtype">int</span> j=0;j&lt;3;++j)</div>
 <div class="line"><a id="l01251" name="l01251"></a><span class="lineno"> 1251</span>            {</div>
-<div class="line"><a id="l01252" name="l01252"></a><span class="lineno"> 1252</span>                <span class="keywordflow">if</span>(!fi-&gt;IsV() &amp;&amp; face::IsBorder(*fi,j))</div>
+<div class="line"><a id="l01252" name="l01252"></a><span class="lineno"> 1252</span>                <span class="keywordflow">if</span>(!fi-&gt;IsV() &amp;&amp; <a class="code hl_function" href="namespacevcg_1_1face.html#a2c84b49d422ed67ff3d9853d83175545">face::IsBorder</a>(*fi,j))</div>
 <div class="line"><a id="l01253" name="l01253"></a><span class="lineno"> 1253</span>                {</div>
 <div class="line"><a id="l01254" name="l01254"></a><span class="lineno"> 1254</span>                    face::Pos&lt;FaceType&gt; startPos(&amp;*fi,j);</div>
 <div class="line"><a id="l01255" name="l01255"></a><span class="lineno"> 1255</span>                    face::Pos&lt;FaceType&gt; curPos=startPos;</div>
@@ -1276,7 +1276,7 @@ $(function() {
 <div class="line"><a id="l01297" name="l01297"></a><span class="lineno"> 1297</span>                    sf.pop();</div>
 <div class="line"><a id="l01298" name="l01298"></a><span class="lineno"> 1298</span>                    <span class="keywordflow">for</span>(<span class="keywordtype">int</span> j=0; j&lt;fpt-&gt;VN(); ++j)</div>
 <div class="line"><a id="l01299" name="l01299"></a><span class="lineno"> 1299</span>                    {</div>
-<div class="line"><a id="l01300" name="l01300"></a><span class="lineno"> 1300</span>                        <span class="keywordflow">if</span>( !face::IsBorder(*fpt,j) )</div>
+<div class="line"><a id="l01300" name="l01300"></a><span class="lineno"> 1300</span>                        <span class="keywordflow">if</span>( !<a class="code hl_function" href="namespacevcg_1_1face.html#a2c84b49d422ed67ff3d9853d83175545">face::IsBorder</a>(*fpt,j) )</div>
 <div class="line"><a id="l01301" name="l01301"></a><span class="lineno"> 1301</span>                        {</div>
 <div class="line"><a id="l01302" name="l01302"></a><span class="lineno"> 1302</span>                            FacePointer l = fpt-&gt;FFp(j);</div>
 <div class="line"><a id="l01303" name="l01303"></a><span class="lineno"> 1303</span>                            <span class="keywordflow">if</span>( !(*l).IsV() )</div>
@@ -1417,7 +1417,7 @@ $(function() {
 <div class="line"><a id="l01484" name="l01484"></a><span class="lineno"> 1484</span>        <span class="keywordflow">for</span> (FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi)</div>
 <div class="line"><a id="l01485" name="l01485"></a><span class="lineno"> 1485</span>            <span class="keywordflow">if</span> (!fi-&gt;IsD())</div>
 <div class="line"><a id="l01486" name="l01486"></a><span class="lineno"> 1486</span>                <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0;i&lt;3;++i)</div>
-<div class="line"><a id="l01487" name="l01487"></a><span class="lineno"> 1487</span>                    <span class="keywordflow">if</span>(!face::CheckOrientation(*fi,i))</div>
+<div class="line"><a id="l01487" name="l01487"></a><span class="lineno"> 1487</span>                    <span class="keywordflow">if</span>(!<a class="code hl_function" href="namespacevcg_1_1face.html#a4da98f1b9f341bd88ed707e36cdddb1f">face::CheckOrientation</a>(*fi,i))</div>
 <div class="line"><a id="l01488" name="l01488"></a><span class="lineno"> 1488</span>                        <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line"><a id="l01489" name="l01489"></a><span class="lineno"> 1489</span> </div>
 <div class="line"><a id="l01490" name="l01490"></a><span class="lineno"> 1490</span>        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
@@ -1447,7 +1447,7 @@ $(function() {
 <div class="line"><a id="l01514" name="l01514"></a><span class="lineno"> 1514</span>                    <span class="comment">// make consistently oriented the adjacent faces</span></div>
 <div class="line"><a id="l01515" name="l01515"></a><span class="lineno"> 1515</span>                    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> j = 0; j &lt; 3; j++)</div>
 <div class="line"><a id="l01516" name="l01516"></a><span class="lineno"> 1516</span>                    {</div>
-<div class="line"><a id="l01517" name="l01517"></a><span class="lineno"> 1517</span>                        <span class="keywordflow">if</span> (!face::IsBorder(*fp,j) &amp;&amp; face::IsManifold&lt;FaceType&gt;(*fp, j))</div>
+<div class="line"><a id="l01517" name="l01517"></a><span class="lineno"> 1517</span>                        <span class="keywordflow">if</span> (!<a class="code hl_function" href="namespacevcg_1_1face.html#a2c84b49d422ed67ff3d9853d83175545">face::IsBorder</a>(*fp,j) &amp;&amp; face::IsManifold&lt;FaceType&gt;(*fp, j))</div>
 <div class="line"><a id="l01518" name="l01518"></a><span class="lineno"> 1518</span>                        {</div>
 <div class="line"><a id="l01519" name="l01519"></a><span class="lineno"> 1519</span>                            FacePointer fpaux = fp-&gt;FFp(j);</div>
 <div class="line"><a id="l01520" name="l01520"></a><span class="lineno"> 1520</span>                            <span class="keywordtype">int</span> iaux = fp-&gt;FFi(j);</div>
@@ -1614,7 +1614,7 @@ $(function() {
 <div class="line"><a id="l01687" name="l01687"></a><span class="lineno"> 1687</span>                <span class="keywordtype">int</span> i = std::find(sides, sides+3, std::max( std::max(sides[0],sides[1]), sides[2])) - (sides);</div>
 <div class="line"><a id="l01688" name="l01688"></a><span class="lineno"> 1688</span>                <span class="keywordflow">if</span>( tri::IsMarked(m,f-&gt;V2(i) )) <span class="keywordflow">continue</span>;</div>
 <div class="line"><a id="l01689" name="l01689"></a><span class="lineno"> 1689</span> </div>
-<div class="line"><a id="l01690" name="l01690"></a><span class="lineno"> 1690</span>                <span class="keywordflow">if</span>( PSDist(f-&gt;P2(i),f-&gt;P(i),f-&gt;P1(i),dummy)*threshold &lt;= sides[i] )</div>
+<div class="line"><a id="l01690" name="l01690"></a><span class="lineno"> 1690</span>                <span class="keywordflow">if</span>( <a class="code hl_function" href="namespacevcg.html#a6ec45f5d72df6a314392b76ee57fd9f5">PSDist</a>(f-&gt;P2(i),f-&gt;P(i),f-&gt;P1(i),dummy)*threshold &lt;= sides[i] )</div>
 <div class="line"><a id="l01691" name="l01691"></a><span class="lineno"> 1691</span>                {</div>
 <div class="line"><a id="l01692" name="l01692"></a><span class="lineno"> 1692</span>                    tri::Mark(m,f-&gt;V2(i));</div>
 <div class="line"><a id="l01693" name="l01693"></a><span class="lineno"> 1693</span>                    <span class="keywordflow">if</span>(face::CheckFlipEdge&lt;FaceType&gt;( *f, i ))  {</div>
@@ -1662,7 +1662,7 @@ $(function() {
 <div class="line"><a id="l01735" name="l01735"></a><span class="lineno"> 1735</span>                <span class="keywordtype">int</span> i = std::find(sides, sides+3, std::max( std::max(sides[0],sides[1]), sides[2])) - (sides);</div>
 <div class="line"><a id="l01736" name="l01736"></a><span class="lineno"> 1736</span>                <span class="keywordflow">if</span>( tri::IsMarked(m,f-&gt;V2(i) )) <span class="keywordflow">continue</span>;</div>
 <div class="line"><a id="l01737" name="l01737"></a><span class="lineno"> 1737</span> </div>
-<div class="line"><a id="l01738" name="l01738"></a><span class="lineno"> 1738</span>                <span class="keywordflow">if</span>( PSDist(f-&gt;P2(i),f-&gt;P(i),f-&gt;P1(i),dummy)*threshold &lt;= sides[i] )</div>
+<div class="line"><a id="l01738" name="l01738"></a><span class="lineno"> 1738</span>                <span class="keywordflow">if</span>( <a class="code hl_function" href="namespacevcg.html#a6ec45f5d72df6a314392b76ee57fd9f5">PSDist</a>(f-&gt;P2(i),f-&gt;P(i),f-&gt;P1(i),dummy)*threshold &lt;= sides[i] )</div>
 <div class="line"><a id="l01739" name="l01739"></a><span class="lineno"> 1739</span>                {</div>
 <div class="line"><a id="l01740" name="l01740"></a><span class="lineno"> 1740</span>                    tri::Mark(m,f-&gt;V2(i));</div>
 <div class="line"><a id="l01741" name="l01741"></a><span class="lineno"> 1741</span> </div>
@@ -1783,7 +1783,7 @@ $(function() {
 <div class="line"><a id="l01869" name="l01869"></a><span class="lineno"> 1869</span> </div>
 <div class="line"><a id="l01877" name="l01877"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1Clean.html#a8ea700d7187c15ea11c460ae03fc2c0e"> 1877</a></span>    <span class="keyword">static</span>  <span class="keywordtype">bool</span> <a class="code hl_function" href="classvcg_1_1tri_1_1Clean.html#a8ea700d7187c15ea11c460ae03fc2c0e">TestFaceFaceIntersection</a>(FaceType *f0,FaceType *f1)</div>
 <div class="line"><a id="l01878" name="l01878"></a><span class="lineno"> 1878</span>    {</div>
-<div class="line"><a id="l01879" name="l01879"></a><span class="lineno"> 1879</span>        <span class="keywordtype">int</span> sv = face::CountSharedVertex(f0,f1);</div>
+<div class="line"><a id="l01879" name="l01879"></a><span class="lineno"> 1879</span>        <span class="keywordtype">int</span> sv = <a class="code hl_function" href="namespacevcg_1_1face.html#a2c8197481e4e2edaf12098ee2a0e0505">face::CountSharedVertex</a>(f0,f1);</div>
 <div class="line"><a id="l01880" name="l01880"></a><span class="lineno"> 1880</span>        <span class="keywordflow">if</span>(sv==3) <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line"><a id="l01881" name="l01881"></a><span class="lineno"> 1881</span>        <span class="keywordflow">if</span>(sv==0) <span class="keywordflow">return</span> (vcg::IntersectionTriangleTriangle&lt;FaceType&gt;((*f0),(*f1)));</div>
 <div class="line"><a id="l01882" name="l01882"></a><span class="lineno"> 1882</span>        <span class="comment">//  if the faces share only a vertex, the opposite edge (as a segment) is tested against the face</span></div>
@@ -1792,7 +1792,7 @@ $(function() {
 <div class="line"><a id="l01885" name="l01885"></a><span class="lineno"> 1885</span>        <span class="keywordflow">if</span>(sv==1)</div>
 <div class="line"><a id="l01886" name="l01886"></a><span class="lineno"> 1886</span>        {</div>
 <div class="line"><a id="l01887" name="l01887"></a><span class="lineno"> 1887</span>            <span class="keywordtype">int</span> i0,i1; ScalarType a,b;</div>
-<div class="line"><a id="l01888" name="l01888"></a><span class="lineno"> 1888</span>            face::FindSharedVertex(f0,f1,i0,i1);</div>
+<div class="line"><a id="l01888" name="l01888"></a><span class="lineno"> 1888</span>            <a class="code hl_function" href="namespacevcg_1_1face.html#abb736a7e031f67a31130b6692ba600ab">face::FindSharedVertex</a>(f0,f1,i0,i1);</div>
 <div class="line"><a id="l01889" name="l01889"></a><span class="lineno"> 1889</span>            CoordType shP = f0-&gt;V(i0)-&gt;P()*0.5;</div>
 <div class="line"><a id="l01890" name="l01890"></a><span class="lineno"> 1890</span>            <span class="keywordflow">if</span>(vcg::IntersectionSegmentTriangle(Segment3&lt;ScalarType&gt;((*f0).V1(i0)-&gt;P()*0.5+shP,(*f0).V2(i0)-&gt;P()*0.5+shP), *f1, a, b) )</div>
 <div class="line"><a id="l01891" name="l01891"></a><span class="lineno"> 1891</span>            {</div>
@@ -2100,12 +2100,20 @@ $(function() {
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateTopology_html_a283f15f2c47896ef91e47db41ebb265a"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateTopology.html#a283f15f2c47896ef91e47db41ebb265a">vcg::tri::UpdateTopology::VertexFace</a></div><div class="ttdeci">static void VertexFace(MeshType &amp;m)</div><div class="ttdoc">Update the Vertex-Face topological relation.</div><div class="ttdef"><b>Definition:</b> topology.h:467</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateTopology_html_a2c8325c8749f27a5aec31a60422bab54"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateTopology.html#a2c8325c8749f27a5aec31a60422bab54">vcg::tri::UpdateTopology::FillEdgeVector</a></div><div class="ttdeci">static void FillEdgeVector(MeshType &amp;m, std::vector&lt; PEdge &gt; &amp;edgeVec, bool includeFauxEdge=true)</div><div class="ttdef"><b>Definition:</b> topology.h:200</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateTopology_html_a506e3895fa279551d02296ed53a2f814"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateTopology.html#a506e3895fa279551d02296ed53a2f814">vcg::tri::UpdateTopology::FaceFace</a></div><div class="ttdeci">static void FaceFace(MeshType &amp;m)</div><div class="ttdoc">Update the Face-Face topological relation by allowing to retrieve for each face what other faces shar...</div><div class="ttdef"><b>Definition:</b> topology.h:395</div></div>
+<div class="ttc" id="anamespacevcg_1_1face_html_a173ac9366b00f862113b0926564ae840"><div class="ttname"><a href="namespacevcg_1_1face.html#a173ac9366b00f862113b0926564ae840">vcg::face::IsManifold</a></div><div class="ttdeci">bool IsManifold(FaceType const &amp;f, const int j)</div><div class="ttdef"><b>Definition:</b> topology.h:41</div></div>
+<div class="ttc" id="anamespacevcg_1_1face_html_a2c8197481e4e2edaf12098ee2a0e0505"><div class="ttname"><a href="namespacevcg_1_1face.html#a2c8197481e4e2edaf12098ee2a0e0505">vcg::face::CountSharedVertex</a></div><div class="ttdeci">int CountSharedVertex(FaceType *f0, FaceType *f1)</div><div class="ttdef"><b>Definition:</b> topology.h:1273</div></div>
+<div class="ttc" id="anamespacevcg_1_1face_html_a2c84b49d422ed67ff3d9853d83175545"><div class="ttname"><a href="namespacevcg_1_1face.html#a2c84b49d422ed67ff3d9853d83175545">vcg::face::IsBorder</a></div><div class="ttdeci">bool IsBorder(FaceType const &amp;f, const int j)</div><div class="ttdef"><b>Definition:</b> topology.h:55</div></div>
+<div class="ttc" id="anamespacevcg_1_1face_html_a4da98f1b9f341bd88ed707e36cdddb1f"><div class="ttname"><a href="namespacevcg_1_1face.html#a4da98f1b9f341bd88ed707e36cdddb1f">vcg::face::CheckOrientation</a></div><div class="ttdeci">bool CheckOrientation(FaceType &amp;f, int z)</div><div class="ttdef"><b>Definition:</b> topology.h:380</div></div>
+<div class="ttc" id="anamespacevcg_1_1face_html_abb736a7e031f67a31130b6692ba600ab"><div class="ttname"><a href="namespacevcg_1_1face.html#abb736a7e031f67a31130b6692ba600ab">vcg::face::FindSharedVertex</a></div><div class="ttdeci">bool FindSharedVertex(FaceType *f0, FaceType *f1, int &amp;i, int &amp;j)</div><div class="ttdef"><b>Definition:</b> topology.h:1291</div></div>
+<div class="ttc" id="anamespacevcg_1_1face_html_acd70bc38985dd81b1d769cf303871692"><div class="ttname"><a href="namespacevcg_1_1face.html#acd70bc38985dd81b1d769cf303871692">vcg::face::VFStarVF</a></div><div class="ttdeci">void VFStarVF(typename FaceType::VertexType *vp, std::vector&lt; FaceType * &gt; &amp;faceVec, std::vector&lt; int &gt; &amp;indexes)</div><div class="ttdoc">Compute the set of faces adjacent to a given vertex using VF adjacency.</div><div class="ttdef"><b>Definition:</b> topology.h:993</div></div>
+<div class="ttc" id="anamespacevcg_html"><div class="ttname"><a href="namespacevcg.html">vcg</a></div><div class="ttdef"><b>Definition:</b> color4.h:30</div></div>
+<div class="ttc" id="anamespacevcg_html_a6ec45f5d72df6a314392b76ee57fd9f5"><div class="ttname"><a href="namespacevcg.html#a6ec45f5d72df6a314392b76ee57fd9f5">vcg::PSDist</a></div><div class="ttdeci">P3ScalarType PSDist(const Point3&lt; P3ScalarType &gt; &amp;p, const Point3&lt; P3ScalarType &gt; &amp;v1, const Point3&lt; P3ScalarType &gt; &amp;v2, Point3&lt; P3ScalarType &gt; &amp;q)</div><div class="ttdoc">Point(p) Edge(v1-v2) dist, q is the point in v1-v2 with min dist.</div><div class="ttdef"><b>Definition:</b> point3.h:522</div></div>
 <div class="ttc" id="astructvcg_1_1tri_1_1Clean_1_1CompareAreaFP_html"><div class="ttname"><a href="structvcg_1_1tri_1_1Clean_1_1CompareAreaFP.html">vcg::tri::Clean::CompareAreaFP</a></div><div class="ttdef"><b>Definition:</b> clean.h:796</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.9.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated by&#160;<a href="https://www.doxygen.org/index.html">doxygen</a> 1.9.6 on Thu Nov 6 2025 18:14:06
+Generated by&#160;<a href="https://www.doxygen.org/index.html">doxygen</a> 1.9.6 on Thu Nov 6 2025 22:27:25
 </small></address>
 </body>
 </html>

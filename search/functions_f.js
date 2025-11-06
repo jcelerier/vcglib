@@ -1,16 +1,17 @@
 var searchData=
 [
-  ['scatter_0',['Scatter',['../classvcg_1_1Color4.html#a6f81ca21ee1b60304a98ab053353493f',1,'vcg::Color4']]],
-  ['selectcreasevertexonedgemeshee_1',['SelectCreaseVertexOnEdgeMeshEE',['../classvcg_1_1tri_1_1Clean.html#af01913e2096fbfbcffc281c3cfdea0b4',1,'vcg::tri::Clean']]],
-  ['selectcreasevertexonedgemeshve_2',['SelectCreaseVertexOnEdgeMeshVE',['../classvcg_1_1tri_1_1Clean.html#a71c7b72a6a36a9024baad75879622341',1,'vcg::tri::Clean']]],
-  ['selected_3',['Selected',['../classvcg_1_1tri_1_1Append.html#af353c17cb715be4febd9bffbb1109c26',1,'vcg::tri::Append']]],
-  ['selectfoldedfacefromoneringfaces_4',['SelectFoldedFaceFromOneRingFaces',['../classvcg_1_1tri_1_1Clean.html#a19ff4f9d5bfde6343084c4b4115a037b',1,'vcg::tri::Clean']]],
-  ['selectintersectingfaces_5',['SelectIntersectingFaces',['../classvcg_1_1tri_1_1Clean.html#a303f08dfdd7006b2191dc9bc346708ba',1,'vcg::tri::Clean']]],
-  ['set_6',['Set',['../classvcg_1_1Box3.html#a4cce1e44306dc1bef49e6e31a60e782a',1,'vcg::Box3']]],
-  ['setcolorramp_7',['SetColorRamp',['../classvcg_1_1Color4.html#a7674bbc9560bc8694d4744a438142695',1,'vcg::Color4']]],
-  ['setnull_8',['SetNull',['../classvcg_1_1Box3.html#ab19f4373049ede7f0460fdae111916b7',1,'vcg::Box3']]],
-  ['singlet_5fremove_5fquad_9',['singlet_remove_quad',['../classvcg_1_1tri_1_1HalfEdgeTopology.html#a4376ae70cec2fc210f728385c235bc1f',1,'vcg::tri::HalfEdgeTopology']]],
-  ['splitmanifoldcomponents_10',['SplitManifoldComponents',['../classvcg_1_1tri_1_1Clean.html#a458949d58e3926811dd22f0b6dc50785',1,'vcg::tri::Clean']]],
-  ['splitnonmanifoldvertex_11',['SplitNonManifoldVertex',['../classvcg_1_1tri_1_1Clean.html#a5839cea95b531daace7acb86651af35e',1,'vcg::tri::Clean']]],
-  ['squareddiag_12',['SquaredDiag',['../classvcg_1_1Box3.html#a48aeba05611b43b7f3748eba4b430f6d',1,'vcg::Box3']]]
+  ['refinecurvebybasemesh_0',['RefineCurveByBaseMesh',['../classvcg_1_1tri_1_1CoM.html#a4e22ca4117ec158c34b29629f92623f4',1,'vcg::tri::CoM']]],
+  ['refinecurvebydistance_1',['RefineCurveByDistance',['../classvcg_1_1tri_1_1CoM.html#abb176fb9cb9433730d2bb4f0dc07e572',1,'vcg::tri::CoM']]],
+  ['remove_5fface_2',['remove_face',['../classvcg_1_1tri_1_1HalfEdgeTopology.html#a113ed10f67304fe5668c2e17fe76c72d',1,'vcg::tri::HalfEdgeTopology']]],
+  ['remove_5fface_5funsafe_3',['remove_face_unsafe',['../classvcg_1_1tri_1_1HalfEdgeTopology.html#abbd89a1ddb36888bf3db7e2ca759546f',1,'vcg::tri::HalfEdgeTopology']]],
+  ['removedegenerateface_4',['RemoveDegenerateFace',['../classvcg_1_1tri_1_1Clean.html#aa5a172d818f58d40444535dc502f03ca',1,'vcg::tri::Clean']]],
+  ['removedegeneratevertex_5',['RemoveDegenerateVertex',['../classvcg_1_1tri_1_1Clean.html#a019128077eaa20de22a915dcfa27da37',1,'vcg::tri::Clean']]],
+  ['removeduplicateedge_6',['RemoveDuplicateEdge',['../classvcg_1_1tri_1_1Clean.html#abe64fc2656c2a5589cea6891e6d634a5',1,'vcg::tri::Clean']]],
+  ['removeduplicateface_7',['RemoveDuplicateFace',['../classvcg_1_1tri_1_1Clean.html#a1712f5ff687aebbc9aa7df35fa289a47',1,'vcg::tri::Clean']]],
+  ['removeduplicatevertex_8',['RemoveDuplicateVertex',['../classvcg_1_1tri_1_1Clean.html#a247f421da724cbbf49b96a55ddb9d69c',1,'vcg::tri::Clean']]],
+  ['removehedge_9',['RemoveHEdge',['../classvcg_1_1tri_1_1UpdateHalfEdges.html#a2830c62b38109829ede471f1ae535594',1,'vcg::tri::UpdateHalfEdges']]],
+  ['removehugeconnectedcomponentsdiameter_10',['RemoveHugeConnectedComponentsDiameter',['../classvcg_1_1tri_1_1Clean.html#a60fc39a381fa860ca7363c869600e5d5',1,'vcg::tri::Clean']]],
+  ['removenonmanifoldface_11',['RemoveNonManifoldFace',['../classvcg_1_1tri_1_1Clean.html#ae30a7c2d3e76fbd3a4a0a15b5f778517',1,'vcg::tri::Clean']]],
+  ['removesmallconnectedcomponentsdiameter_12',['RemoveSmallConnectedComponentsDiameter',['../classvcg_1_1tri_1_1Clean.html#a3e031c0f99e3bb2ec1ad0ae221eb3262',1,'vcg::tri::Clean']]],
+  ['removeunreferencedvertex_13',['RemoveUnreferencedVertex',['../classvcg_1_1tri_1_1Clean.html#a57758cbd28403a39c00821a813e4b14a',1,'vcg::tri::Clean']]]
 ];

@@ -110,7 +110,7 @@ $(function() {
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="preprocessor">#include &lt;vcg/simplex/face/topology.h&gt;</span></div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#include &lt;vcg/simplex/edge/pos.h&gt;</span></div>
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="keyword">namespace </span>vcg {</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespacevcg.html">vcg</a> {</div>
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="keyword">namespace </span>tri {</div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
@@ -341,7 +341,7 @@ $(function() {
 <div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span>    {</div>
 <div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span>      std::vector&lt;FacePointer&gt; fpVec;</div>
 <div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span>      std::vector&lt;int&gt; eiVec;</div>
-<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span>      face::EFStarFF(Edges[i].f,Edges[i].z,fpVec,eiVec);</div>
+<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span>      <a class="code hl_function" href="namespacevcg_1_1face.html#a25d788feeec110a8a1d13c31cd656acf">face::EFStarFF</a>(Edges[i].f,Edges[i].z,fpVec,eiVec);</div>
 <div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span>      m.edge[i].EFp() = Edges[i].f;</div>
 <div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span>      m.edge[i].EFi() = Edges[i].z;</div>
 <div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span>    }</div>
@@ -353,7 +353,7 @@ $(function() {
 <div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span>    {</div>
 <div class="line"><a id="l00295" name="l00295"></a><span class="lineno">  295</span>      std::vector&lt;FacePointer&gt; fpVec;</div>
 <div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span>      std::vector&lt;int&gt; eiVec;</div>
-<div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span>      face::EFStarFF(Edges[i].f,Edges[i].z,fpVec,eiVec);</div>
+<div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span>      <a class="code hl_function" href="namespacevcg_1_1face.html#a25d788feeec110a8a1d13c31cd656acf">face::EFStarFF</a>(Edges[i].f,Edges[i].z,fpVec,eiVec);</div>
 <div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span>      <span class="keywordflow">for</span>(<span class="keywordtype">size_t</span> j=0;j&lt;fpVec.size();++j)</div>
 <div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span>        fpVec[j]-&gt;FEp(eiVec[j])=&amp;(m.edge[i]);</div>
 <div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span> </div>
@@ -590,7 +590,7 @@ $(function() {
 <div class="line"><a id="l00556" name="l00556"></a><span class="lineno">  556</span>    {</div>
 <div class="line"><a id="l00557" name="l00557"></a><span class="lineno">  557</span>      <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; (*fi).VN(); i++)</div>
 <div class="line"><a id="l00558" name="l00558"></a><span class="lineno">  558</span>      {</div>
-<div class="line"><a id="l00559" name="l00559"></a><span class="lineno">  559</span>        <span class="keywordflow">if</span> (!vcg::face::IsBorder((*fi), i))</div>
+<div class="line"><a id="l00559" name="l00559"></a><span class="lineno">  559</span>        <span class="keywordflow">if</span> (!<a class="code hl_function" href="namespacevcg_1_1face.html#a2c84b49d422ed67ff3d9853d83175545">vcg::face::IsBorder</a>((*fi), i))</div>
 <div class="line"><a id="l00560" name="l00560"></a><span class="lineno">  560</span>        {</div>
 <div class="line"><a id="l00561" name="l00561"></a><span class="lineno">  561</span>          <span class="keyword">typename</span> MeshType::FacePointer nextFace = (*fi).FFp(i);</div>
 <div class="line"><a id="l00562" name="l00562"></a><span class="lineno">  562</span>          <span class="keywordtype">int</span> nextEdgeIndex = (*fi).FFi(i);</div>
@@ -606,7 +606,7 @@ $(function() {
 <div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span>              border = <span class="keyword">true</span>;</div>
 <div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span>          }</div>
 <div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span>          <span class="keywordflow">if</span> (border)</div>
-<div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span>            vcg::face::FFDetach((*fi), i);</div>
+<div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span>            <a class="code hl_function" href="namespacevcg_1_1face.html#ac8ebd61c946fd797566ef71842375480">vcg::face::FFDetach</a>((*fi), i);</div>
 <div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span> </div>
 <div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span>        }</div>
 <div class="line"><a id="l00578" name="l00578"></a><span class="lineno">  578</span>      }</div>
@@ -845,11 +845,15 @@ $(function() {
 <div class="ttc" id="agroup__trimesh_html_ga189dbfba130073459cdb1c46e7694d65"><div class="ttname"><a href="group__trimesh.html#ga189dbfba130073459cdb1c46e7694d65">vcg::tri::ForEachTetra</a></div><div class="ttdeci">void ForEachTetra(const MeshType &amp;m, Callable action)</div><div class="ttdef"><b>Definition:</b> foreach.h:270</div></div>
 <div class="ttc" id="agroup__trimesh_html_ga41d6e87d2b9988bd38353c64f1cc32fb"><div class="ttname"><a href="group__trimesh.html#ga41d6e87d2b9988bd38353c64f1cc32fb">vcg::tri::ForEachFace</a></div><div class="ttdeci">void ForEachFace(const MeshType &amp;m, Callable action)</div><div class="ttdef"><b>Definition:</b> foreach.h:78</div></div>
 <div class="ttc" id="agroup__trimesh_html_gaa5468c62fb324fa87f551337e95da273"><div class="ttname"><a href="group__trimesh.html#gaa5468c62fb324fa87f551337e95da273">vcg::tri::ForEachVertex</a></div><div class="ttdeci">void ForEachVertex(const MeshType &amp;m, Callable action)</div><div class="ttdef"><b>Definition:</b> foreach.h:126</div></div>
+<div class="ttc" id="anamespacevcg_1_1face_html_a25d788feeec110a8a1d13c31cd656acf"><div class="ttname"><a href="namespacevcg_1_1face.html#a25d788feeec110a8a1d13c31cd656acf">vcg::face::EFStarFF</a></div><div class="ttdeci">void EFStarFF(FaceType *fp, int ei, std::vector&lt; FaceType * &gt; &amp;faceVec, std::vector&lt; int &gt; &amp;indVed)</div><div class="ttdoc">Compute the set of faces incident onto a given edge using FF adjacency.</div><div class="ttdef"><b>Definition:</b> topology.h:1020</div></div>
+<div class="ttc" id="anamespacevcg_1_1face_html_a2c84b49d422ed67ff3d9853d83175545"><div class="ttname"><a href="namespacevcg_1_1face.html#a2c84b49d422ed67ff3d9853d83175545">vcg::face::IsBorder</a></div><div class="ttdeci">bool IsBorder(FaceType const &amp;f, const int j)</div><div class="ttdef"><b>Definition:</b> topology.h:55</div></div>
+<div class="ttc" id="anamespacevcg_1_1face_html_ac8ebd61c946fd797566ef71842375480"><div class="ttname"><a href="namespacevcg_1_1face.html#ac8ebd61c946fd797566ef71842375480">vcg::face::FFDetach</a></div><div class="ttdeci">void FFDetach(FaceType &amp;f, const int e)</div><div class="ttdef"><b>Definition:</b> topology.h:250</div></div>
+<div class="ttc" id="anamespacevcg_html"><div class="ttname"><a href="namespacevcg.html">vcg</a></div><div class="ttdef"><b>Definition:</b> color4.h:30</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.9.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated by&#160;<a href="https://www.doxygen.org/index.html">doxygen</a> 1.9.6 on Thu Nov 6 2025 18:14:06
+Generated by&#160;<a href="https://www.doxygen.org/index.html">doxygen</a> 1.9.6 on Thu Nov 6 2025 22:27:26
 </small></address>
 </body>
 </html>

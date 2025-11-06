@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['edgecomponentgroup_0',['EdgeComponentGroup',['../group__EdgeComponentGroup.html',1,'']]]
+  ['code_20examples_0',['Code Examples',['../group__code__sample.html',1,'']]]
 ];

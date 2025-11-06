@@ -108,7 +108,7 @@ $(function() {
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#include &lt;algorithm&gt;</span></div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &lt;vcg/math/base.h&gt;</span></div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="keyword">namespace </span>vcg {</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespacevcg.html">vcg</a> {</div>
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt; <span class="keyword">class </span>Box3;</div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
@@ -544,12 +544,12 @@ $(function() {
 <div class="line"><a id="l00518" name="l00518"></a><span class="lineno">  518</span> </div>
 <div class="line"><a id="l00519" name="l00519"></a><span class="lineno">  519</span> </div>
 <div class="line"><a id="l00521" name="l00521"></a><span class="lineno">  521</span><span class="keyword">template</span>&lt;<span class="keyword">class</span> P3ScalarType&gt;</div>
-<div class="line"><a id="l00522" name="l00522"></a><span class="lineno">  522</span>P3ScalarType PSDist( <span class="keyword">const</span> Point3&lt;P3ScalarType&gt; &amp; p,</div>
-<div class="line"><a id="l00523" name="l00523"></a><span class="lineno">  523</span>                     <span class="keyword">const</span> Point3&lt;P3ScalarType&gt; &amp; v1,</div>
-<div class="line"><a id="l00524" name="l00524"></a><span class="lineno">  524</span>                     <span class="keyword">const</span> Point3&lt;P3ScalarType&gt; &amp; v2,</div>
-<div class="line"><a id="l00525" name="l00525"></a><span class="lineno">  525</span>                     Point3&lt;P3ScalarType&gt; &amp; q )</div>
+<div class="line"><a id="l00522" name="l00522"></a><span class="lineno"><a class="line" href="namespacevcg.html#a6ec45f5d72df6a314392b76ee57fd9f5">  522</a></span>P3ScalarType <a class="code hl_function" href="namespacevcg.html#a6ec45f5d72df6a314392b76ee57fd9f5">PSDist</a>( <span class="keyword">const</span> <a class="code hl_class" href="classvcg_1_1Point3.html">Point3&lt;P3ScalarType&gt;</a> &amp; p,</div>
+<div class="line"><a id="l00523" name="l00523"></a><span class="lineno">  523</span>                     <span class="keyword">const</span> <a class="code hl_class" href="classvcg_1_1Point3.html">Point3&lt;P3ScalarType&gt;</a> &amp; v1,</div>
+<div class="line"><a id="l00524" name="l00524"></a><span class="lineno">  524</span>                     <span class="keyword">const</span> <a class="code hl_class" href="classvcg_1_1Point3.html">Point3&lt;P3ScalarType&gt;</a> &amp; v2,</div>
+<div class="line"><a id="l00525" name="l00525"></a><span class="lineno">  525</span>                     <a class="code hl_class" href="classvcg_1_1Point3.html">Point3&lt;P3ScalarType&gt;</a> &amp; q )</div>
 <div class="line"><a id="l00526" name="l00526"></a><span class="lineno">  526</span>{</div>
-<div class="line"><a id="l00527" name="l00527"></a><span class="lineno">  527</span>    Point3&lt;P3ScalarType&gt; e = v2-v1;</div>
+<div class="line"><a id="l00527" name="l00527"></a><span class="lineno">  527</span>    <a class="code hl_class" href="classvcg_1_1Point3.html">Point3&lt;P3ScalarType&gt;</a> e = v2-v1;</div>
 <div class="line"><a id="l00528" name="l00528"></a><span class="lineno">  528</span>    P3ScalarType  t = ((p-v1)*e)/e.SquaredNorm();</div>
 <div class="line"><a id="l00529" name="l00529"></a><span class="lineno">  529</span>    <span class="keywordflow">if</span>(t&lt;0)      t = 0;</div>
 <div class="line"><a id="l00530" name="l00530"></a><span class="lineno">  530</span>    <span class="keywordflow">else</span> <span class="keywordflow">if</span>(t&gt;1) t = 1;</div>
@@ -617,11 +617,13 @@ $(function() {
 <div class="ttc" id="aclassvcg_1_1Point3_html_a91faac54e0ffc2b79500722c6bb71282"><div class="ttname"><a href="classvcg_1_1Point3.html#a91faac54e0ffc2b79500722c6bb71282">vcg::Point3::FromPolarRad</a></div><div class="ttdeci">void FromPolarRad(const P3ScalarType &amp;ro, const P3ScalarType &amp;theta, const P3ScalarType &amp;phi)</div><div class="ttdef"><b>Definition:</b> point3.h:349</div></div>
 <div class="ttc" id="aclassvcg_1_1Point3_html_abe21aa7c5d07c6bb156d423e501ba01d"><div class="ttname"><a href="classvcg_1_1Point3.html#abe21aa7c5d07c6bb156d423e501ba01d">vcg::Point3::operator^</a></div><div class="ttdeci">Point3 operator^(Point3 const &amp;p) const</div><div class="ttdoc">Cross product.</div><div class="ttdef"><b>Definition:</b> point3.h:238</div></div>
 <div class="ttc" id="aclassvcg_1_1Point3_html_af3e9d8f9aeb915d3609358b372b0f7b4"><div class="ttname"><a href="classvcg_1_1Point3.html#af3e9d8f9aeb915d3609358b372b0f7b4">vcg::Point3::Point3</a></div><div class="ttdeci">Point3(Point3&lt; Q &gt; const &amp;p)</div><div class="ttdef"><b>Definition:</b> point3.h:72</div></div>
+<div class="ttc" id="anamespacevcg_html"><div class="ttname"><a href="namespacevcg.html">vcg</a></div><div class="ttdef"><b>Definition:</b> color4.h:30</div></div>
+<div class="ttc" id="anamespacevcg_html_a6ec45f5d72df6a314392b76ee57fd9f5"><div class="ttname"><a href="namespacevcg.html#a6ec45f5d72df6a314392b76ee57fd9f5">vcg::PSDist</a></div><div class="ttdeci">P3ScalarType PSDist(const Point3&lt; P3ScalarType &gt; &amp;p, const Point3&lt; P3ScalarType &gt; &amp;v1, const Point3&lt; P3ScalarType &gt; &amp;v2, Point3&lt; P3ScalarType &gt; &amp;q)</div><div class="ttdoc">Point(p) Edge(v1-v2) dist, q is the point in v1-v2 with min dist.</div><div class="ttdef"><b>Definition:</b> point3.h:522</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.9.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated by&#160;<a href="https://www.doxygen.org/index.html">doxygen</a> 1.9.6 on Thu Nov 6 2025 18:14:06
+Generated by&#160;<a href="https://www.doxygen.org/index.html">doxygen</a> 1.9.6 on Thu Nov 6 2025 22:27:26
 </small></address>
 </body>
 </html>

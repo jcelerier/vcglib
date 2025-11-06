@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['trimesh_0',['Trimesh',['../group__trimesh.html',1,'']]]
+  ['math_0',['Math',['../group__math.html',1,'']]]
 ];

@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['face_0',['Face',['../group__face.html',1,'']]],
-  ['facecomponentgroup_1',['FaceComponentGroup',['../group__FaceComponentGroup.html',1,'']]]
+  ['edge_20components_0',['Edge Components',['../group__EdgeComponentGroup.html',1,'']]]
 ];

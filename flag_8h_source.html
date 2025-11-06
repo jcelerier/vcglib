@@ -107,7 +107,7 @@ $(function() {
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="preprocessor">#include &lt;vcg/simplex/tetrahedron/pos.h&gt;</span></div>
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#include &lt;vcg/simplex/edge/pos.h&gt;</span></div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="keyword">namespace </span>vcg {</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespacevcg.html">vcg</a> {</div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="keyword">namespace </span>tri {</div>
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
@@ -244,7 +244,7 @@ $(function() {
 <div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>        <span class="keywordflow">for</span>(FaceIterator fi=m.face.begin();fi!=m.face.end();++fi)<span class="keywordflow">if</span>(!(*fi).IsD())</div>
 <div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>            <span class="keywordflow">for</span>(<span class="keywordtype">int</span> j=0;j&lt;fi-&gt;VN();++j)</div>
 <div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>            {</div>
-<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>                <span class="keywordflow">if</span>(face::IsBorder(*fi,j)) (*fi).SetB(j);</div>
+<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>                <span class="keywordflow">if</span>(<a class="code hl_function" href="namespacevcg_1_1face.html#a2c84b49d422ed67ff3d9853d83175545">face::IsBorder</a>(*fi,j)) (*fi).SetB(j);</div>
 <div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>                <span class="keywordflow">else</span> (*fi).ClearB(j);</div>
 <div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span>            }</div>
 <div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>    }</div>
@@ -479,7 +479,7 @@ $(function() {
 <div class="line"><a id="l00416" name="l00416"></a><span class="lineno">  416</span>            {</div>
 <div class="line"><a id="l00417" name="l00417"></a><span class="lineno">  417</span> </div>
 <div class="line"><a id="l00418" name="l00418"></a><span class="lineno">  418</span>                <span class="keywordflow">for</span>(<span class="keywordtype">int</span> z=0;z&lt;(*fi).VN();++z)</div>
-<div class="line"><a id="l00419" name="l00419"></a><span class="lineno">  419</span>                    <span class="keywordflow">if</span>( face::IsBorder(*fi,z))</div>
+<div class="line"><a id="l00419" name="l00419"></a><span class="lineno">  419</span>                    <span class="keywordflow">if</span>( <a class="code hl_function" href="namespacevcg_1_1face.html#a2c84b49d422ed67ff3d9853d83175545">face::IsBorder</a>(*fi,z))</div>
 <div class="line"><a id="l00420" name="l00420"></a><span class="lineno">  420</span>                    {</div>
 <div class="line"><a id="l00421" name="l00421"></a><span class="lineno">  421</span>                        (*fi).V0(z)-&gt;SetB();</div>
 <div class="line"><a id="l00422" name="l00422"></a><span class="lineno">  422</span>                        (*fi).V1(z)-&gt;SetB();</div>
@@ -532,7 +532,7 @@ $(function() {
 <div class="line"><a id="l00480" name="l00480"></a><span class="lineno">  480</span>        {</div>
 <div class="line"><a id="l00481" name="l00481"></a><span class="lineno">  481</span>            <span class="keywordflow">for</span>(<span class="keywordtype">int</span> z=0;z&lt;(*fi).VN();++z)</div>
 <div class="line"><a id="l00482" name="l00482"></a><span class="lineno">  482</span>            {</div>
-<div class="line"><a id="l00483" name="l00483"></a><span class="lineno">  483</span>                <span class="keywordflow">if</span>(!face::IsBorder(*fi,z) )</div>
+<div class="line"><a id="l00483" name="l00483"></a><span class="lineno">  483</span>                <span class="keywordflow">if</span>(!<a class="code hl_function" href="namespacevcg_1_1face.html#a2c84b49d422ed67ff3d9853d83175545">face::IsBorder</a>(*fi,z) )</div>
 <div class="line"><a id="l00484" name="l00484"></a><span class="lineno">  484</span>                {</div>
 <div class="line"><a id="l00485" name="l00485"></a><span class="lineno">  485</span>                    ScalarType angle = DihedralAngleRad(*fi,z);</div>
 <div class="line"><a id="l00486" name="l00486"></a><span class="lineno">  486</span>                    <span class="keywordflow">if</span>(angle&lt;AngleRadNeg || angle&gt;AngleRadPos)</div>
@@ -557,7 +557,7 @@ $(function() {
 <div class="line"><a id="l00507" name="l00507"></a><span class="lineno">  507</span>            {</div>
 <div class="line"><a id="l00508" name="l00508"></a><span class="lineno">  508</span>                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> z=0; z&lt;(*fi).VN(); ++z)</div>
 <div class="line"><a id="l00509" name="l00509"></a><span class="lineno">  509</span>                {</div>
-<div class="line"><a id="l00510" name="l00510"></a><span class="lineno">  510</span>                    <span class="keywordflow">if</span> (face::IsBorder(*fi,z))</div>
+<div class="line"><a id="l00510" name="l00510"></a><span class="lineno">  510</span>                    <span class="keywordflow">if</span> (<a class="code hl_function" href="namespacevcg_1_1face.html#a2c84b49d422ed67ff3d9853d83175545">face::IsBorder</a>(*fi,z))</div>
 <div class="line"><a id="l00511" name="l00511"></a><span class="lineno">  511</span>                        fi-&gt;SetFaceEdgeS(z);</div>
 <div class="line"><a id="l00512" name="l00512"></a><span class="lineno">  512</span>                }</div>
 <div class="line"><a id="l00513" name="l00513"></a><span class="lineno">  513</span>            }</div>
@@ -588,11 +588,13 @@ $(function() {
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateFlags_html_aac16c2a9b6574a42e81125afd7943674"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateFlags.html#aac16c2a9b6574a42e81125afd7943674">vcg::tri::UpdateFlags::TetraBorderFromTT</a></div><div class="ttdeci">static void TetraBorderFromTT(MeshType &amp;m)</div><div class="ttdoc">Compute the border flags for the tetras using the Tetra-Tetra Topology.</div><div class="ttdef"><b>Definition:</b> flag.h:187</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateFlags_html_af410e2e44f895b69160641c5fd77534f"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateFlags.html#af410e2e44f895b69160641c5fd77534f">vcg::tri::UpdateFlags::FaceEdgeSelBorder</a></div><div class="ttdeci">static void FaceEdgeSelBorder(MeshType &amp;m)</div><div class="ttdoc">Selects feature edges according to Face adjacency.</div><div class="ttdef"><b>Definition:</b> flag.h:499</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateFlags_html_af773a8cdc6f2402c07c6bdd387df5c42"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateFlags.html#af773a8cdc6f2402c07c6bdd387df5c42">vcg::tri::UpdateFlags::VertexBorderFromEdgeAdj</a></div><div class="ttdeci">static void VertexBorderFromEdgeAdj(MeshType &amp;m)</div><div class="ttdoc">Compute the PerVertex Border flag deriving it from the Edge-Edge adjacency (made for edgemeshes)</div><div class="ttdef"><b>Definition:</b> flag.h:446</div></div>
+<div class="ttc" id="anamespacevcg_1_1face_html_a2c84b49d422ed67ff3d9853d83175545"><div class="ttname"><a href="namespacevcg_1_1face.html#a2c84b49d422ed67ff3d9853d83175545">vcg::face::IsBorder</a></div><div class="ttdeci">bool IsBorder(FaceType const &amp;f, const int j)</div><div class="ttdef"><b>Definition:</b> topology.h:55</div></div>
+<div class="ttc" id="anamespacevcg_html"><div class="ttname"><a href="namespacevcg.html">vcg</a></div><div class="ttdef"><b>Definition:</b> color4.h:30</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.9.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated by&#160;<a href="https://www.doxygen.org/index.html">doxygen</a> 1.9.6 on Thu Nov 6 2025 18:14:06
+Generated by&#160;<a href="https://www.doxygen.org/index.html">doxygen</a> 1.9.6 on Thu Nov 6 2025 22:27:25
 </small></address>
 </body>
 </html>

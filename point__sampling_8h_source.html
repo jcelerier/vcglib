@@ -128,7 +128,7 @@ $(function() {
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="preprocessor">#include &lt;vcg/space/segment2.h&gt;</span></div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span><span class="preprocessor">#include &lt;vcg/space/index/grid_static_ptr.h&gt;</span></div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span><span class="keyword">namespace </span>vcg</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespacevcg.html">vcg</a></div>
 <div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>{</div>
 <div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="keyword">namespace </span>tri</div>
 <div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>{</div>
@@ -2267,12 +2267,12 @@ $(function() {
 <div class="line"><a id="l02333" name="l02333"></a><span class="lineno"> 2333</span> </div>
 <div class="line"><a id="l02337" name="l02337"></a><span class="lineno"> 2337</span><span class="comment">//</span></div>
 <div class="line"><a id="l02338" name="l02338"></a><span class="lineno"> 2338</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> MeshType&gt;</div>
-<div class="line"><a id="l02339" name="l02339"></a><span class="lineno"> 2339</span><span class="keywordtype">void</span> PoissonPruning(MeshType &amp;m, <span class="comment">// the mesh that has to be pruned</span></div>
+<div class="line"><a id="l02339" name="l02339"></a><span class="lineno"><a class="line" href="namespacevcg_1_1tri.html#a94e454bd61e194491416b6f984120a18"> 2339</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="namespacevcg_1_1tri.html#a94e454bd61e194491416b6f984120a18">PoissonPruning</a>(MeshType &amp;m, <span class="comment">// the mesh that has to be pruned</span></div>
 <div class="line"><a id="l02340" name="l02340"></a><span class="lineno"> 2340</span>                    std::vector&lt;typename MeshType::VertexPointer&gt; &amp;poissonSamples, <span class="comment">// the vector that will contain the chosen set of points</span></div>
 <div class="line"><a id="l02341" name="l02341"></a><span class="lineno"> 2341</span>                    <span class="keywordtype">float</span> radius, <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> randSeed=0)</div>
 <div class="line"><a id="l02342" name="l02342"></a><span class="lineno"> 2342</span>{</div>
-<div class="line"><a id="l02343" name="l02343"></a><span class="lineno"> 2343</span>  <span class="keyword">typedef</span> tri::TrivialPointerSampler&lt;MeshType&gt; BaseSampler;</div>
-<div class="line"><a id="l02344" name="l02344"></a><span class="lineno"> 2344</span>  <span class="keyword">typename</span> tri::SurfaceSampling&lt;MeshType, BaseSampler&gt;::PoissonDiskParam pp;</div>
+<div class="line"><a id="l02343" name="l02343"></a><span class="lineno"> 2343</span>  <span class="keyword">typedef</span> <a class="code hl_class" href="classvcg_1_1tri_1_1TrivialPointerSampler.html">tri::TrivialPointerSampler&lt;MeshType&gt;</a> BaseSampler;</div>
+<div class="line"><a id="l02344" name="l02344"></a><span class="lineno"> 2344</span>  <span class="keyword">typename</span> <a class="code hl_struct" href="structvcg_1_1tri_1_1SurfaceSampling_1_1PoissonDiskParam.html">tri::SurfaceSampling&lt;MeshType, BaseSampler&gt;::PoissonDiskParam</a> pp;</div>
 <div class="line"><a id="l02345" name="l02345"></a><span class="lineno"> 2345</span>  pp.randomSeed = randSeed;</div>
 <div class="line"><a id="l02346" name="l02346"></a><span class="lineno"> 2346</span> </div>
 <div class="line"><a id="l02347" name="l02347"></a><span class="lineno"> 2347</span>  <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateBounding.html#a5263f5e7f4213cb6db28dd8e38a628fe">tri::UpdateBounding&lt;MeshType&gt;::Box</a>(m);</div>
@@ -2283,12 +2283,12 @@ $(function() {
 <div class="line"><a id="l02352" name="l02352"></a><span class="lineno"> 2352</span> </div>
 <div class="line"><a id="l02353" name="l02353"></a><span class="lineno"> 2353</span> </div>
 <div class="line"><a id="l02359" name="l02359"></a><span class="lineno"> 2359</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> MeshType&gt;</div>
-<div class="line"><a id="l02360" name="l02360"></a><span class="lineno"> 2360</span><span class="keywordtype">void</span> PoissonPruning(MeshType &amp;m, <span class="comment">// the mesh that has to be pruned</span></div>
+<div class="line"><a id="l02360" name="l02360"></a><span class="lineno"><a class="line" href="namespacevcg_1_1tri.html#ae69acd1804ba339a6e43e4f6b089644f"> 2360</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="namespacevcg_1_1tri.html#a94e454bd61e194491416b6f984120a18">PoissonPruning</a>(MeshType &amp;m, <span class="comment">// the mesh that has to be pruned</span></div>
 <div class="line"><a id="l02361" name="l02361"></a><span class="lineno"> 2361</span>                    std::vector&lt;typename MeshType::CoordType&gt; &amp;poissonSamples, <span class="comment">// the vector that will contain the chosen set of points</span></div>
 <div class="line"><a id="l02362" name="l02362"></a><span class="lineno"> 2362</span>                    <span class="keywordtype">float</span> radius, <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> randSeed=0)</div>
 <div class="line"><a id="l02363" name="l02363"></a><span class="lineno"> 2363</span>{</div>
 <div class="line"><a id="l02364" name="l02364"></a><span class="lineno"> 2364</span>  std::vector&lt;typename MeshType::VertexPointer&gt; poissonSamplesVP;</div>
-<div class="line"><a id="l02365" name="l02365"></a><span class="lineno"> 2365</span>  PoissonPruning(m,poissonSamplesVP,radius,randSeed);</div>
+<div class="line"><a id="l02365" name="l02365"></a><span class="lineno"> 2365</span>  <a class="code hl_function" href="namespacevcg_1_1tri.html#a94e454bd61e194491416b6f984120a18">PoissonPruning</a>(m,poissonSamplesVP,radius,randSeed);</div>
 <div class="line"><a id="l02366" name="l02366"></a><span class="lineno"> 2366</span>  poissonSamples.resize(poissonSamplesVP.size());</div>
 <div class="line"><a id="l02367" name="l02367"></a><span class="lineno"> 2367</span>  <span class="keywordflow">for</span>(<span class="keywordtype">size_t</span> i=0;i&lt;poissonSamplesVP.size();++i)</div>
 <div class="line"><a id="l02368" name="l02368"></a><span class="lineno"> 2368</span>    poissonSamples[i]=poissonSamplesVP[i]-&gt;P();</div>
@@ -2297,7 +2297,7 @@ $(function() {
 <div class="line"><a id="l02371" name="l02371"></a><span class="lineno"> 2371</span> </div>
 <div class="line"><a id="l02372" name="l02372"></a><span class="lineno"> 2372</span> </div>
 <div class="line"><a id="l02378" name="l02378"></a><span class="lineno"> 2378</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> MeshType&gt;</div>
-<div class="line"><a id="l02379" name="l02379"></a><span class="lineno"> 2379</span><span class="keywordtype">void</span> PoissonPruningExact(MeshType &amp;m, </div>
+<div class="line"><a id="l02379" name="l02379"></a><span class="lineno"><a class="line" href="namespacevcg_1_1tri.html#a56c6d20439d25399a719bf48a5716966"> 2379</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="namespacevcg_1_1tri.html#a56c6d20439d25399a719bf48a5716966">PoissonPruningExact</a>(MeshType &amp;m, </div>
 <div class="line"><a id="l02380" name="l02380"></a><span class="lineno"> 2380</span>                         std::vector&lt;typename MeshType::VertexPointer&gt; &amp;poissonSamples, </div>
 <div class="line"><a id="l02381" name="l02381"></a><span class="lineno"> 2381</span>                         <span class="keyword">typename</span> MeshType::ScalarType &amp; radius,</div>
 <div class="line"><a id="l02382" name="l02382"></a><span class="lineno"> 2382</span>                         <span class="keywordtype">int</span> sampleNum,</div>
@@ -2316,14 +2316,14 @@ $(function() {
 <div class="line"><a id="l02395" name="l02395"></a><span class="lineno"> 2395</span>  <span class="keywordflow">do</span></div>
 <div class="line"><a id="l02396" name="l02396"></a><span class="lineno"> 2396</span>  {</div>
 <div class="line"><a id="l02397" name="l02397"></a><span class="lineno"> 2397</span>    RangeMinRad/=2.0f;</div>
-<div class="line"><a id="l02398" name="l02398"></a><span class="lineno"> 2398</span>    PoissonPruning(m,poissonSamplesTmp,RangeMinRad,randSeed);</div>
+<div class="line"><a id="l02398" name="l02398"></a><span class="lineno"> 2398</span>    <a class="code hl_function" href="namespacevcg_1_1tri.html#a94e454bd61e194491416b6f984120a18">PoissonPruning</a>(m,poissonSamplesTmp,RangeMinRad,randSeed);</div>
 <div class="line"><a id="l02399" name="l02399"></a><span class="lineno"> 2399</span>    RangeMinSampleNum = poissonSamplesTmp.size();</div>
 <div class="line"><a id="l02400" name="l02400"></a><span class="lineno"> 2400</span>  } <span class="keywordflow">while</span>(RangeMinSampleNum &lt; sampleNumMin);</div>
 <div class="line"><a id="l02401" name="l02401"></a><span class="lineno"> 2401</span> </div>
 <div class="line"><a id="l02402" name="l02402"></a><span class="lineno"> 2402</span>  <span class="keywordflow">do</span></div>
 <div class="line"><a id="l02403" name="l02403"></a><span class="lineno"> 2403</span>  {</div>
 <div class="line"><a id="l02404" name="l02404"></a><span class="lineno"> 2404</span>    RangeMaxRad*=2.0f;</div>
-<div class="line"><a id="l02405" name="l02405"></a><span class="lineno"> 2405</span>    PoissonPruning(m,poissonSamplesTmp,RangeMaxRad,randSeed);</div>
+<div class="line"><a id="l02405" name="l02405"></a><span class="lineno"> 2405</span>    <a class="code hl_function" href="namespacevcg_1_1tri.html#a94e454bd61e194491416b6f984120a18">PoissonPruning</a>(m,poissonSamplesTmp,RangeMaxRad,randSeed);</div>
 <div class="line"><a id="l02406" name="l02406"></a><span class="lineno"> 2406</span>    RangeMaxSampleNum = poissonSamplesTmp.size();</div>
 <div class="line"><a id="l02407" name="l02407"></a><span class="lineno"> 2407</span>  } <span class="keywordflow">while</span>(RangeMaxSampleNum &gt; sampleNumMax);</div>
 <div class="line"><a id="l02408" name="l02408"></a><span class="lineno"> 2408</span> </div>
@@ -2333,7 +2333,7 @@ $(function() {
 <div class="line"><a id="l02412" name="l02412"></a><span class="lineno"> 2412</span>        (poissonSamplesTmp.size() &lt; sampleNumMin || poissonSamplesTmp.size() &gt; sampleNumMax) )</div>
 <div class="line"><a id="l02413" name="l02413"></a><span class="lineno"> 2413</span>  {</div>
 <div class="line"><a id="l02414" name="l02414"></a><span class="lineno"> 2414</span>    curRadius=(RangeMaxRad+RangeMinRad)/2.0f;</div>
-<div class="line"><a id="l02415" name="l02415"></a><span class="lineno"> 2415</span>    PoissonPruning(m,poissonSamplesTmp,curRadius,randSeed);</div>
+<div class="line"><a id="l02415" name="l02415"></a><span class="lineno"> 2415</span>    <a class="code hl_function" href="namespacevcg_1_1tri.html#a94e454bd61e194491416b6f984120a18">PoissonPruning</a>(m,poissonSamplesTmp,curRadius,randSeed);</div>
 <div class="line"><a id="l02416" name="l02416"></a><span class="lineno"> 2416</span>    <span class="comment">//qDebug(&quot;(%6.3f:%5i %6.3f:%5i) Cur Radius %f -&gt; %i sample instead of %i&quot;,RangeMinRad,RangeMinSampleNum,RangeMaxRad,RangeMaxSampleNum,curRadius,poissonSamplesTmp.size(),sampleNum);</span></div>
 <div class="line"><a id="l02417" name="l02417"></a><span class="lineno"> 2417</span>    <span class="keywordflow">if</span>(poissonSamplesTmp.size() &gt; <span class="keywordtype">size_t</span>(sampleNum))</div>
 <div class="line"><a id="l02418" name="l02418"></a><span class="lineno"> 2418</span>      RangeMinRad = curRadius;</div>
@@ -2396,13 +2396,16 @@ $(function() {
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateSelection_html_ac0f023ff0a4f8f9f759c45f829b8e688"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateSelection.html#ac0f023ff0a4f8f9f759c45f829b8e688">vcg::tri::UpdateSelection::VertexCornerBorder</a></div><div class="ttdeci">static size_t VertexCornerBorder(MeshType &amp;m, ScalarType angleRad, bool preserveSelection=false)</div><div class="ttdoc">Select the border vertices that form a corner along the border with an angle that is below a certain ...</div><div class="ttdef"><b>Definition:</b> selection.h:656</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateTopology_1_1PEdge_html"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateTopology_1_1PEdge.html">vcg::tri::UpdateTopology::PEdge</a></div><div class="ttdoc">Auxiliary data structure for computing face face adjacency information.</div><div class="ttdef"><b>Definition:</b> topology.h:149</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateTopology_html"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateTopology.html">vcg::tri::UpdateTopology</a></div><div class="ttdoc">Generation of per-vertex and per-face topological information.</div><div class="ttdef"><b>Definition:</b> topology.h:43</div></div>
+<div class="ttc" id="anamespacevcg_1_1tri_html_a56c6d20439d25399a719bf48a5716966"><div class="ttname"><a href="namespacevcg_1_1tri.html#a56c6d20439d25399a719bf48a5716966">vcg::tri::PoissonPruningExact</a></div><div class="ttdeci">void PoissonPruningExact(MeshType &amp;m, std::vector&lt; typename MeshType::VertexPointer &gt; &amp;poissonSamples, typename MeshType::ScalarType &amp;radius, int sampleNum, float tolerance=0.04, int maxIter=20, unsigned int randSeed=0)</div><div class="ttdoc">Very simple wrapping for the Exact Poisson Disk Pruning.</div><div class="ttdef"><b>Definition:</b> point_sampling.h:2379</div></div>
+<div class="ttc" id="anamespacevcg_1_1tri_html_a94e454bd61e194491416b6f984120a18"><div class="ttname"><a href="namespacevcg_1_1tri.html#a94e454bd61e194491416b6f984120a18">vcg::tri::PoissonPruning</a></div><div class="ttdeci">void PoissonPruning(MeshType &amp;m, std::vector&lt; typename MeshType::VertexPointer &gt; &amp;poissonSamples, float radius, unsigned int randSeed=0)</div><div class="ttdoc">Low level wrapper for Poisson Disk Pruning.</div><div class="ttdef"><b>Definition:</b> point_sampling.h:2339</div></div>
+<div class="ttc" id="anamespacevcg_html"><div class="ttname"><a href="namespacevcg.html">vcg</a></div><div class="ttdef"><b>Definition:</b> color4.h:30</div></div>
 <div class="ttc" id="astructvcg_1_1tri_1_1SurfaceSampling_1_1PoissonDiskParam_1_1Stat_html"><div class="ttname"><a href="structvcg_1_1tri_1_1SurfaceSampling_1_1PoissonDiskParam_1_1Stat.html">vcg::tri::SurfaceSampling::PoissonDiskParam::Stat</a></div><div class="ttdef"><b>Definition:</b> point_sampling.h:1731</div></div>
 <div class="ttc" id="astructvcg_1_1tri_1_1SurfaceSampling_1_1PoissonDiskParam_html"><div class="ttname"><a href="structvcg_1_1tri_1_1SurfaceSampling_1_1PoissonDiskParam.html">vcg::tri::SurfaceSampling::PoissonDiskParam</a></div><div class="ttdef"><b>Definition:</b> point_sampling.h:1715</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.9.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated by&#160;<a href="https://www.doxygen.org/index.html">doxygen</a> 1.9.6 on Thu Nov 6 2025 18:14:06
+Generated by&#160;<a href="https://www.doxygen.org/index.html">doxygen</a> 1.9.6 on Thu Nov 6 2025 22:27:25
 </small></address>
 </body>
 </html>

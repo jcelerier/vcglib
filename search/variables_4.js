@@ -1,4 +1,9 @@
 var searchData=
 [
-  ['unifgridvert_0',['unifGridVert',['../classvcg_1_1tri_1_1HausdorffSampler.html#ad5ed2ead8f9f1fd93be658bb08298578',1,'vcg::tri::HausdorffSampler']]]
+  ['max_0',['max',['../classvcg_1_1Box3.html#a4d25fd6f083de08fc7f86832c564aa3f',1,'vcg::Box3']]],
+  ['maxsimpedgelen_1',['maxSimpEdgeLen',['../classvcg_1_1tri_1_1CoM_1_1Param.html#a4f13bdfdb20352f754babfcd00ff0132',1,'vcg::tri::CoM::Param']]],
+  ['maxsmoothdelta_2',['maxSmoothDelta',['../classvcg_1_1tri_1_1CoM_1_1Param.html#a87d67192c7211ebfd775f4eba5b0f967',1,'vcg::tri::CoM::Param']]],
+  ['maxsnapthr_3',['maxSnapThr',['../classvcg_1_1tri_1_1CoM_1_1Param.html#a7b464c7f382700562a2cd5a59c9c1d62',1,'vcg::tri::CoM::Param']]],
+  ['min_4',['min',['../classvcg_1_1Box3.html#af38f37de0f6a5c4357b1a4bd40cf9de0',1,'vcg::Box3']]],
+  ['minrefedgelen_5',['minRefEdgeLen',['../classvcg_1_1tri_1_1CoM_1_1Param.html#a6b60b33001d39c816d8856d64f98b10e',1,'vcg::tri::CoM::Param']]]
 ];
