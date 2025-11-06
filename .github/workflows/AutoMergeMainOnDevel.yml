@@ -1,3 +1,6 @@
+## This GitHub Action automatically merges changes from the 'main' branch into the 'devel' branch
+## whenever a push occurs on 'main'. It uses the devmasx/merge-branch action to perform the merge
+## and sets a commit message. This keeps 'devel' up-to-date with the latest code from 'main'.
 name: AutoMergeMainOnDevel
 
 on:
