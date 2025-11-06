@@ -1,0 +1,25 @@
+var searchData=
+[
+  ['imark_0',['IMark',['../classvcg_1_1vertex_1_1Mark.html#a3e53c1d9ae3e8986d9e3d317e85cd04a',1,'vcg::vertex::Mark::IMark() const'],['../classvcg_1_1vertex_1_1Mark.html#a2b832bdd4868436f39b1f83482a76dac',1,'vcg::vertex::Mark::IMark()']]],
+  ['import_1',['Import',['../classvcg_1_1Color4.html#a1e90cebf6b1516bd0d737699a8336f38',1,'vcg::Color4']]],
+  ['inertia_2',['Inertia',['../classvcg_1_1tri_1_1Inertia.html#a3c86bac5440f0e1c3331e62fa4ec12df',1,'vcg::tri::Inertia::Inertia()'],['../classvcg_1_1tri_1_1Inertia.html',1,'vcg::tri::Inertia&lt; MeshType &gt;']]],
+  ['inertiatensoreigen_3',['InertiaTensorEigen',['../classvcg_1_1tri_1_1Inertia.html#a56ad400234262e156390f29a39a7ac6c',1,'vcg::tri::Inertia']]],
+  ['initradiushandlefromquality_4',['InitRadiusHandleFromQuality',['../classvcg_1_1tri_1_1SurfaceSampling.html#ae2f75b3fc6a78bf1265438115f929c48',1,'vcg::tri::SurfaceSampling']]],
+  ['intersect_5',['Intersect',['../classvcg_1_1Box3.html#a880e71a36955a004c69a7a64e9a4347a',1,'vcg::Box3']]],
+  ['is_5fnonmanifold_5fvertex_6',['is_nonManifold_vertex',['../classvcg_1_1tri_1_1HalfEdgeTopology.html#a7de9e24e0a7542a4be70814682e3e1b0',1,'vcg::tri::HalfEdgeTopology::is_nonManifold_vertex(MeshType &amp;m, VertexPointer vp)'],['../classvcg_1_1tri_1_1HalfEdgeTopology.html#ab526c000a5bdaa783bbf51dbd5b91ebe',1,'vcg::tri::HalfEdgeTopology::is_nonManifold_vertex(VertexPointer vp)']]],
+  ['is_5fsinglet_5fquad_7',['is_singlet_quad',['../classvcg_1_1tri_1_1HalfEdgeTopology.html#a395ce5b32c0faf81396e25898fb2eb2f',1,'vcg::tri::HalfEdgeTopology']]],
+  ['isbitquadonly_8',['IsBitQuadOnly',['../classvcg_1_1tri_1_1Clean.html#a4d97a87de88b2ff9d5e40b7fcaf42f01',1,'vcg::tri::Clean']]],
+  ['isbittrionly_9',['IsBitTriOnly',['../classvcg_1_1tri_1_1Clean.html#a3739fb925ead0518995e6e50b0294d3e',1,'vcg::tri::Clean']]],
+  ['isbittriquadonly_10',['IsBitTriQuadOnly',['../classvcg_1_1tri_1_1Clean.html#a31a8b7b1bf6ae9aeb409d837d5cf479d',1,'vcg::tri::Clean']]],
+  ['isbordervertex_11',['isBorderVertex',['../classvcg_1_1tri_1_1HalfEdgeTopology.html#a3f5905927b5d99aff013086e70e81bbe',1,'vcg::tri::HalfEdgeTopology']]],
+  ['isempty_12',['IsEmpty',['../classvcg_1_1Box3.html#a3e5e9254f3adc9705f430b111008a639',1,'vcg::Box3']]],
+  ['isffadjacencyconsistent_13',['IsFFAdjacencyConsistent',['../classvcg_1_1tri_1_1Clean.html#affdffc92903bef090c19d68592e6da4e',1,'vcg::tri::Clean']]],
+  ['isin_14',['IsIn',['../classvcg_1_1Box3.html#a3ddcf6d6d832ef09d798ec95a41f5f81',1,'vcg::Box3']]],
+  ['isinex_15',['IsInEx',['../classvcg_1_1Box3.html#a3ec05ed1a659fcd039344ba611c9f877',1,'vcg::Box3']]],
+  ['isnull_16',['IsNull',['../classvcg_1_1Box3.html#a154e22f9f5c37a7fb2b52d4830ba1d98',1,'vcg::Box3']]],
+  ['isotropicdistance_17',['IsotropicDistance',['../classvcg_1_1tri_1_1IsotropicDistance.html#a0b5eabeeecd26d7126d7dcf628dec51c',1,'vcg::tri::IsotropicDistance::IsotropicDistance()'],['../classvcg_1_1tri_1_1IsotropicDistance.html',1,'vcg::tri::IsotropicDistance&lt; MeshType &gt;']]],
+  ['isregularmesh_18',['IsRegularMesh',['../classvcg_1_1tri_1_1Clean.html#ac094e9d0f4324b4cc6cc07f6b7958acd',1,'vcg::tri::Clean']]],
+  ['issizeconsistent_19',['IsSizeConsistent',['../classvcg_1_1tri_1_1Clean.html#a2ab6ee5905250c358b35b55ac81f8d71',1,'vcg::tri::Clean']]],
+  ['isvalidhandle_20',['IsValidHandle',['../classvcg_1_1tri_1_1Allocator.html#a9025361384aa7b07b38f11c01cc047ad',1,'vcg::tri::Allocator::IsValidHandle(const MeshType &amp;m, const typename MeshType::template PerVertexAttributeHandle&lt; ATTR_TYPE &gt; &amp;a)'],['../classvcg_1_1tri_1_1Allocator.html#a89a3f1d60dd6857e2eefd28f16ba0a75',1,'vcg::tri::Allocator::IsValidHandle(const MeshType &amp;m, const typename MeshType::template ConstPerVertexAttributeHandle&lt; ATTR_TYPE &gt; &amp;a)'],['../classvcg_1_1tri_1_1Allocator.html#aecef670f4639b28c97889ec10147971c',1,'vcg::tri::Allocator::IsValidHandle(const MeshType &amp;m, const typename MeshType::template PerEdgeAttributeHandle&lt; ATTR_TYPE &gt; &amp;a)'],['../classvcg_1_1tri_1_1Allocator.html#a6fe021e8420d79ea1cb3e3fbe7c6429d',1,'vcg::tri::Allocator::IsValidHandle(const MeshType &amp;m, const typename MeshType::template PerFaceAttributeHandle&lt; ATTR_TYPE &gt; &amp;a)'],['../classvcg_1_1tri_1_1Allocator.html#a73a2206a7eae70a9004731b3a1ba32a7',1,'vcg::tri::Allocator::IsValidHandle(const MeshType &amp;m, const typename MeshType::template ConstPerFaceAttributeHandle&lt; ATTR_TYPE &gt; &amp;a)'],['../classvcg_1_1tri_1_1Allocator.html#a2973a242b124aa0f60e2b413f5880c93',1,'vcg::tri::Allocator::IsValidHandle(const MeshType &amp;m, const typename MeshType::template PerTetraAttributeHandle&lt; ATTR_TYPE &gt; &amp;a)'],['../classvcg_1_1tri_1_1Allocator.html#ac35d7259628b2c23c401048d9fc5300b',1,'vcg::tri::Allocator::IsValidHandle(const MeshType &amp;m, const typename MeshType::template PerMeshAttributeHandle&lt; ATTR_TYPE &gt; &amp;a)']]],
+  ['iswatertight_21',['IsWaterTight',['../classvcg_1_1tri_1_1Clean.html#aa3b9330669ce67afc306371b75ab0dac',1,'vcg::tri::Clean']]]
+];
