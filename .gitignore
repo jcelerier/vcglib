@@ -9,6 +9,7 @@
 
 # Directories to ignore
 build/
+html/
 debug/
 release/
 *-debug/
