@@ -45,6 +45,11 @@ namespace tri {
                  The 1st parameter is usually the mesh that will
                 be filled with the solid.
         */
+/**
+ * @brief Build a tetrahedron as a triangular mesh.
+ * @tparam TetraMeshType Triangular mesh type with Coord/Vertex/Face types.
+ * @param in Mesh to fill; cleared and populated with 4 vertices and 4 faces.
+ */
 template <class TetraMeshType>
 void Tetrahedron(TetraMeshType &in)
 {
@@ -71,10 +76,12 @@ void Tetrahedron(TetraMeshType &in)
  (*fi).V(0)=ivp[3];  (*fi).V(1)=ivp[2]; (*fi).V(2)=ivp[1];
 }
 
-/// Builds a Dodecahedron triangular mesh 
-/// Each pentagonal face is triangulated into three triangles.
-/// Faux edges are correctly marked.
-/// Note that symmetry is not preserved
+/**
+ * @brief Build a dodecahedron as a triangular mesh.
+ * @tparam DodMeshType Triangular mesh type with Coord/Vertex/Face types.
+ * @param in Mesh to fill; each pentagon is split into 3 triangles; faux edges are marked.
+ * @note Symmetry is not preserved by this triangulation.
+ */
 
 template <class DodMeshType>
 void Dodecahedron(DodMeshType & in)
@@ -121,8 +128,11 @@ void Dodecahedron(DodMeshType & in)
 	}
 }
 
-/// Builds a Symmetric Dodecahedron triangular mesh 
-/// Each pentagonal face is star triangulated with an additional central vertex and it is composed by 5 triangles
+/**
+ * @brief Build a symmetric dodecahedron as a triangular mesh.
+ * @tparam DodMeshType Triangular mesh type with Coord/Vertex/Face types.
+ * @param in Mesh to fill; each pentagon is star-triangulated using a center vertex (5 triangles).
+ */
 template <class DodMeshType>
 void DodecahedronSym(DodMeshType & in)
 {
@@ -236,6 +246,11 @@ void DodecahedronSym(DodMeshType & in)
 }
 
 template <class OctMeshType>
+/**
+ * @brief Build an octahedron as a triangular mesh.
+ * @tparam OctMeshType Triangular mesh type with Coord/Vertex/Face types.
+ * @param in Mesh to fill with 6 vertices and 8 faces.
+ */
 void Octahedron(OctMeshType &in)
 {
  typedef OctMeshType MeshType;
@@ -270,6 +285,11 @@ void Octahedron(OctMeshType &in)
 }
 
 template <class IcoMeshType>
+/**
+ * @brief Build an icosahedron as a triangular mesh.
+ * @tparam IcoMeshType Triangular mesh type with Coord/Vertex/Face types.
+ * @param in Mesh to fill with 12 vertices and 20 faces.
+ */
 void Icosahedron(IcoMeshType &in)
 {
  typedef IcoMeshType MeshType;
@@ -327,6 +347,11 @@ void Icosahedron(IcoMeshType &in)
 }
 
 template <class MeshType>
+/**
+ * @brief Build a hexahedron (cube) as a triangular mesh.
+ * @tparam MeshType Triangular mesh type with Coord/Vertex/Face types.
+ * @param in Mesh to fill with 8 vertices and 12 faces.
+ */
 void Hexahedron(MeshType &in)
 {
  typedef typename MeshType::CoordType CoordType;
@@ -375,6 +400,11 @@ void Hexahedron(MeshType &in)
 }
 
 template <class MeshType>
+/**
+ * @brief Build a unit square in the XY plane as two triangles.
+ * @tparam MeshType Triangular mesh type with Coord/Vertex/Face types.
+ * @param in Mesh to fill with 4 vertices and 2 faces.
+ */
 void Square(MeshType &in)
 {
   typedef typename MeshType::CoordType CoordType;
@@ -407,6 +437,13 @@ void Square(MeshType &in)
 }
 
 template <class MeshType>
+/**
+ * @brief Build a spherical cap from a hexagon refined on the sphere.
+ * @tparam MeshType Triangular mesh type.
+ * @param in Output mesh (cleared and filled).
+ * @param angleRad Angular aperture (cap diameter) in radians.
+ * @param subdiv Number of refinement steps on the initial hexagon.
+ */
 void SphericalCap(MeshType &in, float angleRad, const int subdiv = 3 )
 {
   typedef typename MeshType::CoordType CoordType;
@@ -452,6 +489,12 @@ void SphericalCap(MeshType &in, float angleRad, const int subdiv = 3 )
 // If the mesh is not empty it is 'spherified' and used as base for the subdivision process.
 // otherwise an icosahedron is used.
 template <class MeshType>
+/**
+ * @brief Build a geodesic sphere by recursive icosahedron refinement.
+ * @tparam MeshType Triangular mesh type.
+ * @param in Output mesh; if empty, an icosahedron is used as base. Vertices are projected on unit sphere.
+ * @param subdiv Number of refinement steps.
+ */
 void Sphere(MeshType &in, const int subdiv = 3 )
 {
  typedef typename MeshType::CoordType CoordType;
@@ -484,6 +527,14 @@ void Sphere(MeshType &in, const int subdiv = 3 )
 }
 
 template <class MeshType>
+/**
+ * @brief Convenience overload: build and place a sphere at a position with a radius.
+ * @tparam MeshType Triangular mesh type.
+ * @param m Output mesh (cleared and filled).
+ * @param position Center of the sphere.
+ * @param radius Sphere radius.
+ * @param subdiv Number of refinement steps.
+ */
 void Sphere(MeshType & m, const typename MeshType::CoordType & position,  typename MeshType::ScalarType radius = 0, const int subdiv = 3)
 {
 	m.Clear();
@@ -493,6 +544,15 @@ void Sphere(MeshType & m, const typename MeshType::CoordType & position,  typena
 }
 
     /// r1 = raggio 1, r2 = raggio2, h = altezza (asse y)
+/**
+ * @brief Build a cone or truncated cone aligned to Y axis.
+ * @tparam MeshType Triangular mesh type.
+ * @param in Output mesh (cleared and filled).
+ * @param r1 Radius at y = -h/2 (base).
+ * @param r2 Radius at y = +h/2 (top). Use 0 for apex.
+ * @param h Height of the cone (along Y).
+ * @param SubDiv Number of radial slices.
+ */
 template <class MeshType>
 void Cone( MeshType& in,
           const typename MeshType::ScalarType r1,
@@ -585,6 +645,16 @@ void Cone( MeshType& in,
 }
 
 template <class MeshType>
+/**
+ * @brief Build a cone/frustum oriented from origin to end.
+ * @tparam MeshType Triangular mesh type.
+ * @param m Output mesh.
+ * @param origin Start point of the axis.
+ * @param end End point of the axis.
+ * @param r1 Radius at origin end.
+ * @param r2 Radius at end point.
+ * @param SubDiv Number of radial slices.
+ */
 void OrientedCone(MeshType & m,
                   const typename MeshType::CoordType origin,
                   const typename MeshType::CoordType end,
@@ -622,6 +692,12 @@ void OrientedCone(MeshType & m,
 
 
 template <class MeshType >
+/**
+ * @brief Build a box aligned with the axes from a bounding box.
+ * @tparam MeshType Triangular mesh type.
+ * @param in Output mesh.
+ * @param bb Bounding box providing min/max corners.
+ */
 void Box(MeshType &in, const typename MeshType::BoxType & bb )
 {
  typedef typename MeshType::CoordType CoordType;
@@ -667,6 +743,15 @@ void Box(MeshType &in, const typename MeshType::BoxType & bb )
 
 // Torus
 template <class MeshType>
+/**
+ * @brief Build a torus mesh around Z axis.
+ * @tparam MeshType Triangular mesh type.
+ * @param m Output mesh.
+ * @param hRingRadius Main ring radius (distance from center).
+ * @param vRingRadius Tube radius.
+ * @param hRingDiv Number of segments around the main ring.
+ * @param vRingDiv Number of segments around the tube.
+ */
 void Torus(MeshType &m, float hRingRadius, float vRingRadius, int hRingDiv=24, int vRingDiv=12 )
 {
   typedef typename MeshType::CoordType CoordType;
@@ -709,11 +794,15 @@ static ScalarType _SQfnS(ScalarType a, ScalarType b){
 
 
 /**
- * SuperToroid
- * 
- * Generate a  a supertoroid, e.g. a member of a family of doughnut-like surfaces 
- * (technically, a topological torus) whose shape is defined by mathematical formulas 
- * similar to those that define the superquadrics. 
+ * @brief Build a supertoroid (superquadric torus).
+ * @tparam MeshType Triangular mesh type.
+ * @param m Output mesh.
+ * @param hRingRadius Main ring radius.
+ * @param vRingRadius Tube radius.
+ * @param vSquareness Exponent along torus axis (u power).
+ * @param hSquareness Exponent around tube (v power).
+ * @param hRingDiv Segments around the main ring.
+ * @param vRingDiv Segments around the tube.
  */
 template <class MeshType>
 void SuperToroid(MeshType &m, float hRingRadius, float vRingRadius, float vSquareness, float hSquareness, int hRingDiv=24, int vRingDiv=12 )
@@ -748,9 +837,14 @@ void SuperToroid(MeshType &m, float hRingRadius, float vRingRadius, float vSquar
 
 }
 /**
- * Generate a SuperEllipsoid eg  a solid whose horizontal sections are super-ellipses (Lamé curves)
- * with the same exponent r, and whose vertical sections through the center are super-ellipses with 
- * the same exponent t.
+ * @brief Build a superellipsoid (superquadric sphere-like surface).
+ * @tparam MeshType Triangular mesh type.
+ * @param m Output mesh.
+ * @param rFeature Exponent along X.
+ * @param sFeature Exponent along Y.
+ * @param tFeature Exponent along Z.
+ * @param hRingDiv Vertical divisions.
+ * @param vRingDiv Horizontal divisions.
  */
 template <class MeshType>
 void SuperEllipsoid(MeshType &m, float rFeature, float sFeature, float tFeature, int hRingDiv=24, int vRingDiv=12 )
@@ -786,9 +880,14 @@ void SuperEllipsoid(MeshType &m, float rFeature, float sFeature, float tFeature,
   tri::UpdateSelection<MeshType>::Clear(m);
 }
 
-/** This function build a mesh starting from a vector of generic coords (InCoordType) and indexes (InFaceIndexType)
- *  InCoordsType needs to have a [] access method for accessing the three coordinates
- *  and similarly the InFaceIndexType requires [] access method for accessing the three indexes
+/**
+ * @brief Build a mesh from coordinate and face-index vectors.
+ * @tparam MeshType Triangular mesh type.
+ * @tparam InCoordType Input coordinate type supporting operator[] for xyz.
+ * @tparam InFaceIndexType Input face index type supporting operator[] for 3 vertex indices.
+ * @param in Output mesh; cleared and filled.
+ * @param v Input vertex coordinates (size = vn).
+ * @param f Input triangle indices (size = fn).
  */
 
 template <class MeshType, class InCoordType, class InFaceIndexType >
@@ -822,6 +921,13 @@ void BuildMeshFromCoordVectorIndexVector(MeshType & in, const std::vector<InCoor
 
 
 template <class MeshType,class V>
+/**
+ * @brief Build a point-only mesh from coordinate vector (no faces).
+ * @tparam MeshType Mesh type.
+ * @tparam V Coordinate container type.
+ * @param in Output mesh; cleared and filled with vertices only.
+ * @param v Input vertex coordinates.
+ */
 void BuildMeshFromCoordVector( MeshType & in, const V & v)
 {
   std::vector<Point3i> dummyfaceVec;
@@ -830,6 +936,13 @@ void BuildMeshFromCoordVector( MeshType & in, const V & v)
 
 
 template <class TriMeshType,class EdgeMeshType >
+/**
+ * @brief Build an edge mesh from the selected edges of a triangle mesh.
+ * @tparam TriMeshType Triangle mesh type (input).
+ * @tparam EdgeMeshType Edge mesh type (output).
+ * @param in Input triangle mesh with face-edge selection.
+ * @param out Output edge mesh with selected edges.
+ */
 void BuildFromFaceEdgeSel(TriMeshType &in, EdgeMeshType &out)
 {
   tri::RequireCompactness(in);
@@ -863,6 +976,16 @@ void BuildFromFaceEdgeSel(TriMeshType &in, EdgeMeshType &out)
 // Once generated the vertex positions it uses the FaceGrid function to generate the faces;
 
 template <class MeshType>
+/**
+ * @brief Build a regular height-field grid mesh (vertices and faces).
+ * @tparam MeshType Triangular mesh type.
+ * @param in Output mesh; cleared and filled.
+ * @param w Grid width (number of columns).
+ * @param h Grid height (number of rows).
+ * @param wl Physical width.
+ * @param hl Physical height.
+ * @param data Optional height buffer (row-major, size w*h).
+ */
 void Grid(MeshType & in, int w, int h, float wl, float hl, float *data=0)
 {
   typedef typename MeshType::CoordType CoordType;
@@ -887,6 +1010,13 @@ void Grid(MeshType & in, int w, int h, float wl, float hl, float *data=0)
 // Vertexes are assumed to be already be allocated.
 
 template <class MeshType>
+/**
+ * @brief Build faces for a regular grid given pre-allocated vertices.
+ * @tparam MeshType Triangular mesh type.
+ * @param in Mesh with at least w*h vertices.
+ * @param w Grid width (columns).
+ * @param h Grid height (rows).
+ */
 void FaceGrid(MeshType & in, int w, int h)
 {
     assert(in.vn == (int)in.vert.size()); // require a compact vertex vector
@@ -928,6 +1058,14 @@ void FaceGrid(MeshType & in, int w, int h)
 // Negative indexes in this vector means that there is no vertex.
 
 template <class MeshType>
+/**
+ * @brief Build faces for a sparsely sampled regular grid.
+ * @tparam MeshType Triangular mesh type.
+ * @param in Mesh with vertices; not necessarily w*h of them.
+ * @param grid Index grid mapping (size w*h), -1 for missing vertices.
+ * @param w Grid width.
+ * @param h Grid height.
+ */
 void SparseFaceGrid(MeshType & in, const std::vector<int> &grid, int w, int h)
 {
     tri::RequireCompactness(in);
@@ -994,6 +1132,14 @@ void SparseFaceGrid(MeshType & in, const std::vector<int> &grid, int w, int h)
     }
 }
 template <class MeshType>
+/**
+ * @brief Build an annulus (ring) in the XY plane.
+ * @tparam MeshType Triangular mesh type.
+ * @param m Output mesh.
+ * @param externalRadius Outer radius.
+ * @param internalRadius Inner radius.
+ * @param slices Number of angular segments.
+ */
 void Annulus(MeshType & m, float externalRadius, float internalRadius, int slices)
 {
   m.Clear();
@@ -1025,13 +1171,25 @@ void Annulus(MeshType & m, float externalRadius, float internalRadius, int slice
 }
 
 template <class MeshType>
-void OrientedAnnulus(MeshType & m, Point3f center, Point3f norm, float externalRadius, float internalRadius, int slices)
+/**
+ * @brief Build an oriented annulus in 3D, centered and rotated.
+ * @tparam MeshType Triangular mesh type.
+ * @param m Output mesh.
+ * @param center Center position.
+ * @param norm Normal direction.
+ * @param externalRadius Outer radius.
+ * @param internalRadius Inner radius.
+ * @param slices Number of segments.
+ */
+void OrientedAnnulus(MeshType & m, typename MeshType::CoordType center, typename MeshType::CoordType norm, float externalRadius, float internalRadius, int slices)
 {
+  typedef typename MeshType::ScalarType ScalarType;
+  typedef typename MeshType::CoordType  CoordType;
   Annulus(m,externalRadius,internalRadius, slices);
-  float angleRad = Angle(Point3f(0,0,1),norm);
-  Point3f axis = Point3f(0,0,1)^norm;
+  ScalarType angleRad = Angle(CoordType(0,0,1),norm);
+  CoordType axis = CoordType(0,0,1)^norm;
 
-  Matrix44f rotM;
+  Matrix44<ScalarType> rotM;
   rotM.SetRotateRad(angleRad,axis);
   tri::UpdatePosition<MeshType>::Matrix(m,rotM);
   tri::UpdatePosition<MeshType>::Translate(m,center);
@@ -1039,6 +1197,37 @@ void OrientedAnnulus(MeshType & m, Point3f center, Point3f norm, float externalR
 
 
 template <class MeshType>
+/**
+ * @brief Build a 2D circle as a polyline (edges only) in XY plane.
+ * @tparam MeshType Edge-capable mesh type.
+ * @param m Output mesh.
+ * @param radius Circle radius.
+ * @param sides Number of segments.
+ */
+void Circle2D(MeshType & m, float radius=1.0, int sides=32)
+{
+  m.Clear();
+  for ( int j = 0; j < sides; ++j)
+  {
+    float x = cos(	2.0 * M_PI / sides * j)*radius;
+    float y = sin(	2.0 * M_PI / sides * j)*radius;
+
+    tri::Allocator<MeshType>::AddVertex(m, Point3f(x,y,0));
+  }
+for ( int j = 0; j < sides; ++j)
+  {
+    int a =  j;
+    int b =  (j+1)%sides;
+    tri::Allocator<MeshType>::AddEdge(m, &m.vert[a], &m.vert[b]); 
+  }
+}
+template <class MeshType>
+/**
+ * @brief Build a unit disk (triangle fan) in the XY plane.
+ * @tparam MeshType Triangular mesh type.
+ * @param m Output mesh.
+ * @param slices Number of angular segments.
+ */
 void Disk(MeshType & m, int slices)
 {
   m.Clear();
@@ -1067,7 +1256,16 @@ void Disk(MeshType & m, int slices)
 }
 
 template <class MeshType>
-void OrientedDisk(MeshType &m, int slices, typename MeshType::CoordType center, typename MeshType::CoordType norm, float radius)
+/**
+ * @brief Build a disk oriented in 3D space.
+ * @tparam MeshType Triangular mesh type.
+ * @param m Output mesh.
+ * @param center Disk center.
+ * @param norm Disk normal.
+ * @param radius Disk radius.
+ * @param slices Number of segments.
+ */
+void OrientedDisk(MeshType &m, typename MeshType::CoordType center, typename MeshType::CoordType norm, float radius, int slices)
 {
     typedef typename MeshType::ScalarType ScalarType;
     typedef typename MeshType::CoordType  CoordType;
@@ -1084,12 +1282,25 @@ void OrientedDisk(MeshType &m, int slices, typename MeshType::CoordType center, 
 }
 
 template <class MeshType>
+/**
+ * @brief Build an oriented elliptic prism (scaled cylinder), optionally capped.
+ * @tparam MeshType Triangular mesh type.
+ * @param m Output mesh.
+ * @param origin Prism start point.
+ * @param end Prism end point.
+ * @param radius Base radius before scaling.
+ * @param xScale Scale along local X.
+ * @param yScale Scale along local Z.
+ * @param capped Add end caps if true.
+ * @param slices Angular segments.
+ * @param stacks Longitudinal segments.
+ */
 void OrientedEllipticPrism(MeshType & m, const typename MeshType::CoordType origin, const typename MeshType::CoordType end, float radius, float xScale, float yScale,bool capped, int slices=32, int stacks=4 )
 {
   typedef typename MeshType::ScalarType ScalarType;
   typedef typename MeshType::CoordType CoordType;
   typedef Matrix44<typename MeshType::ScalarType> Matrix44x;
-  Cylinder(slices,stacks,m,capped);
+  Cylinder(m,slices,stacks,capped);
   tri::UpdatePosition<MeshType>::Translate(m,CoordType(0,1,0));
   tri::UpdatePosition<MeshType>::Scale(m,CoordType(1,0.5f,1));
   tri::UpdatePosition<MeshType>::Scale(m,CoordType(xScale,1.0f,yScale));
@@ -1119,6 +1330,17 @@ void OrientedEllipticPrism(MeshType & m, const typename MeshType::CoordType orig
 }
 
 template <class MeshType>
+/**
+ * @brief Build an oriented cylinder along a segment, optionally capped.
+ * @tparam MeshType Triangular mesh type.
+ * @param m Output mesh.
+ * @param origin Cylinder base center.
+ * @param end Cylinder top center.
+ * @param radius Cylinder radius.
+ * @param capped Add end caps if true.
+ * @param slices Angular segments.
+ * @param stacks Longitudinal segments.
+ */
 void OrientedCylinder(MeshType & m, const typename MeshType::CoordType origin, const typename MeshType::CoordType end, float radius, bool capped, int slices=32, int stacks=4 )
 {
   OrientedEllipticPrism(m,origin,end,radius,1.0f,1.0f,capped,slices,stacks);
@@ -1126,7 +1348,15 @@ void OrientedCylinder(MeshType & m, const typename MeshType::CoordType origin, c
 
 
 template <class MeshType>
-void Cylinder(int slices, int stacks, MeshType & m, bool capped=false)
+/**
+ * @brief Build a unit cylinder aligned to Y, optionally capped.
+ * @tparam MeshType Triangular mesh type.
+ * @param slices Angular segments.
+ * @param stacks Longitudinal segments.
+ * @param m Output mesh.
+ * @param capped Add end caps if true.
+ */
+void Cylinder(MeshType & m, int slices, int stacks, bool capped=false)
 {
   m.Clear();
   typename MeshType::VertexIterator vi = vcg::tri::Allocator<MeshType>::AddVertices(m,slices*(stacks+1));
@@ -1178,13 +1408,14 @@ void Cylinder(int slices, int stacks, MeshType & m, bool capped=false)
   }
 }
 
-/** Given a mesh, it builds a new mesh composed by a set of solid prisms, one for each face.
- *  it supports faux edges polygonal meshes
- *  @param mIn input mesh
- *  @param mOut output mesh
- *  @param height height of the prism
- *  @param inset  how much is contracted each face. 
- *  @param smoothFlag if true, the output mesh is smoothed
+/**
+ * @brief Build a shell made of face-aligned prisms for each face.
+ * @tparam MeshType Triangular mesh type supporting polygonal faux edges.
+ * @param mIn Input mesh.
+ * @param mOut Output mesh (append mode).
+ * @param height Prism height (auto from bbox if 0).
+ * @param inset Inset amount along face to shrink border (auto if 0).
+ * @param smoothFlag Apply smoothing on side strips if true.
  */
  
 template <class MeshType>
@@ -1277,6 +1508,15 @@ void BuildPrismFaceShell(MeshType &mIn, MeshType &mOut, float height=0, float in
 
 
 template <class MeshType>
+/**
+ * @brief Build a tubular shell around edges using oriented cylinders.
+ * @tparam MeshType Mesh type (input/output).
+ * @param mIn Input mesh.
+ * @param mOut Output mesh (append mode).
+ * @param radius Cylinder radius (auto from bbox if 0).
+ * @param slices Angular segments.
+ * @param stacks Longitudinal segments.
+ */
 void BuildCylinderEdgeShell(MeshType &mIn, MeshType &mOut, float radius=0, int slices=16, int stacks=1 )
 {
   if(radius==0) radius = mIn.bbox.Diag()/100.0f;
@@ -1304,6 +1544,14 @@ void BuildCylinderEdgeShell(MeshType &mIn, MeshType &mOut, float radius=0, int s
 }
 
 template <class MeshType>
+/**
+ * @brief Build a spherical shell on each vertex by instancing a small sphere.
+ * @tparam MeshType Triangular mesh type.
+ * @param mIn Input mesh.
+ * @param mOut Output mesh (append mode).
+ * @param radius Sphere radius (auto from bbox if 0).
+ * @param recDiv Sphere recursion divisions.
+ */
 void BuildSphereVertexShell(MeshType &mIn, MeshType &mOut, float radius=0, int recDiv=2 )
 {
   if(radius==0) radius = mIn.bbox.Diag()/100.0f;
@@ -1318,6 +1566,16 @@ void BuildSphereVertexShell(MeshType &mIn, MeshType &mOut, float radius=0, int r
 }
 
 template <class MeshType>
+/**
+ * @brief Build a cylindrical shell on each vertex aligned with its normal.
+ * @tparam MeshType Triangular mesh type.
+ * @param mIn Input mesh.
+ * @param mOut Output mesh (append mode).
+ * @param radius Cylinder radius (auto if 0).
+ * @param height Half-height along the vertex normal (auto if 0).
+ * @param slices Angular segments.
+ * @param stacks Longitudinal segments.
+ */
 void BuildCylinderVertexShell(MeshType &mIn, MeshType &mOut, float radius=0, float height=0, int slices=16, int stacks=1 )
 {
   typedef typename MeshType::CoordType CoordType;
@@ -1336,6 +1594,11 @@ void BuildCylinderVertexShell(MeshType &mIn, MeshType &mOut, float radius=0, flo
 
 
 template <class MeshType>
+/**
+ * @brief Build a simple camera-shaped mesh (mainly for visualization).
+ * @tparam MeshType Triangular mesh type.
+ * @param in Output mesh.
+ */
 void GenerateCameraMesh(MeshType &in){
     typedef typename MeshType::CoordType MV;
     MV vv[52]={
@@ -1381,13 +1644,26 @@ void GenerateCameraMesh(MeshType &in){
 }
 
 template <class MeshType>
-void OrientedRect(MeshType &square, float width, float height, Point3f c, Point3f dir=Point3f(0,0,0), float angleDeg=0,Point3f preRotTra = Point3f(0,0,0))
+/**
+ * @brief Build a rectangle in 3D with orientation and optional pre-rotation.
+ * @tparam MeshType Triangular mesh type.
+ * @param square Output mesh.
+ * @param width Rectangle width (X extent).
+ * @param height Rectangle height (Y extent).
+ * @param c Center position.
+ * @param dir Rotation axis.
+ * @param angleDeg Rotation angle in degrees around dir.
+ * @param preRotTra Translation applied before rotation (to rotate around custom pivot).
+ */
+void OrientedRect(MeshType &square, float width, float height, typename MeshType::CoordType c, typename MeshType::CoordType dir=typename MeshType::CoordType(0,0,0), float angleDeg=0,typename MeshType::CoordType preRotTra = typename MeshType::CoordType(0,0,0))
 {
+  typedef typename MeshType::ScalarType ScalarType;
+  typedef typename MeshType::CoordType  CoordType;
   float zeros[4]={0,0,0,0};
   square.Clear();
-  Matrix44f rotM;
+  Matrix44<ScalarType> rotM;
   tri::Grid(square,2,2,width,height,zeros);
-  tri::UpdatePosition<MeshType>::Translate(square,Point3f(-width/2.0f,-height/2.0f,0.0f));
+  tri::UpdatePosition<MeshType>::Translate(square,CoordType(-width/2.0f,-height/2.0f,0.0f));
   if(angleDeg!=0){
     tri::UpdatePosition<MeshType>::Translate(square,preRotTra);
     rotM.SetRotateDeg(angleDeg,dir);
@@ -1398,7 +1674,17 @@ void OrientedRect(MeshType &square, float width, float height, Point3f c, Point3
 }
 
 template <class MeshType>
-void OrientedSquare(MeshType &square, float width, Point3f c, Point3f dir=Point3f(0,0,0), float angleDeg=0,Point3f preRotTra = Point3f(0,0,0))
+/**
+ * @brief Build an oriented square (special case of OrientedRect).
+ * @tparam MeshType Triangular mesh type.
+ * @param square Output mesh.
+ * @param width Side length.
+ * @param c Center position.
+ * @param dir Rotation axis.
+ * @param angleDeg Rotation angle in degrees.
+ * @param preRotTra Pre-rotation translation.
+ */
+void OrientedSquare(MeshType &square, float width, typename MeshType::CoordType c, typename MeshType::CoordType dir=typename MeshType::CoordType(0,0,0), float angleDeg=0,typename MeshType::CoordType preRotTra = typename MeshType::CoordType(0,0,0))
 {
   OrientedRect(square,width,width,c,dir,angleDeg,preRotTra);
 }
