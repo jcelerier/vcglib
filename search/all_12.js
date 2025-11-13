@@ -25,10 +25,11 @@ var searchData=
   ['the_20vcg_20library_22',['The VCG Library',['../index.html',1,'']]],
   ['todo_20list_23',['Todo List',['../todo.html',1,'']]],
   ['topolarrad_24',['ToPolarRad',['../classvcg_1_1Point3.html#a5690a51b749dc0179525c001cc1e9d16',1,'vcg::Point3']]],
-  ['translate_25',['Translate',['../classvcg_1_1Box3.html#a6806d518b3c3e378c0cada373062a0a6',1,'vcg::Box3']]],
-  ['triangular_20meshes_26',['Triangular Meshes',['../group__trimesh.html',1,'']]],
-  ['trisplit_27',['TriSplit',['../namespacevcg_1_1face.html#a0ba88094523aac1235a83b5bc33ea845',1,'vcg::face::TriSplit()'],['../classvcg_1_1tri_1_1TriSplit.html',1,'vcg::tri::TriSplit&lt; TRIMESH_TYPE, CenterPoint &gt;']]],
-  ['trivialmidpointrefine_28',['TrivialMidPointRefine',['../namespacevcg_1_1tri.html#a0412bb3c694f537339a2fa718409a1fc',1,'vcg::tri']]],
-  ['trivialpointersampler_29',['TrivialPointerSampler',['../classvcg_1_1tri_1_1TrivialPointerSampler.html',1,'vcg::tri']]],
-  ['trivialsampler_30',['TrivialSampler',['../classvcg_1_1tri_1_1TrivialSampler.html',1,'vcg::tri']]]
+  ['torus_25',['Torus',['../namespacevcg_1_1tri.html#a3d21f6053edc0e0abed6e0c20ab78a21',1,'vcg::tri']]],
+  ['translate_26',['Translate',['../classvcg_1_1Box3.html#a6806d518b3c3e378c0cada373062a0a6',1,'vcg::Box3']]],
+  ['triangular_20meshes_27',['Triangular Meshes',['../group__trimesh.html',1,'']]],
+  ['trisplit_28',['TriSplit',['../namespacevcg_1_1face.html#a0ba88094523aac1235a83b5bc33ea845',1,'vcg::face::TriSplit()'],['../classvcg_1_1tri_1_1TriSplit.html',1,'vcg::tri::TriSplit&lt; TRIMESH_TYPE, CenterPoint &gt;']]],
+  ['trivialmidpointrefine_29',['TrivialMidPointRefine',['../namespacevcg_1_1tri.html#a0412bb3c694f537339a2fa718409a1fc',1,'vcg::tri']]],
+  ['trivialpointersampler_30',['TrivialPointerSampler',['../classvcg_1_1tri_1_1TrivialPointerSampler.html',1,'vcg::tri']]],
+  ['trivialsampler_31',['TrivialSampler',['../classvcg_1_1tri_1_1TrivialSampler.html',1,'vcg::tri']]]
 ];

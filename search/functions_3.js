@@ -17,8 +17,9 @@ var searchData=
   ['dimx_14',['DimX',['../classvcg_1_1Box3.html#ada482797d08f0cfa4962901f01126651',1,'vcg::Box3']]],
   ['dimy_15',['DimY',['../classvcg_1_1Box3.html#a1c3b7ec6bfd7d4ac6a4392f8752dec41',1,'vcg::Box3']]],
   ['dimz_16',['DimZ',['../classvcg_1_1Box3.html#a989a3278f73d324f8e302b2c718e924e',1,'vcg::Box3']]],
-  ['dodecahedron_17',['Dodecahedron',['../namespacevcg_1_1tri.html#a4b8b2378d483d8723efdeb09fe471ff7',1,'vcg::tri']]],
-  ['dodecahedronsym_18',['DodecahedronSym',['../namespacevcg_1_1tri.html#ac6d9ecdc58cbfd8cba6e027a2ef61420',1,'vcg::tri']]],
-  ['doublet_5fremove_5fquad_19',['doublet_remove_quad',['../classvcg_1_1tri_1_1HalfEdgeTopology.html#acfc5a175416eee294d8b90d4d729f8d5',1,'vcg::tri::HalfEdgeTopology']]],
-  ['dump_20',['Dump',['../classvcg_1_1tri_1_1CoM_1_1Param.html#a80ff86ba25971f00b9292cf0754b4abd',1,'vcg::tri::CoM::Param']]]
+  ['disk_17',['Disk',['../namespacevcg_1_1tri.html#af846e1fc40f02c06fa0201b905ee9701',1,'vcg::tri']]],
+  ['dodecahedron_18',['Dodecahedron',['../namespacevcg_1_1tri.html#a4b8b2378d483d8723efdeb09fe471ff7',1,'vcg::tri']]],
+  ['dodecahedronsym_19',['DodecahedronSym',['../namespacevcg_1_1tri.html#ac6d9ecdc58cbfd8cba6e027a2ef61420',1,'vcg::tri']]],
+  ['doublet_5fremove_5fquad_20',['doublet_remove_quad',['../classvcg_1_1tri_1_1HalfEdgeTopology.html#acfc5a175416eee294d8b90d4d729f8d5',1,'vcg::tri::HalfEdgeTopology']]],
+  ['dump_21',['Dump',['../classvcg_1_1tri_1_1CoM_1_1Param.html#a80ff86ba25971f00b9292cf0754b4abd',1,'vcg::tri::CoM::Param']]]
 ];

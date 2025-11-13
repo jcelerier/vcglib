@@ -16,7 +16,8 @@ var searchData=
   ['tetrainvert_13',['TetraInvert',['../classvcg_1_1tri_1_1UpdateSelection.html#af3b4adb380d894e198b9b47a03917e9f',1,'vcg::tri::UpdateSelection']]],
   ['tetratetra_14',['TetraTetra',['../classvcg_1_1tri_1_1UpdateTopology.html#ab02f7b029ea610b287816484a97d0ad7',1,'vcg::tri::UpdateTopology']]],
   ['topolarrad_15',['ToPolarRad',['../classvcg_1_1Point3.html#a5690a51b749dc0179525c001cc1e9d16',1,'vcg::Point3']]],
-  ['translate_16',['Translate',['../classvcg_1_1Box3.html#a6806d518b3c3e378c0cada373062a0a6',1,'vcg::Box3']]],
-  ['trisplit_17',['TriSplit',['../namespacevcg_1_1face.html#a0ba88094523aac1235a83b5bc33ea845',1,'vcg::face']]],
-  ['trivialmidpointrefine_18',['TrivialMidPointRefine',['../namespacevcg_1_1tri.html#a0412bb3c694f537339a2fa718409a1fc',1,'vcg::tri']]]
+  ['torus_16',['Torus',['../namespacevcg_1_1tri.html#a3d21f6053edc0e0abed6e0c20ab78a21',1,'vcg::tri']]],
+  ['translate_17',['Translate',['../classvcg_1_1Box3.html#a6806d518b3c3e378c0cada373062a0a6',1,'vcg::Box3']]],
+  ['trisplit_18',['TriSplit',['../namespacevcg_1_1face.html#a0ba88094523aac1235a83b5bc33ea845',1,'vcg::face']]],
+  ['trivialmidpointrefine_19',['TrivialMidPointRefine',['../namespacevcg_1_1tri.html#a0412bb3c694f537339a2fa718409a1fc',1,'vcg::tri']]]
 ];

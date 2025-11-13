@@ -17,11 +17,15 @@ var searchData=
   ['smoothproject_14',['SmoothProject',['../classvcg_1_1tri_1_1CoM.html#adcc8c5312c3322df5db819792c53a05b',1,'vcg::tri::CoM']]],
   ['snappedonsameface_15',['SnappedOnSameFace',['../classvcg_1_1tri_1_1CoM.html#a9619229df69270e8573f1a128b37767a',1,'vcg::tri::CoM']]],
   ['snappolyline_16',['SnapPolyline',['../classvcg_1_1tri_1_1CoM.html#a70723c2c17aa37373598b7bb6877d87c',1,'vcg::tri::CoM']]],
-  ['splitmanifoldcomponents_17',['SplitManifoldComponents',['../classvcg_1_1tri_1_1Clean.html#a458949d58e3926811dd22f0b6dc50785',1,'vcg::tri::Clean']]],
-  ['splitmeshwithpolyline_18',['SplitMeshWithPolyline',['../classvcg_1_1tri_1_1CoM.html#af644aed4c77e4bb1f52bc4afeff6978d',1,'vcg::tri::CoM']]],
-  ['splitnonmanifoldvertex_19',['SplitNonManifoldVertex',['../classvcg_1_1tri_1_1Clean.html#a5839cea95b531daace7acb86651af35e',1,'vcg::tri::Clean']]],
-  ['squareddiag_20',['SquaredDiag',['../classvcg_1_1Box3.html#a48aeba05611b43b7f3748eba4b430f6d',1,'vcg::Box3']]],
-  ['superellipsoid_21',['SuperEllipsoid',['../namespacevcg_1_1tri.html#aba8545e8c51b9c00644963a71662f69a',1,'vcg::tri']]],
-  ['supertoroid_22',['SuperToroid',['../namespacevcg_1_1tri.html#acc03ebee4a18660d9d76e1c96cfd614c',1,'vcg::tri']]],
-  ['swapedge_23',['SwapEdge',['../namespacevcg_1_1face.html#a71d52d1730b6f6226050dc1b053bc2f8',1,'vcg::face']]]
+  ['sparsefacegrid_17',['SparseFaceGrid',['../namespacevcg_1_1tri.html#ad3151af8cfc6eeffb234a994738fd98b',1,'vcg::tri']]],
+  ['sphere_18',['Sphere',['../namespacevcg_1_1tri.html#abbb700793ca42358a931e32a21f03b37',1,'vcg::tri::Sphere(MeshType &amp;in, const int subdiv=3)'],['../namespacevcg_1_1tri.html#a38fa3ed69c2aed56d5525aea88caed9c',1,'vcg::tri::Sphere(MeshType &amp;m, const typename MeshType::CoordType &amp;position, typename MeshType::ScalarType radius=0, const int subdiv=3)']]],
+  ['sphericalcap_19',['SphericalCap',['../namespacevcg_1_1tri.html#ae8a4469c428132322474d105fa3e0d55',1,'vcg::tri']]],
+  ['splitmanifoldcomponents_20',['SplitManifoldComponents',['../classvcg_1_1tri_1_1Clean.html#a458949d58e3926811dd22f0b6dc50785',1,'vcg::tri::Clean']]],
+  ['splitmeshwithpolyline_21',['SplitMeshWithPolyline',['../classvcg_1_1tri_1_1CoM.html#af644aed4c77e4bb1f52bc4afeff6978d',1,'vcg::tri::CoM']]],
+  ['splitnonmanifoldvertex_22',['SplitNonManifoldVertex',['../classvcg_1_1tri_1_1Clean.html#a5839cea95b531daace7acb86651af35e',1,'vcg::tri::Clean']]],
+  ['square_23',['Square',['../namespacevcg_1_1tri.html#a90570cbcacbd44ba04f3ee9024849a7c',1,'vcg::tri']]],
+  ['squareddiag_24',['SquaredDiag',['../classvcg_1_1Box3.html#a48aeba05611b43b7f3748eba4b430f6d',1,'vcg::Box3']]],
+  ['superellipsoid_25',['SuperEllipsoid',['../namespacevcg_1_1tri.html#aba8545e8c51b9c00644963a71662f69a',1,'vcg::tri']]],
+  ['supertoroid_26',['SuperToroid',['../namespacevcg_1_1tri.html#acc03ebee4a18660d9d76e1c96cfd614c',1,'vcg::tri']]],
+  ['swapedge_27',['SwapEdge',['../namespacevcg_1_1face.html#a71d52d1730b6f6226050dc1b053bc2f8',1,'vcg::face']]]
 ];

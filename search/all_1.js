@@ -20,7 +20,8 @@ var searchData=
   ['allocating_20and_20deleting_20mesh_20elements_17',['Allocating and Deleting mesh elements',['../allocation.html',1,'index']]],
   ['allocator_18',['Allocator',['../classvcg_1_1tri_1_1Allocator.html',1,'vcg::tri']]],
   ['anisotropicdistance_19',['AnisotropicDistance',['../classvcg_1_1tri_1_1AnisotropicDistance.html',1,'vcg::tri']]],
-  ['append_20',['Append',['../classvcg_1_1tri_1_1Append.html',1,'vcg::tri']]],
-  ['areadata_21',['AreaData',['../classvcg_1_1tri_1_1UpdateCurvature_1_1AreaData.html',1,'vcg::tri::UpdateCurvature']]],
-  ['attributes_22',['attributes',['../attributes.html',1,'index']]]
+  ['annulus_20',['Annulus',['../namespacevcg_1_1tri.html#a8f48ddca79b6493487ca80b25be38939',1,'vcg::tri']]],
+  ['append_21',['Append',['../classvcg_1_1tri_1_1Append.html',1,'vcg::tri']]],
+  ['areadata_22',['AreaData',['../classvcg_1_1tri_1_1UpdateCurvature_1_1AreaData.html',1,'vcg::tri::UpdateCurvature']]],
+  ['attributes_23',['attributes',['../attributes.html',1,'index']]]
 ];

@@ -4,5 +4,6 @@ var searchData=
   ['hasconsistentperfacefauxflag_1',['HasConsistentPerFaceFauxFlag',['../classvcg_1_1tri_1_1Clean.html#a61f42c7bd6eb068508a5df0586c400eb',1,'vcg::tri::Clean']]],
   ['hasconsistentperwedgetexcoord_2',['HasConsistentPerWedgeTexCoord',['../classvcg_1_1tri_1_1Clean.html#a79e55a25221331544312a90481bc088d',1,'vcg::tri::Clean']]],
   ['haszerotexcoordface_3',['HasZeroTexCoordFace',['../classvcg_1_1tri_1_1Clean.html#a3b850b70b250158fb1c44881d4a9a239',1,'vcg::tri::Clean']]],
-  ['hierarchicalpoissondisk_4',['HierarchicalPoissonDisk',['../classvcg_1_1tri_1_1SurfaceSampling.html#a17f6a18db4b0fd89ebb65c71a200c1cb',1,'vcg::tri::SurfaceSampling']]]
+  ['hexahedron_4',['Hexahedron',['../namespacevcg_1_1tri.html#a8a36d747f7eefe5aafde0e292a4f8bd3',1,'vcg::tri']]],
+  ['hierarchicalpoissondisk_5',['HierarchicalPoissonDisk',['../classvcg_1_1tri_1_1SurfaceSampling.html#a17f6a18db4b0fd89ebb65c71a200c1cb',1,'vcg::tri::SurfaceSampling']]]
 ];

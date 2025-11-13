@@ -6,5 +6,6 @@ var searchData=
   ['hasconsistentperwedgetexcoord_3',['HasConsistentPerWedgeTexCoord',['../classvcg_1_1tri_1_1Clean.html#a79e55a25221331544312a90481bc088d',1,'vcg::tri::Clean']]],
   ['haszerotexcoordface_4',['HasZeroTexCoordFace',['../classvcg_1_1tri_1_1Clean.html#a3b850b70b250158fb1c44881d4a9a239',1,'vcg::tri::Clean']]],
   ['hausdorffsampler_5',['HausdorffSampler',['../classvcg_1_1tri_1_1HausdorffSampler.html',1,'vcg::tri']]],
-  ['hierarchicalpoissondisk_6',['HierarchicalPoissonDisk',['../classvcg_1_1tri_1_1SurfaceSampling.html#a17f6a18db4b0fd89ebb65c71a200c1cb',1,'vcg::tri::SurfaceSampling']]]
+  ['hexahedron_6',['Hexahedron',['../namespacevcg_1_1tri.html#a8a36d747f7eefe5aafde0e292a4f8bd3',1,'vcg::tri']]],
+  ['hierarchicalpoissondisk_7',['HierarchicalPoissonDisk',['../classvcg_1_1tri_1_1SurfaceSampling.html#a17f6a18db4b0fd89ebb65c71a200c1cb',1,'vcg::tri::SurfaceSampling']]]
 ];
