@@ -46,28 +46,28 @@ namespace vcg {
 		Triangle/triangle intersection ,based on the algorithm presented in "A Fast Triangle-Triangle Intersection Test",
 		Journal of Graphics Tools, 2(2), 1997
  */
-#ifndef FABS
-#define FABS(x) (T(fabs(x)))  
+#ifndef VCG_INT_FABS
+#define VCG_INT_FABS(x) (T(fabs(x)))  
 #endif
 #define USE_EPSILON_TEST
-#define TRI_TRI_INT_EPSILON 0.000001
+#define VCG_INT_TRI_TRI_INT_EPSILON 0.000001
 
 
 
-#define CROSS(dest,v1,v2){                     \
+#define VCG_INT_CROSS(dest,v1,v2){                     \
               dest[0]=v1[1]*v2[2]-v1[2]*v2[1]; \
               dest[1]=v1[2]*v2[0]-v1[0]*v2[2]; \
               dest[2]=v1[0]*v2[1]-v1[1]*v2[0];}
 
-#define DOT(v1,v2) (v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2])
+#define VCG_INT_DOT(v1,v2) (v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2])
 
-#define SUB(dest,v1,v2){         \
+#define VCG_INT_SUB(dest,v1,v2){         \
             dest[0]=v1[0]-v2[0]; \
             dest[1]=v1[1]-v2[1]; \
             dest[2]=v1[2]-v2[2];}
 
 
-#define SORT(a,b)       \
+#define VCG_INT_SORT(a,b)       \
              if(a>b)    \
              {          \
                T c; \
@@ -77,7 +77,7 @@ namespace vcg {
              }
 
 
-#define EDGE_EDGE_TEST(V0,U0,U1)                      \
+#define VCG_INT_EDGE_EDGE_TEST(V0,U0,U1)                      \
   Bx=U0[i0]-U1[i0];                                   \
   By=U0[i1]-U1[i1];                                   \
   Cx=V0[i0]-U0[i0];                                   \
@@ -97,20 +97,20 @@ namespace vcg {
     }                                                 \
   }
 
-#define EDGE_AGAINST_TRI_EDGES(V0,V1,U0,U1,U2) \
+#define VCG_INT_EDGE_AGAINST_TRI_EDGES(V0,V1,U0,U1,U2) \
 {                                              \
   T Ax,Ay,Bx,By,Cx,Cy,e,d,f;               \
   Ax=V1[i0]-V0[i0];                            \
   Ay=V1[i1]-V0[i1];                            \
   /* test edge U0,U1 against V0,V1 */          \
-  EDGE_EDGE_TEST(V0,U0,U1);                    \
+  VCG_INT_EDGE_EDGE_TEST(V0,U0,U1);                    \
   /* test edge U1,U2 against V0,V1 */          \
-  EDGE_EDGE_TEST(V0,U1,U2);                    \
+  VCG_INT_EDGE_EDGE_TEST(V0,U1,U2);                    \
   /* test edge U2,U1 against V0,V1 */          \
-  EDGE_EDGE_TEST(V0,U2,U0);                    \
+  VCG_INT_EDGE_EDGE_TEST(V0,U2,U0);                    \
 }
 
-#define POINT_IN_TRI(V0,U0,U1,U2)           \
+#define VCG_INT_POINT_IN_TRI(V0,U0,U1,U2)           \
 {                                           \
   T a,b,c,d0,d1,d2;                     \
   /* is T1 completly inside T2? */          \
@@ -154,9 +154,9 @@ bool coplanar_tri_tri(const Point3<T> N, const Point3<T> V0, const Point3<T> V1,
    short i0,i1;
    /* first project onto an axis-aligned plane, that maximizes the area */
    /* of the triangles, compute indices: i0,i1. */
-   A[0]=FABS(N[0]);
-   A[1]=FABS(N[1]);
-   A[2]=FABS(N[2]);
+  A[0]=VCG_INT_FABS(N[0]);
+  A[1]=VCG_INT_FABS(N[1]);
+  A[2]=VCG_INT_FABS(N[2]);
    if(A[0]>A[1])
    {
       if(A[0]>A[2])
@@ -185,50 +185,50 @@ bool coplanar_tri_tri(const Point3<T> N, const Point3<T> V0, const Point3<T> V1,
     }
 
     /* test all edges of triangle 1 against the edges of triangle 2 */
-    EDGE_AGAINST_TRI_EDGES(V0,V1,U0,U1,U2);
-    EDGE_AGAINST_TRI_EDGES(V1,V2,U0,U1,U2);
-    EDGE_AGAINST_TRI_EDGES(V2,V0,U0,U1,U2);
+    VCG_INT_EDGE_AGAINST_TRI_EDGES(V0,V1,U0,U1,U2);
+    VCG_INT_EDGE_AGAINST_TRI_EDGES(V1,V2,U0,U1,U2);
+    VCG_INT_EDGE_AGAINST_TRI_EDGES(V2,V0,U0,U1,U2);
 
     /* finally, test if tri1 is totally contained in tri2 or vice versa */
-    POINT_IN_TRI(V0,U0,U1,U2);
-    POINT_IN_TRI(U0,V0,V1,V2);
+    VCG_INT_POINT_IN_TRI(V0,U0,U1,U2);
+    VCG_INT_POINT_IN_TRI(U0,V0,V1,V2);
 
     return 0;
 }
 
 
 
-#define NEWCOMPUTE_INTERVALS(VV0,VV1,VV2,D0,D1,D2,D0D1,D0D2,A,B,C,X0,X1) \
+#define VCG_INT_NEWCOMPUTE_INTERVALS(VV0,VV1,VV2,D0,D1,D2,D0D1,D0D2,A,B,C,X0,X1) \
 { \
-        if(D0D1>0.0f) \
-        { \
-                /* here we know that D0D2<=0.0 */ \
-            /* that is D0, D1 are on the same side, D2 on the other or on the plane */ \
-                A=VV2; B=(VV0-VV2)*D2; C=(VV1-VV2)*D2; X0=D2-D0; X1=D2-D1; \
-        } \
-        else if(D0D2>0.0f)\
-        { \
-                /* here we know that d0d1<=0.0 */ \
-            A=VV1; B=(VV0-VV1)*D1; C=(VV2-VV1)*D1; X0=D1-D0; X1=D1-D2; \
-        } \
-        else if(D1*D2>0.0f || D0!=0.0f) \
-        { \
-                /* here we know that d0d1<=0.0 or that D0!=0.0 */ \
-                A=VV0; B=(VV1-VV0)*D0; C=(VV2-VV0)*D0; X0=D0-D1; X1=D0-D2; \
-        } \
-        else if(D1!=0.0f) \
-        { \
-                A=VV1; B=(VV0-VV1)*D1; C=(VV2-VV1)*D1; X0=D1-D0; X1=D1-D2; \
-        } \
-        else if(D2!=0.0f) \
-        { \
-                A=VV2; B=(VV0-VV2)*D2; C=(VV1-VV2)*D2; X0=D2-D0; X1=D2-D1; \
-        } \
-        else \
-        { \
-                /* triangles are coplanar */ \
-                return coplanar_tri_tri(N1,V0,V1,V2,U0,U1,U2); \
-        } \
+  if(D0D1>0.0f) \
+  { \
+    /* here we know that D0D2<=0.0 */ \
+      /* that is D0, D1 are on the same side, D2 on the other or on the plane */ \
+    A=VV2; B=(VV0-VV2)*D2; C=(VV1-VV2)*D2; X0=D2-D0; X1=D2-D1; \
+  } \
+  else if(D0D2>0.0f)\
+  { \
+    /* here we know that d0d1<=0.0 */ \
+      A=VV1; B=(VV0-VV1)*D1; C=(VV2-VV1)*D1; X0=D1-D0; X1=D1-D2; \
+  } \
+  else if(D1*D2>0.0f || D0!=0.0f) \
+  { \
+    /* here we know that d0d1<=0.0 or that D0!=0.0 */ \
+    A=VV0; B=(VV1-VV0)*D0; C=(VV2-VV0)*D0; X0=D0-D1; X1=D0-D2; \
+  } \
+  else if(D1!=0.0f) \
+  { \
+    A=VV1; B=(VV0-VV1)*D1; C=(VV2-VV1)*D1; X0=D1-D0; X1=D1-D2; \
+  } \
+  else if(D2!=0.0f) \
+  { \
+    A=VV2; B=(VV0-VV2)*D2; C=(VV1-VV2)*D2; X0=D2-D0; X1=D2-D1; \
+  } \
+  else \
+  { \
+    /* triangles are coplanar */ \
+    return coplanar_tri_tri(N1,V0,V1,V2,U0,U1,U2); \
+  } \
 }
 
 
@@ -258,23 +258,23 @@ bool NoDivTriTriIsect(const Point3<T> V0,const Point3<T> V1,const Point3<T> V2,
   T bb,cc,max;
 
   /* compute plane equation of triangle(V0,V1,V2) */
-  SUB(E1,V1,V0);
-  SUB(E2,V2,V0);
-  CROSS(N1,E1,E2);
-	N1.Normalize(); // aggiunto rispetto al codice orig.
-  d1=-DOT(N1,V0);
+  VCG_INT_SUB(E1,V1,V0);
+  VCG_INT_SUB(E2,V2,V0);
+  VCG_INT_CROSS(N1,E1,E2);
+  N1.Normalize(); // aggiunto rispetto al codice orig.
+  d1=-VCG_INT_DOT(N1,V0);
   /* plane equation 1: N1.X+d1=0 */
 
   /* put U0,U1,U2 into plane equation 1 to compute signed distances to the plane*/
-  du0=DOT(N1,U0)+d1;
-  du1=DOT(N1,U1)+d1;
-  du2=DOT(N1,U2)+d1;
+  du0=VCG_INT_DOT(N1,U0)+d1;
+  du1=VCG_INT_DOT(N1,U1)+d1;
+  du2=VCG_INT_DOT(N1,U2)+d1;
 
   /* coplanarity robustness check */
 #ifdef USE_TRI_TRI_INT_EPSILON_TEST
-  if(FABS(du0)<TRI_TRI_INT_EPSILON) du0=0.0;
-  if(FABS(du1)<TRI_TRI_INT_EPSILON) du1=0.0;
-  if(FABS(du2)<TRI_TRI_INT_EPSILON) du2=0.0;
+  if(VCG_INT_FABS(du0)<VCG_INT_TRI_TRI_INT_EPSILON) du0=0.0;
+  if(VCG_INT_FABS(du1)<VCG_INT_TRI_TRI_INT_EPSILON) du1=0.0;
+  if(VCG_INT_FABS(du2)<VCG_INT_TRI_TRI_INT_EPSILON) du2=0.0;
 #endif
   du0du1=du0*du1;
   du0du2=du0*du2;
@@ -283,16 +283,16 @@ bool NoDivTriTriIsect(const Point3<T> V0,const Point3<T> V1,const Point3<T> V2,
     return 0;                    /* no intersection occurs */
 
   /* compute plane of triangle (U0,U1,U2) */
-  SUB(E1,U1,U0);
-  SUB(E2,U2,U0);
-  CROSS(N2,E1,E2);
-  d2=-DOT(N2,U0);
+  VCG_INT_SUB(E1,U1,U0);
+  VCG_INT_SUB(E2,U2,U0);
+  VCG_INT_CROSS(N2,E1,E2);
+  d2=-VCG_INT_DOT(N2,U0);
   /* plane equation 2: N2.X+d2=0 */
 
   /* put V0,V1,V2 into plane equation 2 */
-  dv0=DOT(N2,V0)+d2;
-  dv1=DOT(N2,V1)+d2;
-  dv2=DOT(N2,V2)+d2;
+  dv0=VCG_INT_DOT(N2,V0)+d2;
+  dv1=VCG_INT_DOT(N2,V1)+d2;
+  dv2=VCG_INT_DOT(N2,V2)+d2;
 
 #ifdef USE_TRI_TRI_INT_EPSILON_TEST
   if(FABS(dv0)<TRI_TRI_INT_EPSILON) dv0=0.0;
@@ -307,13 +307,13 @@ bool NoDivTriTriIsect(const Point3<T> V0,const Point3<T> V1,const Point3<T> V2,
     return 0;                    /* no intersection occurs */
 
   /* compute direction of intersection line */
-  CROSS(D,N1,N2);
+  VCG_INT_CROSS(D,N1,N2);
 
   /* compute and index to the largest component of D */
-  max=(T)FABS(D[0]);
+  max=(T)VCG_INT_FABS(D[0]);
   index=0;
-  bb=(T)FABS(D[1]);
-  cc=(T)FABS(D[2]);
+  bb=(T)VCG_INT_FABS(D[1]);
+  cc=(T)VCG_INT_FABS(D[2]);
   if(bb>max) max=bb,index=1;
   if(cc>max) max=cc,index=2;
 
@@ -328,11 +328,11 @@ bool NoDivTriTriIsect(const Point3<T> V0,const Point3<T> V1,const Point3<T> V2,
 
   /* compute interval for triangle 1 */
   T a,b,c,x0,x1;
-  NEWCOMPUTE_INTERVALS(vp0,vp1,vp2,dv0,dv1,dv2,dv0dv1,dv0dv2,a,b,c,x0,x1);
+  VCG_INT_NEWCOMPUTE_INTERVALS(vp0,vp1,vp2,dv0,dv1,dv2,dv0dv1,dv0dv2,a,b,c,x0,x1);
 
   /* compute interval for triangle 2 */
   T d,e,f,y0,y1;
-  NEWCOMPUTE_INTERVALS(up0,up1,up2,du0,du1,du2,du0du1,du0du2,d,e,f,y0,y1);
+  VCG_INT_NEWCOMPUTE_INTERVALS(up0,up1,up2,du0,du1,du2,du0du1,du0du2,d,e,f,y0,y1);
 
   T xx,yy,xxyy,tmp;
   xx=x0*x1;
@@ -347,8 +347,8 @@ bool NoDivTriTriIsect(const Point3<T> V0,const Point3<T> V1,const Point3<T> V2,
   isect2[0]=tmp+e*xx*y1;
   isect2[1]=tmp+f*xx*y0;
 
-  SORT(isect1[0],isect1[1]);
-  SORT(isect2[0],isect2[1]);
+  VCG_INT_SORT(isect1[0],isect1[1]);
+  VCG_INT_SORT(isect2[0],isect2[1]);
 
   if(isect1[1]<isect2[0] || isect2[1]<isect1[0]) return 0;
   return 1;
@@ -356,12 +356,12 @@ bool NoDivTriTriIsect(const Point3<T> V0,const Point3<T> V1,const Point3<T> V2,
 
 
 
-#define DOT(v1,v2) (v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2])
-#define ADD(dest,v1,v2) dest[0]=v1[0]+v2[0]; dest[1]=v1[1]+v2[1]; dest[2]=v1[2]+v2[2]; 
-#define MULT(dest,v,factor) dest[0]=factor*v[0]; dest[1]=factor*v[1]; dest[2]=factor*v[2];
-#define SET(dest,src) dest[0]=src[0]; dest[1]=src[1]; dest[2]=src[2]; 
+#define VCG_INT_DOT(v1,v2) (v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2])
+#define VCG_INT_ADD(dest,v1,v2) dest[0]=v1[0]+v2[0]; dest[1]=v1[1]+v2[1]; dest[2]=v1[2]+v2[2]; 
+#define VCG_INT_MULT(dest,v,factor) dest[0]=factor*v[0]; dest[1]=factor*v[1]; dest[2]=factor*v[2];
+#define VCG_INT_SET(dest,src) dest[0]=src[0]; dest[1]=src[1]; dest[2]=src[2]; 
 /* sort so that a<=b */
-#define SORT2(a,b,smallest)       \
+#define VCG_INT_SORT2(a,b,smallest)       \
              if(a>b)       \
              {             \
                float c;    \
@@ -374,19 +374,19 @@ bool NoDivTriTriIsect(const Point3<T> V0,const Point3<T> V1,const Point3<T> V2,
 
 template <class T>
 inline void isect2(Point3<T> VTX0,Point3<T> VTX1,Point3<T> VTX2,float VV0,float VV1,float VV2,
-	    float D0,float D1,float D2,float *isect0,float *isect1,Point3<T> &isectpoint0,Point3<T> &isectpoint1) 
+    float D0,float D1,float D2,float *isect0,float *isect1,Point3<T> &isectpoint0,Point3<T> &isectpoint1) 
 {
   float tmp=D0/(D0-D1);          
   float diff[3];
   *isect0=VV0+(VV1-VV0)*tmp;         
-  SUB(diff,VTX1,VTX0);              
-  MULT(diff,diff,tmp);               
-  ADD(isectpoint0,diff,VTX0);        
+  VCG_INT_SUB(diff,VTX1,VTX0);              
+  VCG_INT_MULT(diff,diff,tmp);               
+  VCG_INT_ADD(isectpoint0,diff,VTX0);        
   tmp=D0/(D0-D2);                    
   *isect1=VV0+(VV2-VV0)*tmp;          
-  SUB(diff,VTX2,VTX0);                   
-  MULT(diff,diff,tmp);                 
-  ADD(isectpoint1,VTX0,diff);          
+  VCG_INT_SUB(diff,VTX2,VTX0);                   
+  VCG_INT_MULT(diff,diff,tmp);                 
+  VCG_INT_ADD(isectpoint1,VTX0,diff);          
 }
 
 template <class T>
@@ -484,22 +484,22 @@ bool tri_tri_intersect_with_isectline(	Point3<T> V0,Point3<T> V1,Point3<T> V2,
   int smallest1,smallest2;
   
   /* compute plane equation of triangle(V0,V1,V2) */
-  SUB(E1,V1,V0);
-  SUB(E2,V2,V0);
-  CROSS(N1,E1,E2);
-  d1=-DOT(N1,V0);
+  VCG_INT_SUB(E1,V1,V0);
+  VCG_INT_SUB(E2,V2,V0);
+  VCG_INT_CROSS(N1,E1,E2);
+  d1=-VCG_INT_DOT(N1,V0);
   /* plane equation 1: N1.X+d1=0 */
 
   /* put U0,U1,U2 into plane equation 1 to compute signed distances to the plane*/
-  du0=DOT(N1,U0)+d1;
-  du1=DOT(N1,U1)+d1;
-  du2=DOT(N1,U2)+d1;
+  du0=VCG_INT_DOT(N1,U0)+d1;
+  du1=VCG_INT_DOT(N1,U1)+d1;
+  du2=VCG_INT_DOT(N1,U2)+d1;
 
   /* coplanarity robustness check */
 #ifdef USE_EPSILON_TEST
-  if(fabs(du0)<TRI_TRI_INT_EPSILON) du0=0.0;
-  if(fabs(du1)<TRI_TRI_INT_EPSILON) du1=0.0;
-  if(fabs(du2)<TRI_TRI_INT_EPSILON) du2=0.0;
+  if(fabs(du0)<VCG_INT_TRI_TRI_INT_EPSILON) du0=0.0;
+  if(fabs(du1)<VCG_INT_TRI_TRI_INT_EPSILON) du1=0.0;
+  if(fabs(du2)<VCG_INT_TRI_TRI_INT_EPSILON) du2=0.0;
 #endif
   du0du1=du0*du1;
   du0du2=du0*du2;
@@ -508,21 +508,21 @@ bool tri_tri_intersect_with_isectline(	Point3<T> V0,Point3<T> V1,Point3<T> V2,
     return 0;                    /* no intersection occurs */
 
   /* compute plane of triangle (U0,U1,U2) */
-  SUB(E1,U1,U0);
-  SUB(E2,U2,U0);
-  CROSS(N2,E1,E2);
-  d2=-DOT(N2,U0);
+  VCG_INT_SUB(E1,U1,U0);
+  VCG_INT_SUB(E2,U2,U0);
+  VCG_INT_CROSS(N2,E1,E2);
+  d2=-VCG_INT_DOT(N2,U0);
   /* plane equation 2: N2.X+d2=0 */
 
   /* put V0,V1,V2 into plane equation 2 */
-  dv0=DOT(N2,V0)+d2;
-  dv1=DOT(N2,V1)+d2;
-  dv2=DOT(N2,V2)+d2;
+  dv0=VCG_INT_DOT(N2,V0)+d2;
+  dv1=VCG_INT_DOT(N2,V1)+d2;
+  dv2=VCG_INT_DOT(N2,V2)+d2;
 
 #ifdef USE_EPSILON_TEST
-  if(fabs(dv0)<TRI_TRI_INT_EPSILON) dv0=0.0;
-  if(fabs(dv1)<TRI_TRI_INT_EPSILON) dv1=0.0;
-  if(fabs(dv2)<TRI_TRI_INT_EPSILON) dv2=0.0;
+  if(fabs(dv0)<VCG_INT_TRI_TRI_INT_EPSILON) dv0=0.0;
+  if(fabs(dv1)<VCG_INT_TRI_TRI_INT_EPSILON) dv1=0.0;
+  if(fabs(dv2)<VCG_INT_TRI_TRI_INT_EPSILON) dv2=0.0;
 #endif
 
   dv0dv1=dv0*dv1;
@@ -532,7 +532,7 @@ bool tri_tri_intersect_with_isectline(	Point3<T> V0,Point3<T> V1,Point3<T> V2,
     return 0;                    /* no intersection occurs */
 
   /* compute direction of intersection line */
-  CROSS(D,N1,N2);
+  VCG_INT_CROSS(D,N1,N2);
 
   /* compute and index to the largest component of D */
   max=fabs(D[0]);
@@ -561,8 +561,8 @@ bool tri_tri_intersect_with_isectline(	Point3<T> V0,Point3<T> V1,Point3<T> V2,
   compute_intervals_isectline(U0,U1,U2,up0,up1,up2,du0,du1,du2,
 			      du0du1,du0du2,&isect2[0],&isect2[1],isectpointB1,isectpointB2);
 
-  SORT2(isect1[0],isect1[1],smallest1);
-  SORT2(isect2[0],isect2[1],smallest2);
+  VCG_INT_SORT2(isect1[0],isect1[1],smallest1);
+  VCG_INT_SORT2(isect2[0],isect2[1],smallest2);
 
   if(isect1[1]<isect2[0] || isect2[1]<isect1[0]) return 0;
 
@@ -570,34 +570,34 @@ bool tri_tri_intersect_with_isectline(	Point3<T> V0,Point3<T> V1,Point3<T> V2,
 
   if(isect2[0]<isect1[0])
   {
-    if(smallest1==0) { SET(isectpt1,isectpointA1); }
-    else { SET(isectpt1,isectpointA2); }
+    if(smallest1==0) { VCG_INT_SET(isectpt1,isectpointA1); }
+    else { VCG_INT_SET(isectpt1,isectpointA2); }
 
     if(isect2[1]<isect1[1])
     {
-      if(smallest2==0) { SET(isectpt2,isectpointB2); }
-      else { SET(isectpt2,isectpointB1); }
+      if(smallest2==0) { VCG_INT_SET(isectpt2,isectpointB2); }
+      else { VCG_INT_SET(isectpt2,isectpointB1); }
     }
     else
     {
-      if(smallest1==0) { SET(isectpt2,isectpointA2); }
-      else { SET(isectpt2,isectpointA1); }
+      if(smallest1==0) { VCG_INT_SET(isectpt2,isectpointA2); }
+      else { VCG_INT_SET(isectpt2,isectpointA1); }
     }
   }
   else
   {
-    if(smallest2==0) { SET(isectpt1,isectpointB1); }
-    else { SET(isectpt1,isectpointB2); }
+    if(smallest2==0) { VCG_INT_SET(isectpt1,isectpointB1); }
+    else { VCG_INT_SET(isectpt1,isectpointB2); }
 
     if(isect2[1]>isect1[1])
     {
-      if(smallest1==0) { SET(isectpt2,isectpointA2); }
-      else { SET(isectpt2,isectpointA1); }      
+      if(smallest1==0) { VCG_INT_SET(isectpt2,isectpointA2); }
+      else { VCG_INT_SET(isectpt2,isectpointA1); }      
     }
     else
     {
-      if(smallest2==0) { SET(isectpt2,isectpointB2); }
-      else { SET(isectpt2,isectpointB1); } 
+      if(smallest2==0) { VCG_INT_SET(isectpt2,isectpointB2); }
+      else { VCG_INT_SET(isectpt2,isectpointB1); } 
     }
   }
   return 1;
@@ -606,20 +606,20 @@ bool tri_tri_intersect_with_isectline(	Point3<T> V0,Point3<T> V1,Point3<T> V2,
 
 } // end namespace
 
-#undef FABS
+#undef VCG_INT_FABS
 #undef USE_EPSILON_TEST
-#undef TRI_TRI_INT_EPSILON 
-#undef CROSS
-#undef DOT
-#undef SUB
-#undef SORT 
-#undef SORT2 
-#undef ADD
-#undef MULT
-#undef SET
-#undef EDGE_EDGE_TEST
-#undef EDGE_AGAINST_TRI_EDGE
-#undef POINT_IN_TRI
+#undef VCG_INT_TRI_TRI_INT_EPSILON 
+#undef VCG_INT_CROSS
+#undef VCG_INT_DOT
+#undef VCG_INT_SUB
+#undef VCG_INT_SORT 
+#undef VCG_INT_SORT2 
+#undef VCG_INT_ADD
+#undef VCG_INT_MULT
+#undef VCG_INT_SET
+#undef VCG_INT_EDGE_EDGE_TEST
+#undef VCG_INT_EDGE_AGAINST_TRI_EDGES
+#undef VCG_INT_POINT_IN_TRI
 #undef COMPUTE_INTERVALS_ISECTLINE
-#undef NEWCOMPUTE_INTERVALS
+#undef VCG_INT_NEWCOMPUTE_INTERVALS
 #endif 
