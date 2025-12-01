@@ -84,7 +84,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>class for computing approximate geodesic distances on a mesh  
+<p>Class for computing approximate geodesic distances on a mesh.  
  <a href="classvcg_1_1tri_1_1Geodesic.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="geodesic_8h_source.html">geodesic.h</a>&gt;</code></p>
@@ -136,7 +136,7 @@ template&lt;class DistanceFunctor &gt; </td></tr>
 <tr class="memitem:ad5288680a7212a7392b8ea3d90c848e0"><td class="memTemplItemLeft" align="right" valign="top">static VertexPointer&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classvcg_1_1tri_1_1Geodesic.html#ad5288680a7212a7392b8ea3d90c848e0">Visit</a> (MeshType &amp;m, std::vector&lt; <a class="el" href="structvcg_1_1tri_1_1Geodesic_1_1VertDist.html">VertDist</a> &gt; &amp;seedVec, DistanceFunctor &amp;distFunc, ScalarType distance_threshold=std::numeric_limits&lt; ScalarType &gt;::max(), typename MeshType::template PerVertexAttributeHandle&lt; VertexPointer &gt; *vertSource=NULL, typename MeshType::template PerVertexAttributeHandle&lt; VertexPointer &gt; *vertParent=NULL, std::vector&lt; VertexPointer &gt; *InInterval=NULL)</td></tr>
 <tr class="separator:ad5288680a7212a7392b8ea3d90c848e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a098af145a58cabc9e6fab3e9fd392e82"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classvcg_1_1tri_1_1Geodesic.html#a098af145a58cabc9e6fab3e9fd392e82">Compute</a> (MeshType &amp;m, const std::vector&lt; VertexPointer &gt; &amp;seedVec)</td></tr>
-<tr class="memdesc:a098af145a58cabc9e6fab3e9fd392e82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a set of source vertices compute the approximate geodesic distance to all the other vertices.  <br /></td></tr>
+<tr class="memdesc:a098af145a58cabc9e6fab3e9fd392e82"><td class="mdescLeft">&#160;</td><td class="mdescRight">High-level wrapper: compute approximate geodesic distances from seeds.  <br /></td></tr>
 <tr class="separator:a098af145a58cabc9e6fab3e9fd392e82"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1bd6004fd3a986438cc577a3a1c62690"><td class="memTemplParams" colspan="2"><a id="a1bd6004fd3a986438cc577a3a1c62690" name="a1bd6004fd3a986438cc577a3a1c62690"></a>
 template&lt;class DistanceFunctor &gt; </td></tr>
@@ -165,8 +165,15 @@ template&lt;class DistanceFunctor &gt; </td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;class MeshType&gt;<br />
-class vcg::tri::Geodesic&lt; MeshType &gt;</div><p>class for computing approximate geodesic distances on a mesh </p>
-<p>require VF Adjacency relation </p><dl class="section see"><dt>See also</dt><dd>trimesh_geodesic.cpp </dd></dl>
+class vcg::tri::Geodesic&lt; MeshType &gt;</div><p>Class for computing approximate geodesic distances on a mesh. </p>
+<p>This class implements approximate geodesic distance computations (vertex- and face-based) using Dijkstra-like propagation combined with a local triangle update (see GeoDistance) for improved accuracy across faces.</p>
+<p>The implementation uses a mailbox-style marking strategy (see <code><a class="el" href="classvcg_1_1tri_1_1Geodesic_1_1GeodData.html">GeodData</a></code>) to avoid a linear per-vertex reinitialization between multiple runs. Thanks to this approach repeated geodesic computations avoid full linear initialization of per-vertex data and the practical cost is proportional to the number of visited vertices (i.e. O(output) plus heap costs) rather than always being strictly linear in the mesh size.</p>
+<p>Requirements:</p><ul>
+<li>Vertex-face adjacency (VF) for vertex-based routines and face-face (FF) adjacency for face-based routines.</li>
+<li>Per-vertex or per-face <code>Quality</code> is used to store computed distances.</li>
+</ul>
+<p>See individual method documentation for more detail on parameters and optional per-vertex/per-face attributes (e.g. <code>sources</code>, <code>parent</code>, <code>geod</code>).</p>
+<dl class="section see"><dt>See also</dt><dd>trimesh_geodesic.cpp </dd></dl>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="a098af145a58cabc9e6fab3e9fd392e82" name="a098af145a58cabc9e6fab3e9fd392e82"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a098af145a58cabc9e6fab3e9fd392e82">&#9670;&#160;</a></span>Compute()</h2>
@@ -204,30 +211,25 @@ template&lt;class MeshType &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Given a set of source vertices compute the approximate geodesic distance to all the other vertices. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">m</td><td>the mesh </td></tr>
-    <tr><td class="paramname">seedVec</td><td>a vector of Vertex pointers with the <em>sources</em> of the flood fill </td></tr>
-    <tr><td class="paramname">maxDistanceThr</td><td>max distance that we travel on the mesh starting from the sources </td></tr>
-    <tr><td class="paramname">withinDistanceVec</td><td>a pointer to a vector for storing the vertexes reached within the passed maxDistanceThr </td></tr>
-    <tr><td class="paramname">sourceSeed</td><td>pointer to the handle to keep for each vertex its seed </td></tr>
-    <tr><td class="paramname">parentSeed</td><td>pointer to the handle to keep for each vertex its parent in the closest tree (UNRELIABLE)</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>Given a mesh and a vector of pointers to seed vertices, this function compute the approximated geodesic distance from the given sources to all the mesh vertices within the given maximum distance threshold. The computed distance is stored in the <a class="el" href="classvcg_1_1vertex_1_1Quality.html" title="Component: Per vertex quality The Quality Component is a generic place for storing a float....">vertex::Quality</a> component. Optionally for each vertex it can store, in a passed attribute, the corresponding seed vertex (e.g. the vertex of the source set closest to him) and the 'parent' in a tree forest that connects each vertex to the closest source.</p>
-<p>To allocate the attributes: </p><div class="fragment"><div class="line"><span class="keyword">typename</span> MeshType::template PerVertexAttributeHandle&lt;VertexPointer&gt; sourcesHandle;</div>
-<div class="line">sourcesHandle =  <a class="code hl_class" href="classvcg_1_1tri_1_1Allocator.html">tri::Allocator&lt;CMeshO&gt;::AddPerVertexAttribute&lt;MeshType::VertexPointer&gt;</a> (m,<span class="stringliteral">&quot;sources&quot;</span>);</div>
+<p>High-level wrapper: compute approximate geodesic distances from seeds. </p>
+<p>Given a mesh and a vector of seed vertex pointers, this wrapper computes the approximated geodesic distance from the supplied sources to all mesh vertices within <code>maxDistanceThr</code>. Computed distances are stored in the vertex <code>Quality</code> component unless <code>withinDistanceVec</code> is supplied (in which case only the vertices pushed into <code>withinDistanceVec</code> will have their <code>Quality</code> updated).</p>
+<p>Optional outputs:</p><ul>
+<li><code>sourceSeed</code>: per-vertex handle that, if supplied, will be filled with the closest seed for each visited vertex.</li>
+<li><code>parentSeed</code>: per-vertex handle that, if supplied, will be filled with the parent in the shortest-path tree (best-effort; see notes in code).</li>
+</ul>
+<p>Example attribute allocation: </p><div class="fragment"><div class="line"><span class="keyword">typename</span> MeshType::template PerVertexAttributeHandle&lt;VertexPointer&gt; sourcesHandle;</div>
+<div class="line">sourcesHandle = <a class="code hl_class" href="classvcg_1_1tri_1_1Allocator.html">tri::Allocator&lt;MeshType&gt;::AddPerVertexAttribute&lt;MeshType::VertexPointer&gt;</a>(m, <span class="stringliteral">&quot;sources&quot;</span>);</div>
 <div class="line"> </div>
 <div class="line"><span class="keyword">typename</span> MeshType::template PerVertexAttributeHandle&lt;VertexPointer&gt; parentHandle;</div>
-<div class="line">parentHandle =  <a class="code hl_class" href="classvcg_1_1tri_1_1Allocator.html">tri::Allocator&lt;CMeshO&gt;::AddPerVertexAttribute&lt;MeshType::VertexPointer&gt;</a> (m,<span class="stringliteral">&quot;parent&quot;</span>);</div>
+<div class="line">parentHandle = <a class="code hl_class" href="classvcg_1_1tri_1_1Allocator.html">tri::Allocator&lt;MeshType&gt;::AddPerVertexAttribute&lt;MeshType::VertexPointer&gt;</a>(m, <span class="stringliteral">&quot;parent&quot;</span>);</div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1Allocator_html"><div class="ttname"><a href="classvcg_1_1tri_1_1Allocator.html">vcg::tri::Allocator</a></div><div class="ttdoc">Class to safely add and delete elements in a mesh.</div><div class="ttdef"><b>Definition:</b> allocate.h:97</div></div>
-</div><!-- fragment --><p>It requires VF adjacency relation (e.g. <a class="el" href="classvcg_1_1vertex_1_1VFAdj.html" title="Component: Per vertex Vertex-Face adjacency relation">vertex::VFAdj</a> and <a class="el" href="classvcg_1_1face_1_1VFAdj.html" title="Component: Per Face Vertex-Face adjacency relation">face::VFAdj</a> components) It requires per vertex Quality (e.g. <a class="el" href="classvcg_1_1vertex_1_1Quality.html" title="Component: Per vertex quality The Quality Component is a generic place for storing a float....">vertex::Quality</a> component)</p>
-<dl class="section warning"><dt>Warning</dt><dd>that this function has ALWAYS at least a linear cost (it use additional attributes that have a linear initialization) </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd><p class="startdd">make it O(output) by using incremental mark and persistent attributes. </p>
-<p class="enddd">fix sourceSeed output</p>
-</dd></dl>
+</div><!-- fragment --><p>Requirements:</p><ul>
+<li>VF adjacency relations and per-vertex <code>Quality</code> (the routine will write distances into <code>Quality</code>).</li>
+</ul>
+<p>Performance note:</p><ul>
+<li>Older versions of this code always performed a linear-time reinitialization of per-vertex data. The current implementation uses the <code><a class="el" href="classvcg_1_1tri_1_1Geodesic_1_1GeodData.html">GeodData</a></code> mailbox-marking approach to avoid full clears between runs, so repeated calls are effectively proportional to the number of visited vertices (plus heap overhead), i.e. O(output) in practice.</li>
+</ul>
+<dl class="section return"><dt>Returns</dt><dd>true if seed vector is non-empty and the operation was started. </dd></dl>
 
 </div>
 </div>
@@ -298,7 +300,18 @@ template&lt;class DistanceFunctor &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>This is the low level function of the geodesic computation framework. Starting from a set of seeds, it assign a distance value to each vertex. The distance of a vertex is its approximated geodesic distance to the closest seeds. For a simple interface look at the <a class="el" href="classvcg_1_1tri_1_1Geodesic.html#a098af145a58cabc9e6fab3e9fd392e82">Compute</a> wrapper. </p>
+<p>Low-level geodesic propagation routine.</p>
+<p>Starting from a set of seed vertices (with initial distances provided in <code>seedVec</code>), this routine propagates approximate geodesic distances across the mesh and assigns a distance value to each visited vertex. The distance stored for a vertex is an approximation of the geodesic distance to the closest seed.</p>
+<p>Notes:</p><ul>
+<li><code>distFunc</code> is used to compute the (possibly anisotropic) cost between vertices; several functors are provided (e.g. <code><a class="el" href="structvcg_1_1tri_1_1EuclideanDistance.html">EuclideanDistance</a></code>, <code><a class="el" href="classvcg_1_1tri_1_1IsotropicDistance.html">IsotropicDistance</a></code>, <code><a class="el" href="classvcg_1_1tri_1_1AnisotropicDistance.html">AnisotropicDistance</a></code>).</li>
+<li>If <code>vertSource</code>/<code>vertParent</code> attribute handles are supplied, the routine will set them to the closest source and parent in the shortest-path tree.</li>
+<li>If <code>InInterval</code> is supplied, it will be filled with the list of vertices reached within <code>distance_threshold</code>.</li>
+<li>The per-vertex <code>geod</code> attribute is used together with the mailbox (<code><a class="el" href="classvcg_1_1tri_1_1Geodesic_1_1GeodData.html">GeodData</a></code>) mechanism to avoid a full O(n) reinitialization between subsequent calls; this makes repeated runs cost roughly proportional to the number of visited vertices plus heap overhead.</li>
+</ul>
+<p>Requirements:</p><ul>
+<li>VF adjacency and per-vertex <code>Quality</code> (the routine writes distances into the <code>Quality</code> field unless <code>InInterval</code> is provided).</li>
+</ul>
+<p>For a simpler front-end use the <code>Compute</code> wrappers below. </p>
 
 </div>
 </div>
@@ -309,7 +322,7 @@ template&lt;class DistanceFunctor &gt; </div>
 <!-- HTML footer for doxygen 1.9.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated by&#160;<a href="https://www.doxygen.org/index.html">doxygen</a> 1.9.6 on Thu Nov 20 2025 10:01:46
+Generated by&#160;<a href="https://www.doxygen.org/index.html">doxygen</a> 1.9.6 on Mon Dec 1 2025 17:19:44
 </small></address>
 </body>
 </html>
