@@ -147,10 +147,28 @@ public:
 
 
 
-/*! \brief class for computing approximate geodesic distances on a mesh
+/*! \brief Class for computing approximate geodesic distances on a mesh.
 
-  require VF Adjacency relation
-\sa trimesh_geodesic.cpp
+  This class implements approximate geodesic distance computations (vertex- and
+  face-based) using Dijkstra-like propagation combined with a local triangle
+  update (see GeoDistance) for improved accuracy across faces.
+
+  The implementation uses a mailbox-style marking strategy (see `GeodData`) to
+  avoid a linear per-vertex reinitialization between multiple runs. Thanks to
+  this approach repeated geodesic computations avoid full linear initialization
+  of per-vertex data and the practical cost is proportional to the number of
+  visited vertices (i.e. O(output) plus heap costs) rather than always being
+  strictly linear in the mesh size.
+
+  Requirements:
+  - Vertex-face adjacency (VF) for vertex-based routines and face-face (FF)
+    adjacency for face-based routines.
+  - Per-vertex or per-face `Quality` is used to store computed distances.
+
+  See individual method documentation for more detail on parameters and
+  optional per-vertex/per-face attributes (e.g. `sources`, `parent`, `geod`).
+
+  \sa trimesh_geodesic.cpp
 */
 
 template <class MeshType>
@@ -325,10 +343,32 @@ source+        |
 
 
 /**
-This is the low level function of the geodesic computation framework.
-Starting from a set of seeds, it assign a distance value to each vertex. The distance of a vertex is its
-approximated geodesic distance to the closest seeds.
-For a simple interface look at the \ref Compute wrapper.
+  Low-level geodesic propagation routine.
+
+  Starting from a set of seed vertices (with initial distances provided in
+  `seedVec`), this routine propagates approximate geodesic distances across
+  the mesh and assigns a distance value to each visited vertex. The distance
+  stored for a vertex is an approximation of the geodesic distance to the
+  closest seed.
+
+  Notes:
+  - `distFunc` is used to compute the (possibly anisotropic) cost between
+    vertices; several functors are provided (e.g. `EuclideanDistance`,
+    `IsotropicDistance`, `AnisotropicDistance`).
+  - If `vertSource`/`vertParent` attribute handles are supplied, the routine
+    will set them to the closest source and parent in the shortest-path tree.
+  - If `InInterval` is supplied, it will be filled with the list of vertices
+    reached within `distance_threshold`.
+  - The per-vertex `geod` attribute is used together with the mailbox
+    (`GeodData`) mechanism to avoid a full O(n) reinitialization between
+    subsequent calls; this makes repeated runs cost roughly proportional to
+    the number of visited vertices plus heap overhead.
+
+  Requirements:
+  - VF adjacency and per-vertex `Quality` (the routine writes distances into
+    the `Quality` field unless `InInterval` is provided).
+
+  For a simpler front-end use the `Compute` wrappers below.
 */
 
   template <class DistanceFunctor>
@@ -447,37 +487,43 @@ For a simple interface look at the \ref Compute wrapper.
   }
 
 public:
-  /*! \brief Given a set of source vertices compute the approximate geodesic distance to all the other vertices
+  /*! \brief High-level wrapper: compute approximate geodesic distances from seeds.
 
-\param m the mesh
-\param seedVec a vector of Vertex pointers with the \em sources of the flood fill
-\param maxDistanceThr max distance that we travel on the mesh starting from the sources
-\param withinDistanceVec a pointer to a vector for storing the vertexes reached within the passed maxDistanceThr
-\param sourceSeed pointer to the handle to keep for each vertex its seed
-\param parentSeed pointer to the handle to keep for each vertex its parent in the closest tree (UNRELIABLE)
+  Given a mesh and a vector of seed vertex pointers, this wrapper computes the
+  approximated geodesic distance from the supplied sources to all mesh
+  vertices within `maxDistanceThr`. Computed distances are stored in the
+  vertex `Quality` component unless `withinDistanceVec` is supplied (in
+  which case only the vertices pushed into `withinDistanceVec` will have
+  their `Quality` updated).
 
-Given a mesh and a vector of pointers to seed vertices, this function compute the approximated geodesic
-distance from the given sources to all the mesh vertices within the given maximum distance threshold.
-The computed distance is stored in the vertex::Quality component.
-Optionally for each vertex it can store, in a passed attribute, the corresponding seed vertex
-(e.g. the vertex of the source set closest to him) and the 'parent' in a tree forest that connects each vertex to the closest source.
+  Optional outputs:
+  - `sourceSeed`: per-vertex handle that, if supplied, will be filled with the
+    closest seed for each visited vertex.
+  - `parentSeed`: per-vertex handle that, if supplied, will be filled with
+    the parent in the shortest-path tree (best-effort; see notes in code).
 
-To allocate the attributes:
-\code
-      typename MeshType::template PerVertexAttributeHandle<VertexPointer> sourcesHandle;
-      sourcesHandle =  tri::Allocator<CMeshO>::AddPerVertexAttribute<MeshType::VertexPointer> (m,"sources");
+  Example attribute allocation:
+  \code
+    typename MeshType::template PerVertexAttributeHandle<VertexPointer> sourcesHandle;
+    sourcesHandle = tri::Allocator<MeshType>::AddPerVertexAttribute<MeshType::VertexPointer>(m, "sources");
 
-      typename MeshType::template PerVertexAttributeHandle<VertexPointer> parentHandle;
-      parentHandle =  tri::Allocator<CMeshO>::AddPerVertexAttribute<MeshType::VertexPointer> (m,"parent");
-\endcode
+    typename MeshType::template PerVertexAttributeHandle<VertexPointer> parentHandle;
+    parentHandle = tri::Allocator<MeshType>::AddPerVertexAttribute<MeshType::VertexPointer>(m, "parent");
+  \endcode
 
-It requires VF adjacency relation (e.g. vertex::VFAdj and face::VFAdj components)
-It requires per vertex Quality (e.g. vertex::Quality component)
+  Requirements:
+  - VF adjacency relations and per-vertex `Quality` (the routine will write
+    distances into `Quality`).
 
-\warning that this function has ALWAYS at least a linear cost (it use additional attributes that have a linear initialization)
-\todo make it O(output) by using incremental mark and persistent attributes.
-\todo fix sourceSeed output
-            */
+  Performance note:
+  - Older versions of this code always performed a linear-time reinitialization
+    of per-vertex data. The current implementation uses the `GeodData`
+    mailbox-marking approach to avoid full clears between runs, so repeated
+    calls are effectively proportional to the number of visited vertices
+    (plus heap overhead), i.e. O(output) in practice.
+
+  \return true if seed vector is non-empty and the operation was started.
+*/
   static bool Compute( MeshType & m,
                        const std::vector<VertexPointer> & seedVec)
   {
