@@ -29,14 +29,6 @@
 #include <vector>
 #include <algorithm>
 
-#ifndef FAST_WINDING_OMP_MIN_VALUE
-#define FAST_WINDING_OMP_MIN_VALUE 1000
-#endif
-
-#ifndef TAYLOR_SERIES_ORDER
-#define TAYLOR_SERIES_ORDER 2
-#endif
-
 namespace vcg {
 namespace tri {
 
@@ -62,15 +54,12 @@ struct BoxData
     // Unnormalized, area-weighted normal of the mesh in this box
     Point3<T> N;
 
-#if TAYLOR_SERIES_ORDER >= 1
     // Values for Omega_1 (first-order Taylor expansion)
     Point3<T> NijDiag;  // Nxx, Nyy, Nzz
     T Nxy_Nyx;          // Nxy+Nyx
     T Nyz_Nzy;          // Nyz+Nzy
     T Nzx_Nxz;          // Nzx+Nxz
-#endif
 
-#if TAYLOR_SERIES_ORDER >= 2
     // Values for Omega_2 (second-order Taylor expansion)
     Point3<T> NijkDiag;     // Nxxx, Nyyy, Nzzz
     T sumPermuteNxyz;       // (Nxyz+Nxzy+Nyzx+Nyxz+Nzxy+Nzyx) = 2*(Nxyz+Nyzx+Nzxy)
@@ -80,7 +69,6 @@ struct BoxData
     T N2yyx_Nxyy;           // 2*Nyyx+Nxyy
     T N2zzx_Nxzz;           // 2*Nzzx+Nxzz
     T N2zzy_Nyzz;           // 2*Nzzy+Nyzz
-#endif
 
     // Additional data needed during tree construction
     T area;                 // Total area in this box
@@ -109,7 +97,7 @@ public:
     ~FastWindingNumber();
 
     // Initialize the hierarchical structure
-    void init(const MeshType &mesh, const int order = 2);
+    void init(const MeshType &mesh, const int order = 2, const ScalarType epsilon = 1e-10);
 
     // Compute winding number for a query point
     ScalarType computeSolidAngle(const CoordType &queryPoint, const ScalarType accuracyScale = 2.0) const;
@@ -122,6 +110,7 @@ private:
     const MeshType *pMesh;
     int myOrder;
     int nTriangles;
+    ScalarType epsilon;
 
     // Precompute coefficients for a leaf node (single triangle)
     void precomputeLeaf(NodeType *node, const FaceType *face);
@@ -152,6 +141,7 @@ FastWindingNumber<MeshType>::FastWindingNumber()
     : pMesh(nullptr)
     , myOrder(2)
     , nTriangles(0)
+    , epsilon(1e-10)
 {
 }
 
@@ -167,6 +157,7 @@ void FastWindingNumber<MeshType>::clear()
     pMesh = nullptr;
     myOrder = 2;
     nTriangles = 0;
+    epsilon = 1e-10;
 }
 
 // Compute solid angle of a single triangle using Van Oosterom & Strackee formula
@@ -174,8 +165,6 @@ template<typename MeshType>
 typename FastWindingNumber<MeshType>::ScalarType 
 FastWindingNumber<MeshType>::computeTriangleSolidAngle(const CoordType &queryPoint, const FaceType *face) const
 {
-    if (face->IsD()) return 0.0;
-
     CoordType v0 = face->cP(0);
     CoordType v1 = face->cP(1);
     CoordType v2 = face->cP(2);
@@ -188,7 +177,7 @@ FastWindingNumber<MeshType>::computeTriangleSolidAngle(const CoordType &queryPoi
     ScalarType lb = b.Norm();
     ScalarType lc = c.Norm();
 
-    if (la < 1e-10 || lb < 1e-10 || lc < 1e-10)
+    if (la < epsilon || lb < epsilon || lc < epsilon)
         return 0.0;
 
     ScalarType det = a * (b ^ c);
@@ -206,7 +195,7 @@ FastWindingNumber<MeshType>::computeTriangleSolidAngle(const CoordType &queryPoi
 template<typename MeshType>
 void FastWindingNumber<MeshType>::precomputeLeaf(NodeType *node, const FaceType *face)
 {
-    if (!node || !face || face->IsD())
+    if (!node || !face)
         return;
 
     BoxDataType &data = node->auxData;
@@ -218,13 +207,13 @@ void FastWindingNumber<MeshType>::precomputeLeaf(NodeType *node, const FaceType 
     CoordType v2 = face->cP(2);
 
     // Compute triangle area and normal
+    ScalarType area = DoubleArea(*face) * 0.5;
+    
     CoordType edge01 = v1 - v0;
     CoordType edge02 = v2 - v0;
     CoordType crossProd = edge01 ^ edge02;
-    ScalarType area2 = crossProd.Norm();
-    ScalarType area = area2 * 0.5;
 
-    if (area < 1e-10)
+    if (area < epsilon)
     {
         data.area = 0.0;
         return;
@@ -245,7 +234,6 @@ void FastWindingNumber<MeshType>::precomputeLeaf(NodeType *node, const FaceType 
     ScalarType d2 = (v2 - barycenter).SquaredNorm();
     data.maxPDist2 = std::max(d0, std::max(d1, d2));
 
-#if TAYLOR_SERIES_ORDER >= 1
     // Compute second-order moments for Omega_1
     CoordType p = barycenter;
     ScalarType nx = data.N[0], ny = data.N[1], nz = data.N[2];
@@ -257,9 +245,7 @@ void FastWindingNumber<MeshType>::precomputeLeaf(NodeType *node, const FaceType 
     data.Nxy_Nyx = nx * p[1] + ny * p[0];
     data.Nyz_Nzy = ny * p[2] + nz * p[1];
     data.Nzx_Nxz = nz * p[0] + nx * p[2];
-#endif
 
-#if TAYLOR_SERIES_ORDER >= 2
     // Compute third-order moments for Omega_2
     ScalarType px = p[0], py = p[1], pz = p[2];
     
@@ -274,7 +260,6 @@ void FastWindingNumber<MeshType>::precomputeLeaf(NodeType *node, const FaceType 
     data.N2yyx_Nxyy = 2.0 * ny * py * px + nx * py * py;
     data.N2zzx_Nxzz = 2.0 * nz * pz * px + nx * pz * pz;
     data.N2zzy_Nyzz = 2.0 * nz * pz * py + ny * pz * pz;
-#endif
 }
 
 // Precompute data for an internal node by combining children
@@ -301,12 +286,11 @@ void FastWindingNumber<MeshType>::precomputeInternal(NodeType *node)
     }
 
     // Compute average position for parent
-    if (data.area > 1e-10)
+    if (data.area > epsilon)
     {
         data.averageP = data.areaP / data.area;
     }
 
-#if TAYLOR_SERIES_ORDER >= 1
     // Now adjust higher-order moments for displacement from child centers to parent center
     for (int i = 0; i < 2; ++i)
     {
@@ -339,7 +323,6 @@ void FastWindingNumber<MeshType>::precomputeInternal(NodeType *node)
         data.Nyz_Nzy += childData.Nyz_Nzy + Nyz + Nzy;
         data.Nzx_Nxz += childData.Nzx_Nxz + Nzx + Nxz;
 
-#if TAYLOR_SERIES_ORDER >= 2
         // Adjust Nijk for the change in center P
         // Nijk_diag = Nijk_child + 2*di*Nij_child + di*di*Ni
         data.NijkDiag[0] += childData.NijkDiag[0] + 2.0 * dx * childData.NijDiag[0] + dx * dx * Nx;
@@ -374,9 +357,7 @@ void FastWindingNumber<MeshType>::precomputeInternal(NodeType *node)
         data.N2zzy_Nyzz += childData.N2zzy_Nyzz +
             2.0 * (dy * childData.NijDiag[2] + dz * Nzy + Nz * dz * dy) +
             2.0 * Nyz * dz + Ny * dz * dz;
-#endif
     }
-#endif
 
     // Compute max distance for internal node
     CoordType boxMin(node->boxCenter[0] - node->boxHalfDims[0],
@@ -423,7 +404,7 @@ void FastWindingNumber<MeshType>::precomputeNode(NodeType *node)
         for (auto it = node->oBegin; it != node->oEnd; ++it)
         {
             const FaceType *face = *it;
-            if (!face || face->IsD())
+            if (!face)
                 continue;
 
             // Get triangle vertices
@@ -432,13 +413,13 @@ void FastWindingNumber<MeshType>::precomputeNode(NodeType *node)
             CoordType v2 = face->cP(2);
 
             // Compute triangle area and normal
+            ScalarType area = DoubleArea(*face) * 0.5; 
+            
             CoordType edge01 = v1 - v0;
             CoordType edge02 = v2 - v0;
             CoordType crossProd = edge01 ^ edge02;
-            ScalarType area2 = crossProd.Norm();
-            ScalarType area = area2 * 0.5;
 
-            if (area < 1e-10)
+            if (area < epsilon)
                 continue;
 
             // Area-weighted normal (unnormalized)
@@ -456,7 +437,7 @@ void FastWindingNumber<MeshType>::precomputeNode(NodeType *node)
         }
         
         // Compute average position
-        if (data.area > 1e-10)
+        if (data.area > epsilon)
         {
             data.averageP = data.areaP / data.area;
         }
@@ -464,13 +445,11 @@ void FastWindingNumber<MeshType>::precomputeNode(NodeType *node)
         // Compute higher-order moments
         // NOTE: For individual triangles at the centroid, Nij = 0
         // The second-order (Nijk) terms are still needed though
-#if TAYLOR_SERIES_ORDER >= 1
         data.NijDiag = CoordType(0, 0, 0);
         data.Nxy_Nyx = 0;
         data.Nyz_Nzy = 0;
         data.Nzx_Nxz = 0;
         
-#if TAYLOR_SERIES_ORDER >= 2
         // For Nijk, we still need to compute these
         // Using simplified centroid-based approximation
         data.NijkDiag = CoordType(0, 0, 0);
@@ -481,15 +460,13 @@ void FastWindingNumber<MeshType>::precomputeNode(NodeType *node)
         data.N2yyx_Nxyy = 0;
         data.N2zzx_Nxzz = 0;
         data.N2zzy_Nyzz = 0;
-#endif
-#endif
         
         // Compute max distance squared from all triangle vertices
         ScalarType maxDist2 = 0.0;
         for (auto it = node->oBegin; it != node->oEnd; ++it)
         {
             const FaceType *face = *it;
-            if (!face || face->IsD()) continue;
+            if (!face) continue;
             
             for (int vi = 0; vi < 3; ++vi)
             {
@@ -525,7 +502,7 @@ FastWindingNumber<MeshType>::evaluateApproximation(const CoordType &queryPoint, 
     CoordType q = data.averageP - queryPoint;
     ScalarType q2 = q.SquaredNorm();
     
-    if (q2 < 1e-10)
+    if (q2 < epsilon)
         return 0.0;
 
     ScalarType qNorm = sqrt(q2);
@@ -539,7 +516,6 @@ FastWindingNumber<MeshType>::evaluateApproximation(const CoordType &queryPoint, 
     // Omega_0 (monopole term): -q·N / |q|^3
     ScalarType omega = -q3_inv * (qNormalized * data.N);
 
-#if TAYLOR_SERIES_ORDER >= 1
     if (myOrder >= 1)
     {
         ScalarType qx = qNormalized[0], qy = qNormalized[1], qz = qNormalized[2];
@@ -555,7 +531,6 @@ FastWindingNumber<MeshType>::evaluateApproximation(const CoordType &queryPoint, 
         ScalarType omega1 = q5_inv * (trace - 3.0 * quadratic_term);
         omega += omega1;
 
-#if TAYLOR_SERIES_ORDER >= 2
         if (myOrder >= 2)
         {
             ScalarType qx3 = qx2 * qx, qy3 = qy2 * qy, qz3 = qz2 * qz;
@@ -581,9 +556,7 @@ FastWindingNumber<MeshType>::evaluateApproximation(const CoordType &queryPoint, 
             ScalarType omega2 = q7_inv * (1.5 * linear_term - 7.5 * cubic_term);
             omega += omega2;
         }
-#endif
     }
-#endif
 
     return omega;
 }
@@ -638,6 +611,8 @@ FastWindingNumber<MeshType>::traverseTree(const CoordType &queryPoint, const Nod
 template<typename MeshType>
 void FastWindingNumber<MeshType>::init(const MeshType &mesh, const int order)
 {
+    RequireCompactness(mesh);
+    
     clear();
 
     pMesh = &mesh;
@@ -649,8 +624,7 @@ void FastWindingNumber<MeshType>::init(const MeshType &mesh, const int order)
     facePtrs.reserve(nTriangles);
     for (size_t i = 0; i < mesh.face.size(); ++i)
     {
-        if (!mesh.face[i].IsD())
-            facePtrs.push_back(const_cast<FacePointer>(&mesh.face[i]));
+        facePtrs.push_back(const_cast<FacePointer>(&mesh.face[i]));
     }
 
     // Define functors required by AABBBinaryTree::Set

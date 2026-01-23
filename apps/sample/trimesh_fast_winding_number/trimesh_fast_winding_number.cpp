@@ -208,6 +208,9 @@ int main(int argc, char **argv)
     vcg::tri::UpdateTopology<MyMesh>::FaceFace(inputMesh);
     vcg::tri::UpdateNormal<MyMesh>::PerFaceNormalized(inputMesh);
     vcg::tri::UpdateBounding<MyMesh>::Box(inputMesh);
+    
+    // Compact the mesh before fast winding number initialization
+    vcg::tri::Allocator<MyMesh>::CompactEveryVector(inputMesh);
 
     // Initialize fast winding number
     printf("Initializing fast winding number structure...\n");
