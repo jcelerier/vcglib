@@ -37,7 +37,7 @@ namespace tri {
  * BoxData stores precomputed values for each node in the hierarchy
  * Following the structure from UT_SolidAngle.cpp
  */
-template<typename T, typename S>
+template<typename T, typename S, int order = 2>
 struct BoxData
 {
     void clear()
@@ -75,13 +75,54 @@ struct BoxData
     Point3<T> areaP;        // Area-weighted position
 };
 
+// Specialization for order = 1 (remove order 2 values)
+template<typename T, typename S>
+struct BoxData<T, S, 1>
+{
+    void clear()
+    {
+        memset(this, 0, sizeof(*this));
+    }
+
+    S maxPDist2;
+    Point3<T> averageP;
+    Point3<T> N;
+
+    // Values for Omega_1 (first-order Taylor expansion)
+    Point3<T> NijDiag;
+    T Nxy_Nyx;
+    T Nyz_Nzy;
+    T Nzx_Nxz;
+
+    // Additional data needed during tree construction
+    T area;
+    Point3<T> areaP;
+};
+
+// Specialization for order = 0 (remove all Taylor values)
+template<typename T, typename S>
+struct BoxData<T, S, 0>
+{
+    void clear()
+    {
+        memset(this, 0, sizeof(*this));
+    }
+
+    S maxPDist2;
+    Point3<T> averageP;
+    Point3<T> N;
+
+    // Additional data needed during tree construction
+    T area;
+    Point3<T> areaP;
+};
 
 /**
  * Fast Winding Number class
  * Implements hierarchical evaluation of the generalized winding number
  * using a BVH tree with Taylor series approximations
  */
-template<typename MeshType>
+template<typename MeshType, const int order = 2>
 class FastWindingNumber
 {
 public:
@@ -89,7 +130,7 @@ public:
     typedef typename MeshType::CoordType CoordType;
     typedef typename MeshType::FaceType FaceType;
     typedef typename MeshType::FacePointer FacePointer;
-    typedef BoxData<ScalarType, ScalarType> BoxDataType;
+    typedef BoxData<ScalarType, ScalarType, order> BoxDataType;
     typedef AABBBinaryTree<FaceType, ScalarType, BoxDataType> TreeType;
     typedef typename TreeType::NodeType NodeType;
 
@@ -97,7 +138,7 @@ public:
     ~FastWindingNumber();
 
     // Initialize the hierarchical structure
-    void init(const MeshType &mesh, const int order = 2, const ScalarType epsilon = 1e-10);
+    void init(const MeshType &mesh, const ScalarType epsilon = 1e-10);
 
     // Compute winding number for a query point
     ScalarType computeSolidAngle(const CoordType &queryPoint, const ScalarType accuracyScale = 2.0) const;
@@ -108,7 +149,6 @@ public:
 private:
     TreeType tree;
     const MeshType *pMesh;
-    int myOrder;
     int nTriangles;
     ScalarType epsilon;
 
@@ -136,42 +176,36 @@ private:
 // Implementation
 // ============================================================================
 
-template<typename MeshType>
-FastWindingNumber<MeshType>::FastWindingNumber()
+template<typename MeshType, const int order>
+FastWindingNumber<MeshType, order>::FastWindingNumber()
     : pMesh(nullptr)
-    , myOrder(2)
     , nTriangles(0)
     , epsilon(1e-10)
 {
 }
 
-template<typename MeshType>
-FastWindingNumber<MeshType>::~FastWindingNumber()
+template<typename MeshType, const int order>
+FastWindingNumber<MeshType, order>::~FastWindingNumber()
 {
 }
 
-template<typename MeshType>
-void FastWindingNumber<MeshType>::clear()
+template<typename MeshType, const int order>
+void FastWindingNumber<MeshType, order>::clear()
 {
     tree.Clear();
     pMesh = nullptr;
-    myOrder = 2;
     nTriangles = 0;
     epsilon = 1e-10;
 }
 
 // Compute solid angle of a single triangle using Van Oosterom & Strackee formula
-template<typename MeshType>
-typename FastWindingNumber<MeshType>::ScalarType 
-FastWindingNumber<MeshType>::computeTriangleSolidAngle(const CoordType &queryPoint, const FaceType *face) const
+template<typename MeshType, const int order>
+typename FastWindingNumber<MeshType, order>::ScalarType 
+FastWindingNumber<MeshType, order>::computeTriangleSolidAngle(const CoordType &queryPoint, const FaceType *face) const
 {
-    CoordType v0 = face->cP(0);
-    CoordType v1 = face->cP(1);
-    CoordType v2 = face->cP(2);
-
-    CoordType a = v0 - queryPoint;
-    CoordType b = v1 - queryPoint;
-    CoordType c = v2 - queryPoint;
+    CoordType a = face->cP(0) - queryPoint;
+    CoordType b = face->cP(1) - queryPoint;
+    CoordType c = face->cP(2) - queryPoint;
 
     ScalarType la = a.Norm();
     ScalarType lb = b.Norm();
@@ -192,8 +226,8 @@ FastWindingNumber<MeshType>::computeTriangleSolidAngle(const CoordType &queryPoi
 }
 
 // Precompute data for a leaf node (single triangle)
-template<typename MeshType>
-void FastWindingNumber<MeshType>::precomputeLeaf(NodeType *node, const FaceType *face)
+template<typename MeshType, const int order>
+void FastWindingNumber<MeshType, order>::precomputeLeaf(NodeType *node, const FaceType *face)
 {
     if (!node || !face)
         return;
@@ -201,18 +235,9 @@ void FastWindingNumber<MeshType>::precomputeLeaf(NodeType *node, const FaceType 
     BoxDataType &data = node->auxData;
     data.clear();
 
-    // Get triangle vertices
-    CoordType v0 = face->cP(0);
-    CoordType v1 = face->cP(1);
-    CoordType v2 = face->cP(2);
-
     // Compute triangle area and normal
     ScalarType area = DoubleArea(*face) * 0.5;
     
-    CoordType edge01 = v1 - v0;
-    CoordType edge02 = v2 - v0;
-    CoordType crossProd = edge01 ^ edge02;
-
     if (area < epsilon)
     {
         data.area = 0.0;
@@ -220,51 +245,53 @@ void FastWindingNumber<MeshType>::precomputeLeaf(NodeType *node, const FaceType 
     }
 
     // Area-weighted normal (unnormalized)
-    data.N = crossProd * 0.5;
+    data.N = TriangleNormal(*face) * 0.5;
     data.area = area;
 
     // Barycenter
-    CoordType barycenter = (v0 + v1 + v2) / 3.0;
-    data.averageP = barycenter;
-    data.areaP = barycenter * area;
+    data.averageP = Barycenter(*face);
+    data.areaP = data.averageP * area;
 
-    // Compute max distance squared
-    ScalarType d0 = (v0 - barycenter).SquaredNorm();
-    ScalarType d1 = (v1 - barycenter).SquaredNorm();
-    ScalarType d2 = (v2 - barycenter).SquaredNorm();
-    data.maxPDist2 = std::max(d0, std::max(d1, d2));
+    // Compute max distance squared from vertices to barycenter
+    data.maxPDist2 = std::max((face->cP(0) - data.averageP).SquaredNorm(),
+                     std::max((face->cP(1) - data.averageP).SquaredNorm(),
+                              (face->cP(2) - data.averageP).SquaredNorm()));
 
-    // Compute second-order moments for Omega_1
-    CoordType p = barycenter;
-    ScalarType nx = data.N[0], ny = data.N[1], nz = data.N[2];
-    
-    data.NijDiag[0] = nx * p[0];  // Nxx
-    data.NijDiag[1] = ny * p[1];  // Nyy
-    data.NijDiag[2] = nz * p[2];  // Nzz
-    
-    data.Nxy_Nyx = nx * p[1] + ny * p[0];
-    data.Nyz_Nzy = ny * p[2] + nz * p[1];
-    data.Nzx_Nxz = nz * p[0] + nx * p[2];
+    if (order >= 1)
+    {
+        // Compute second-order moments for Omega_1
+        ScalarType nx = data.N[0], ny = data.N[1], nz = data.N[2];
+        ScalarType px = data.averageP[0], py = data.averageP[1], pz = data.averageP[2];
+        
+        data.NijDiag[0] = nx * px;  // Nxx
+        data.NijDiag[1] = ny * py;  // Nyy
+        data.NijDiag[2] = nz * pz;  // Nzz
+        
+        data.Nxy_Nyx = nx * py + ny * px;
+        data.Nyz_Nzy = ny * pz + nz * py;
+        data.Nzx_Nxz = nz * px + nx * pz;
 
-    // Compute third-order moments for Omega_2
-    ScalarType px = p[0], py = p[1], pz = p[2];
-    
-    data.NijkDiag[0] = nx * px * px;  // Nxxx
-    data.NijkDiag[1] = ny * py * py;  // Nyyy
-    data.NijkDiag[2] = nz * pz * pz;  // Nzzz
-    
-    data.sumPermuteNxyz = 2.0 * (nx * py * pz + ny * pz * px + nz * px * py);
-    data.N2xxy_Nyxx = 2.0 * nx * px * py + ny * px * px;
-    data.N2xxz_Nzxx = 2.0 * nx * px * pz + nz * px * px;
-    data.N2yyz_Nzyy = 2.0 * ny * py * pz + nz * py * py;
-    data.N2yyx_Nxyy = 2.0 * ny * py * px + nx * py * py;
-    data.N2zzx_Nxzz = 2.0 * nz * pz * px + nx * pz * pz;
-    data.N2zzy_Nyzz = 2.0 * nz * pz * py + ny * pz * pz;
+        if (order >= 2)
+        {
+            // Compute third-order moments for Omega_2            
+            data.NijkDiag[0] = nx * px * px;  // Nxxx
+            data.NijkDiag[1] = ny * py * py;  // Nyyy
+            data.NijkDiag[2] = nz * pz * pz;  // Nzzz
+            
+            data.sumPermuteNxyz = 2.0 * (nx * py * pz + ny * pz * px + nz * px * py);
+            data.N2xxy_Nyxx = 2.0 * nx * px * py + ny * px * px;
+            data.N2xxz_Nzxx = 2.0 * nx * px * pz + nz * px * px;
+            data.N2yyz_Nzyy = 2.0 * ny * py * pz + nz * py * py;
+            data.N2yyx_Nxyy = 2.0 * ny * py * px + nx * py * py;
+            data.N2zzx_Nxzz = 2.0 * nz * pz * px + nx * pz * pz;
+            data.N2zzy_Nyzz = 2.0 * nz * pz * py + ny * pz * pz;
+        }
+    }
 }
 
 // Precompute data for an internal node by combining children
-template<typename MeshType>
-void FastWindingNumber<MeshType>::precomputeInternal(NodeType *node)
+template<typename MeshType, const int order>
+void FastWindingNumber<MeshType, order>::precomputeInternal(NodeType *node)
 {
     if (!node || node->IsLeaf())
         return;
@@ -305,58 +332,65 @@ void FastWindingNumber<MeshType>::precomputeInternal(NodeType *node)
         ScalarType dx = displacement[0], dy = displacement[1], dz = displacement[2];
         ScalarType Nx = N[0], Ny = N[1], Nz = N[2];
         
-        // Add child Nij and adjust for displacement
-        // Nij_diag(parent) = Nij_diag(child) + Ni * dj (for diagonal terms i=j)
-        data.NijDiag[0] += childData.NijDiag[0] + Nx * dx;
-        data.NijDiag[1] += childData.NijDiag[1] + Ny * dy;
-        data.NijDiag[2] += childData.NijDiag[2] + Nz * dz;
-        
-        // For off-diagonal terms
-        ScalarType Nxy = Nx * dy;
-        ScalarType Nyx = Ny * dx;
-        ScalarType Nyz = Ny * dz;
-        ScalarType Nzy = Nz * dy;
-        ScalarType Nzx = Nz * dx;
-        ScalarType Nxz = Nx * dz;
-        
-        data.Nxy_Nyx += childData.Nxy_Nyx + Nxy + Nyx;
-        data.Nyz_Nzy += childData.Nyz_Nzy + Nyz + Nzy;
-        data.Nzx_Nxz += childData.Nzx_Nxz + Nzx + Nxz;
+        if (order >= 1)
+        {
+            // Add child Nij and adjust for displacement
+            // Nij_diag(parent) = Nij_diag(child) + Ni * dj (for diagonal terms i=j)
+            data.NijDiag[0] += childData.NijDiag[0] + Nx * dx;
+            data.NijDiag[1] += childData.NijDiag[1] + Ny * dy;
+            data.NijDiag[2] += childData.NijDiag[2] + Nz * dz;
+            
+            // For off-diagonal terms
+            ScalarType Nxy = Nx * dy;
+            ScalarType Nyx = Ny * dx;
+            ScalarType Nyz = Ny * dz;
+            ScalarType Nzy = Nz * dy;
+            ScalarType Nzx = Nz * dx;
+            ScalarType Nxz = Nx * dz;
+            
+            data.Nxy_Nyx += childData.Nxy_Nyx + Nxy + Nyx;
+            data.Nyz_Nzy += childData.Nyz_Nzy + Nyz + Nzy;
+            data.Nzx_Nxz += childData.Nzx_Nxz + Nzx + Nxz;
 
-        // Adjust Nijk for the change in center P
-        // Nijk_diag = Nijk_child + 2*di*Nij_child + di*di*Ni
-        data.NijkDiag[0] += childData.NijkDiag[0] + 2.0 * dx * childData.NijDiag[0] + dx * dx * Nx;
-        data.NijkDiag[1] += childData.NijkDiag[1] + 2.0 * dy * childData.NijDiag[1] + dy * dy * Ny;
-        data.NijkDiag[2] += childData.NijkDiag[2] + 2.0 * dz * childData.NijDiag[2] + dz * dz * Nz;
-        
-        data.sumPermuteNxyz += childData.sumPermuteNxyz +
-            dx * (Nyz + Nzy + childData.Nyz_Nzy) +
-            dy * (Nzx + Nxz + childData.Nzx_Nxz) +
-            dz * (Nxy + Nyx + childData.Nxy_Nyx);
-        
-        data.N2xxy_Nyxx += childData.N2xxy_Nyxx +
-            2.0 * (dy * childData.NijDiag[0] + dx * Nxy + Nx * dx * dy) +
-            2.0 * Nyx * dx + Ny * dx * dx;
-            
-        data.N2xxz_Nzxx += childData.N2xxz_Nzxx +
-            2.0 * (dz * childData.NijDiag[0] + dx * Nxz + Nx * dx * dz) +
-            2.0 * Nzx * dx + Nz * dx * dx;
-            
-        data.N2yyz_Nzyy += childData.N2yyz_Nzyy +
-            2.0 * (dz * childData.NijDiag[1] + dy * Nyz + Ny * dy * dz) +
-            2.0 * Nzy * dy + Nz * dy * dy;
-            
-        data.N2yyx_Nxyy += childData.N2yyx_Nxyy +
-            2.0 * (dx * childData.NijDiag[1] + dy * Nyx + Ny * dy * dx) +
-            2.0 * Nxy * dy + Nx * dy * dy;
-            
-        data.N2zzx_Nxzz += childData.N2zzx_Nxzz +
-            2.0 * (dx * childData.NijDiag[2] + dz * Nzx + Nz * dz * dx) +
-            2.0 * Nxz * dz + Nx * dz * dz;
-            
-        data.N2zzy_Nyzz += childData.N2zzy_Nyzz +
-            2.0 * (dy * childData.NijDiag[2] + dz * Nzy + Nz * dz * dy) +
-            2.0 * Nyz * dz + Ny * dz * dz;
+            if (order >= 2)
+            {
+                // Adjust Nijk for the change in center P
+                // Nijk_diag = Nijk_child + 2*di*Nij_child + di*di*Ni
+                data.NijkDiag[0] += childData.NijkDiag[0] + 2.0 * dx * childData.NijDiag[0] + dx * dx * Nx;
+                data.NijkDiag[1] += childData.NijkDiag[1] + 2.0 * dy * childData.NijDiag[1] + dy * dy * Ny;
+                data.NijkDiag[2] += childData.NijkDiag[2] + 2.0 * dz * childData.NijDiag[2] + dz * dz * Nz;
+                
+                data.sumPermuteNxyz += childData.sumPermuteNxyz +
+                    dx * (Nyz + Nzy + childData.Nyz_Nzy) +
+                    dy * (Nzx + Nxz + childData.Nzx_Nxz) +
+                    dz * (Nxy + Nyx + childData.Nxy_Nyx);
+                
+                data.N2xxy_Nyxx += childData.N2xxy_Nyxx +
+                    2.0 * (dy * childData.NijDiag[0] + dx * Nxy + Nx * dx * dy) +
+                    2.0 * Nyx * dx + Ny * dx * dx;
+                    
+                data.N2xxz_Nzxx += childData.N2xxz_Nzxx +
+                    2.0 * (dz * childData.NijDiag[0] + dx * Nxz + Nx * dx * dz) +
+                    2.0 * Nzx * dx + Nz * dx * dx;
+                    
+                data.N2yyz_Nzyy += childData.N2yyz_Nzyy +
+                    2.0 * (dz * childData.NijDiag[1] + dy * Nyz + Ny * dy * dz) +
+                    2.0 * Nzy * dy + Nz * dy * dy;
+                    
+                data.N2yyx_Nxyy += childData.N2yyx_Nxyy +
+                    2.0 * (dx * childData.NijDiag[1] + dy * Nyx + Ny * dy * dx) +
+                    2.0 * Nxy * dy + Nx * dy * dy;
+                    
+                data.N2zzx_Nxzz += childData.N2zzx_Nxzz +
+                    2.0 * (dx * childData.NijDiag[2] + dz * Nzx + Nz * dz * dx) +
+                    2.0 * Nxz * dz + Nx * dz * dz;
+                    
+                data.N2zzy_Nyzz += childData.N2zzy_Nyzz +
+                    2.0 * (dy * childData.NijDiag[2] + dz * Nzy + Nz * dz * dy) +
+                    2.0 * Nyz * dz + Ny * dz * dz;
+            }
+        }
+
     }
 
     // Compute max distance for internal node
@@ -385,8 +419,8 @@ void FastWindingNumber<MeshType>::precomputeInternal(NodeType *node)
 
 
 // Recursively precompute all nodes (post-order traversal)
-template<typename MeshType>
-void FastWindingNumber<MeshType>::precomputeNode(NodeType *node)
+template<typename MeshType, const int order>
+void FastWindingNumber<MeshType, order>::precomputeNode(NodeType *node)
 {
     if (!node)
         return;
@@ -407,24 +441,15 @@ void FastWindingNumber<MeshType>::precomputeNode(NodeType *node)
             if (!face)
                 continue;
 
-            // Get triangle vertices
-            CoordType v0 = face->cP(0);
-            CoordType v1 = face->cP(1);
-            CoordType v2 = face->cP(2);
-
             // Compute triangle area and normal
-            ScalarType area = DoubleArea(*face) * 0.5; 
-            
-            CoordType edge01 = v1 - v0;
-            CoordType edge02 = v2 - v0;
-            CoordType crossProd = edge01 ^ edge02;
+            ScalarType area = DoubleArea(*face) * 0.5;
 
             if (area < epsilon)
                 continue;
 
             // Area-weighted normal (unnormalized)
-            CoordType N = crossProd * 0.5;
-            CoordType barycenter = (v0 + v1 + v2) / 3.0;
+            CoordType N = TriangleNormal(*face) * 0.5;
+            CoordType barycenter = Barycenter(*face);
             
             // Accumulate
             data.N += N;
@@ -442,24 +467,62 @@ void FastWindingNumber<MeshType>::precomputeNode(NodeType *node)
             data.averageP = data.areaP / data.area;
         }
         
-        // Compute higher-order moments
-        // NOTE: For individual triangles at the centroid, Nij = 0
-        // The second-order (Nijk) terms are still needed though
-        data.NijDiag = CoordType(0, 0, 0);
-        data.Nxy_Nyx = 0;
-        data.Nyz_Nzy = 0;
-        data.Nzx_Nxz = 0;
+        // Compute higher-order moments relative to the combined center
+        if (order >= 1)
+        {
+            data.NijDiag = CoordType(0, 0, 0);
+            data.Nxy_Nyx = 0;
+            data.Nyz_Nzy = 0;
+            data.Nzx_Nxz = 0;
+            
+            // Accumulate moments from each triangle
+            for (size_t i = 0; i < triangleNormals.size(); ++i)
+            {
+                CoordType displacement = triangleBarycenters[i] - data.averageP;
+                ScalarType dx = displacement[0], dy = displacement[1], dz = displacement[2];
+                ScalarType Nx = triangleNormals[i][0], Ny = triangleNormals[i][1], Nz = triangleNormals[i][2];
+                
+                data.NijDiag[0] += Nx * dx;
+                data.NijDiag[1] += Ny * dy;
+                data.NijDiag[2] += Nz * dz;
+                
+                data.Nxy_Nyx += Nx * dy + Ny * dx;
+                data.Nyz_Nzy += Ny * dz + Nz * dy;
+                data.Nzx_Nxz += Nz * dx + Nx * dz;
+            }
+        }
         
-        // For Nijk, we still need to compute these
-        // Using simplified centroid-based approximation
-        data.NijkDiag = CoordType(0, 0, 0);
-        data.sumPermuteNxyz = 0;
-        data.N2xxy_Nyxx = 0;
-        data.N2xxz_Nzxx = 0;
-        data.N2yyz_Nzyy = 0;
-        data.N2yyx_Nxyy = 0;
-        data.N2zzx_Nxzz = 0;
-        data.N2zzy_Nyzz = 0;
+        if (order >= 2)
+        {
+            data.NijkDiag = CoordType(0, 0, 0);
+            data.sumPermuteNxyz = 0;
+            data.N2xxy_Nyxx = 0;
+            data.N2xxz_Nzxx = 0;
+            data.N2yyz_Nzyy = 0;
+            data.N2yyx_Nxyy = 0;
+            data.N2zzx_Nxzz = 0;
+            data.N2zzy_Nyzz = 0;
+            
+            // Accumulate third-order moments from each triangle
+            for (size_t i = 0; i < triangleNormals.size(); ++i)
+            {
+                CoordType displacement = triangleBarycenters[i] - data.averageP;
+                ScalarType dx = displacement[0], dy = displacement[1], dz = displacement[2];
+                ScalarType Nx = triangleNormals[i][0], Ny = triangleNormals[i][1], Nz = triangleNormals[i][2];
+                
+                data.NijkDiag[0] += Nx * dx * dx;
+                data.NijkDiag[1] += Ny * dy * dy;
+                data.NijkDiag[2] += Nz * dz * dz;
+                
+                data.sumPermuteNxyz += 2.0 * (Nx * dy * dz + Ny * dz * dx + Nz * dx * dy);
+                data.N2xxy_Nyxx += 2.0 * Nx * dx * dy + Ny * dx * dx;
+                data.N2xxz_Nzxx += 2.0 * Nx * dx * dz + Nz * dx * dx;
+                data.N2yyz_Nzyy += 2.0 * Ny * dy * dz + Nz * dy * dy;
+                data.N2yyx_Nxyy += 2.0 * Ny * dy * dx + Nx * dy * dy;
+                data.N2zzx_Nxzz += 2.0 * Nz * dz * dx + Nx * dz * dz;
+                data.N2zzy_Nyzz += 2.0 * Nz * dz * dy + Ny * dz * dz;
+            }
+        }
         
         // Compute max distance squared from all triangle vertices
         ScalarType maxDist2 = 0.0;
@@ -489,9 +552,9 @@ void FastWindingNumber<MeshType>::precomputeNode(NodeType *node)
 }
 
 // Evaluate winding number using Taylor series approximation
-template<typename MeshType>
-typename FastWindingNumber<MeshType>::ScalarType 
-FastWindingNumber<MeshType>::evaluateApproximation(const CoordType &queryPoint, const NodeType *node) const
+template<typename MeshType, const int order>
+typename FastWindingNumber<MeshType, order>::ScalarType 
+FastWindingNumber<MeshType, order>::evaluateApproximation(const CoordType &queryPoint, const NodeType *node) const
 {
     if (!node)
         return 0.0;
@@ -516,7 +579,7 @@ FastWindingNumber<MeshType>::evaluateApproximation(const CoordType &queryPoint, 
     // Omega_0 (monopole term): -q·N / |q|^3
     ScalarType omega = -q3_inv * (qNormalized * data.N);
 
-    if (myOrder >= 1)
+    if (order >= 1)
     {
         ScalarType qx = qNormalized[0], qy = qNormalized[1], qz = qNormalized[2];
         ScalarType qx2 = qx * qx, qy2 = qy * qy, qz2 = qz * qz;
@@ -531,7 +594,7 @@ FastWindingNumber<MeshType>::evaluateApproximation(const CoordType &queryPoint, 
         ScalarType omega1 = q5_inv * (trace - 3.0 * quadratic_term);
         omega += omega1;
 
-        if (myOrder >= 2)
+        if (order >= 2)
         {
             ScalarType qx3 = qx2 * qx, qy3 = qy2 * qy, qz3 = qz2 * qz;
             ScalarType q7_inv = q5_inv * q2_inv;
@@ -562,9 +625,9 @@ FastWindingNumber<MeshType>::evaluateApproximation(const CoordType &queryPoint, 
 }
 
 // Traverse the tree and accumulate solid angles
-template<typename MeshType>
-typename FastWindingNumber<MeshType>::ScalarType 
-FastWindingNumber<MeshType>::traverseTree(const CoordType &queryPoint, const NodeType *node, const ScalarType accuracyScale2) const
+template<typename MeshType, const int order>
+typename FastWindingNumber<MeshType, order>::ScalarType 
+FastWindingNumber<MeshType, order>::traverseTree(const CoordType &queryPoint, const NodeType *node, const ScalarType accuracyScale2) const
 {
     if (!node)
         return 0.0;
@@ -608,15 +671,15 @@ FastWindingNumber<MeshType>::traverseTree(const CoordType &queryPoint, const Nod
 }
 
 // Initialize the fast winding number structure
-template<typename MeshType>
-void FastWindingNumber<MeshType>::init(const MeshType &mesh, const int order)
+template<typename MeshType, const int order>
+void FastWindingNumber<MeshType, order>::init(const MeshType &mesh, const ScalarType epsilon)
 {
     RequireCompactness(mesh);
     
     clear();
 
+    this->epsilon = epsilon;
     pMesh = &mesh;
-    myOrder = order;
     nTriangles = mesh.FN();
 
     // Build the AABB tree
@@ -663,9 +726,9 @@ void FastWindingNumber<MeshType>::init(const MeshType &mesh, const int order)
 }
 
 // Compute solid angle (winding number contribution) for a query point
-template<typename MeshType>
-typename FastWindingNumber<MeshType>::ScalarType 
-FastWindingNumber<MeshType>::computeSolidAngle(const CoordType &queryPoint, const ScalarType accuracyScale) const
+template<typename MeshType, const int order>
+typename FastWindingNumber<MeshType, order>::ScalarType 
+FastWindingNumber<MeshType, order>::computeSolidAngle(const CoordType &queryPoint, const ScalarType accuracyScale) const
 {
     ScalarType accuracyScale2 = accuracyScale * accuracyScale;
     ScalarType windingNumber = traverseTree(queryPoint, tree.pRoot, accuracyScale2);

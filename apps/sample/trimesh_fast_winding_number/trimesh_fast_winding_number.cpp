@@ -215,7 +215,7 @@ int main(int argc, char **argv)
     // Initialize fast winding number
     printf("Initializing fast winding number structure...\n");
     tri::FastWindingNumber<MyMesh> fastWN;
-    fastWN.init(inputMesh, 2);
+    fastWN.init(inputMesh);
 
     // Create a 2D grid around the mesh
     MyMesh gridMesh;
