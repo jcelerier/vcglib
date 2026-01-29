@@ -220,10 +220,7 @@ int main(int argc, char **argv)
     // Create a 2D grid around the mesh
     MyMesh gridMesh;
     Box3f bbox = inputMesh.bbox;
-    
-    // Expand bbox slightly
-    bbox.min *= 1.2;
-    bbox.max *= 1.2;
+    bbox.Offset(bbox.Diag()/10.0);
     
     // Grid resolution
     float gridWidth = bbox.DimX();
@@ -262,9 +259,10 @@ int main(int argc, char **argv)
     }
     
     printf("Winding number range: [%f, %f]\n", minWN, maxWN);
-
+    tri::UpdateColor<MyMesh>::PerVertexQualityRamp(gridMesh);
+    
     // Save the grid with winding numbers
-    int savemask = vcg::tri::io::Mask::IOM_VERTQUALITY;
+    int savemask = vcg::tri::io::Mask::IOM_VERTQUALITY | vcg::tri::io::Mask::IOM_VERTCOLOR;
     
     if (vcg::tri::io::ExporterPLY<MyMesh>::Save(gridMesh, outputFile, savemask) != 0)
     {
