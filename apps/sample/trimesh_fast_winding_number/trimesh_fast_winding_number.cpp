@@ -242,20 +242,29 @@ int main(int argc, char **argv)
     // Compute winding numbers for all grid vertices
     printf("Computing winding numbers...\n");
     float minWN = 1e10f, maxWN = -1e10f;
-    
-    #pragma omp parallel for reduction(min:minWN) reduction(max:maxWN)
-    for (int i = 0; i < gridMesh.VN(); ++i)
+
+    #pragma omp parallel
     {
-        Point3f queryPoint = gridMesh.vert[i].P();
-        float wn = fastWN.computeSolidAngle(queryPoint, accuracyScale);
-        
-        // Convert solid angle to winding number (divide by 4*pi)
-        wn = wn / (4.0f * M_PI);
-        
-        gridMesh.vert[i].Q() = wn;
-        
-        if (wn < minWN) minWN = wn;
-        if (wn > maxWN) maxWN = wn;
+        float localMin = 1e10f, localMax = -1e10f;
+        #pragma omp for
+        for (int i = 0; i < gridMesh.VN(); ++i)
+        {
+            Point3f queryPoint = gridMesh.vert[i].P();
+            float wn = fastWN.computeSolidAngle(queryPoint, accuracyScale);
+
+            // Convert solid angle to winding number (divide by 4*pi)
+            wn = wn / (4.0f * M_PI);
+
+            gridMesh.vert[i].Q() = wn;
+
+            if (wn < localMin) localMin = wn;
+            if (wn > localMax) localMax = wn;
+        }
+        #pragma omp critical
+        {
+            if (localMin < minWN) minWN = localMin;
+            if (localMax > maxWN) maxWN = localMax;
+        }
     }
     
     printf("Winding number range: [%f, %f]\n", minWN, maxWN);
