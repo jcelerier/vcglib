@@ -305,9 +305,11 @@ public:
    * This function marks edges in the base mesh (using FaceEdgeS flag) where they 
    * coincide with edges from the polyline. The polyline edges must be snapped to 
    * mesh vertices at both endpoints for this to work.
+   * This function requires VertexFace and FaceFace adjacency.
    * 
    * \note This is typically used as a preparation step before cutting the mesh
    *       along the polyline using CutMeshAlongCrease or similar functions.
+   *      
    * 
    * \warning Returns false if any polyline edge is not properly snapped, or if
    *          the snapped vertices don't form an edge in the base mesh.
@@ -617,6 +619,9 @@ bool TagFaceEdgeSelWithPolyLine(MeshType &poly,bool markFlag=true)
    * \brief Split the base mesh to make it conforming with the polyline
    * \param poly The polyline to integrate into the base mesh
    * 
+   * Note that you have to call 
+   * RefineCurveByBaseMesh before this function to ensure that the polyline 
+   * is sufficiently sampled and follows the surface features.
    * This is a complex two-phase algorithm:
    * 
    * **Phase 1: Vertex Insertion**
@@ -638,7 +643,7 @@ bool TagFaceEdgeSelWithPolyLine(MeshType &poly,bool markFlag=true)
    * 
    * \warning This can significantly increase mesh complexity
    * 
-   * \sa TagFaceEdgeSelWithPolyLine, SnapPolyline
+   * \sa TagFaceEdgeSelWithPolyLine, SnapPolyline, RefineCurveByBaseMesh
    */
   
   void SplitMeshWithPolyline(MeshType &poly)
@@ -1232,19 +1237,18 @@ bool TagFaceEdgeSelWithPolyLine(MeshType &poly,bool markFlag=true)
   
   // Given a segment find the maximum distance from it to the original surface. 
   // It is used to evaluate the Haustdorff distance of a Segment from the mesh.
-  ScalarType MaxSegDist(VertexType *v0, VertexType *v1, CoordType &farthestPointOnSurf, CoordType &farthestN, Distribution<ScalarType> *dist=0)
+  ScalarType MaxSegDist(VertexType *v0, VertexType *v1, CoordType &farthestPointOnSurf, CoordType &farthestN, Distribution<ScalarType> *distanceDistribution=0)
   {
     ScalarType maxSurfDist = 0;
     const ScalarType sampleNum = 10;
-    const ScalarType maxDist = base.bbox.Diag()/10.0;
     for(ScalarType k = 1;k<sampleNum;++k)
     {
       ScalarType surfDist;
       CoordType closestPSurf;
       CoordType samplePnt = (v0->P()*k +v1->P()*(sampleNum-k))/sampleNum;          
-      FaceType *f = vcg::tri::GetClosestFaceBase(base,uniformGrid,samplePnt,maxDist, surfDist, closestPSurf);        
-      if(dist)
-        dist->Add(surfDist);
+      FaceType *f = vcg::tri::GetClosestFaceBase(base,uniformGrid,samplePnt,par.gridBailout, surfDist, closestPSurf);        
+      if(distanceDistribution)
+        distanceDistribution->Add(surfDist);
       assert(f);
       if(surfDist > maxSurfDist)
       {
@@ -1329,22 +1333,40 @@ bool TagFaceEdgeSelWithPolyLine(MeshType &poly,bool markFlag=true)
   }
   
   
-  
   /**
-   * @brief SmoothProject
+   * @brief 
+   * 
+   */
+  struct LaplacianFunctor {
+    std::vector<CoordType> operator()(const MeshType &poly) const {
+      std::vector<CoordType> posVec(poly.vn, CoordType(0,0,0));
+      std::vector<int>       cntVec(poly.vn, 0);
+      for(int i=0; i<poly.en; ++i)
+        for(int j=0; j<2; ++j) {
+          int vi = tri::Index(poly, poly.edge[i].V0(j));
+          posVec[vi] += poly.edge[i].V1(j)->P();
+          cntVec[vi] += 1;
+        }
+      for(int i=0; i<poly.vn; ++i)
+        posVec[i] = (poly.vert[i].P() + posVec[i]) / ScalarType(cntVec[i]+1);
+      return posVec;
+    }
+  };
+
+  /**
+   * @brief MoveAndProject
    * @param poly
    * @param iterNum
-   * @param smoothWeight  [0..1] range;  
-   * @param projectWeight [0..1] range;
-   * 
-   * The very important function to adapt a polyline onto the base mesh
-   * The projection process must be done slowly to guarantee some empirical convergence...
-   * For each iteration it choose a new position of each vertex of the polyline. 
-   * The new position is a blend between the smoothed position, the closest point on the surface and the original position. 
-   * You need a good balance...
-   * after each iteration the polyline is refined and simplified. 
+   * @param moveWeight    [0..1] blend toward the desired position returned by the functor
+   * @param projectWeight [0..1] blend toward the closest point on the surface
+   * @param desiredPos    functor: std::vector<CoordType>(const MeshType&)
+   *
+   * Generic version of SmoothProject: the per-vertex desired position is
+   * supplied by a functor instead of being hard-coded as a Laplacian average.
    */
-  void SmoothProject(MeshType &poly, int iterNum, ScalarType smoothWeight, ScalarType projectWeight)
+  template<typename PositionFunctor>
+  void MoveAndProject(MeshType &poly, int iterNum, ScalarType moveWeight, ScalarType projectWeight,
+                      PositionFunctor desiredPos)
   {
     tri::RequireCompactness(poly);
     tri::UpdateTopology<MeshType>::VertexEdge(poly);
@@ -1352,44 +1374,22 @@ bool TagFaceEdgeSelWithPolyLine(MeshType &poly,bool markFlag=true)
     assert(poly.en>0 && base.fn>0);
     for(int k=0;k<iterNum;++k)
     {
-      if(k==iterNum-1) projectWeight=1; 
-      
-      std::vector<CoordType> posVec(poly.vn,CoordType(0,0,0));
-      std::vector<int>     cntVec(poly.vn,0);
-  
-      for(int i =0; i<poly.en;++i)
-      {
-        for(int j=0;j<2;++j)
-        {
-          int vertInd = tri::Index(poly,poly.edge[i].V0(j));
-          posVec[vertInd] += poly.edge[i].V1(j)->P();
-          cntVec[vertInd] += 1;
-        }
-      }
-      
-      const ScalarType maxDist = base.bbox.Diag()/10.0; 
+      if(k==iterNum-1) projectWeight=1;
+
+      std::vector<CoordType> desired = desiredPos(poly);
+
       for(int i=0; i<poly.vn; ++i)
         if(!poly.vert[i].IsS())
         {
-          CoordType smoothPos = (poly.vert[i].P() + posVec[i])/ScalarType(cntVec[i]+1);
+          CoordType newP = poly.vert[i].P()*(1.0-moveWeight) + desired[i]*moveWeight;
           
-          CoordType newP = poly.vert[i].P()*(1.0-smoothWeight) + smoothPos *smoothWeight;
-          
-//          CoordType delta =  newP - poly.vert[i].P();
-//          if(delta.Norm() > par.maxSmoothDelta) 
-//          {
-//            newP =  poly.vert[i].P() + ( delta / delta.Norm()) * maxDist*0.5;
-//          }
-          
-          ScalarType minDist;
           CoordType closestP;
-          FaceType *f = vcg::tri::GetClosestFaceBase(base,uniformGrid,newP,maxDist, minDist, closestP);
+          FaceType *f = GetClosestFacePoint(newP, closestP);
           assert(f);
           poly.vert[i].P() = newP*(1.0-projectWeight) +closestP*projectWeight;
           poly.vert[i].N() = f->N();
         }
       
-      //      Refine(poly);      
       tri::UpdateTopology<MeshType>::TestVertexEdge(poly);
       RefineCurveByDistance(poly);      
       tri::UpdateTopology<MeshType>::TestVertexEdge(poly);
@@ -1397,14 +1397,18 @@ bool TagFaceEdgeSelWithPolyLine(MeshType &poly,bool markFlag=true)
       tri::UpdateTopology<MeshType>::TestVertexEdge(poly);
       int dupVertNum = Clean<MeshType>::RemoveDuplicateVertex(poly);
       if(dupVertNum) {
-//        printf("****REMOVED %i Duplicated\n",dupVertNum);
         tri::Allocator<MeshType>::CompactEveryVector(poly);
         tri::UpdateTopology<MeshType>::VertexEdge(poly);
       }
     }
-  }  
-   
-  
+  }
+
+  void SmoothProject(MeshType &poly, int iterNum, ScalarType smoothWeight, ScalarType projectWeight)
+  {
+    MoveAndProject(poly, iterNum, smoothWeight, projectWeight, LaplacianFunctor{});
+  }
+
+
 class EdgePointPred
 {
 public:
