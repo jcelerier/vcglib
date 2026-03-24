@@ -30,5 +30,6 @@ var searchData=
   ['mindistonedge_27',['MinDistOnEdge',['../classvcg_1_1tri_1_1CoM.html#a19e99457f2851e303b9c5ffa09197217',1,'vcg::tri::CoM::MinDistOnEdge(CoordType samplePnt, EdgeGrid &amp;edgeGrid, MeshType &amp;poly, CoordType &amp;closestPoint)'],['../classvcg_1_1tri_1_1CoM.html#af32d23867a898c7e530fbec16c4ce88c',1,'vcg::tri::CoM::MinDistOnEdge(VertexType *v0, VertexType *v1, EdgeGrid &amp;edgeGrid, MeshType &amp;poly, CoordType &amp;closestPoint)']]],
   ['minrefedgelen_28',['minRefEdgeLen',['../classvcg_1_1tri_1_1CoM_1_1Param.html#a6b60b33001d39c816d8856d64f98b10e',1,'vcg::tri::CoM::Param']]],
   ['montecarlo_29',['Montecarlo',['../classvcg_1_1tri_1_1SurfaceSampling.html#a127d15e8a19b2670dcbb2238ff28eded',1,'vcg::tri::SurfaceSampling']]],
-  ['montecarlopoisson_30',['MontecarloPoisson',['../classvcg_1_1tri_1_1SurfaceSampling.html#acbc37a380eca136de902d92f74aec1d1',1,'vcg::tri::SurfaceSampling']]]
+  ['montecarlopoisson_30',['MontecarloPoisson',['../classvcg_1_1tri_1_1SurfaceSampling.html#acbc37a380eca136de902d92f74aec1d1',1,'vcg::tri::SurfaceSampling']]],
+  ['moveandproject_31',['MoveAndProject',['../classvcg_1_1tri_1_1CoM.html#a6ee00ba603a6dbd4777cb02797a7e172',1,'vcg::tri::CoM']]]
 ];

@@ -1,10 +1,17 @@
 var searchData=
 [
-  ['veadj_0',['VEAdj',['../classvcg_1_1edge_1_1VEAdj.html',1,'vcg::edge::VEAdj&lt; T &gt;'],['../classvcg_1_1vertex_1_1VEAdj.html',1,'vcg::vertex::VEAdj&lt; T &gt;']]],
-  ['vertdist_1',['VertDist',['../structvcg_1_1tri_1_1Geodesic_1_1VertDist.html',1,'vcg::tri::Geodesic']]],
-  ['vertexpairedgeptr_2',['VertexPairEdgePtr',['../structvcg_1_1tri_1_1UpdateHalfEdges_1_1VertexPairEdgePtr.html',1,'vcg::tri::UpdateHalfEdges&lt; MeshType &gt;::VertexPairEdgePtr'],['../structvcg_1_1tri_1_1UpdateIndexed_1_1VertexPairEdgePtr.html',1,'vcg::tri::UpdateIndexed&lt; MeshType &gt;::VertexPairEdgePtr']]],
-  ['vertexref_3',['VertexRef',['../classvcg_1_1edge_1_1VertexRef.html',1,'vcg::edge::VertexRef&lt; T &gt;'],['../classvcg_1_1face_1_1VertexRef.html',1,'vcg::face::VertexRef&lt; T &gt;']]],
-  ['vfadj_4',['VFAdj',['../classvcg_1_1face_1_1VFAdj.html',1,'vcg::face::VFAdj&lt; T &gt;'],['../classvcg_1_1vertex_1_1VFAdj.html',1,'vcg::vertex::VFAdj&lt; T &gt;']]],
-  ['vhadj_5',['VHAdj',['../classvcg_1_1vertex_1_1VHAdj.html',1,'vcg::vertex']]],
-  ['vtadj_6',['VTAdj',['../classvcg_1_1vertex_1_1VTAdj.html',1,'vcg::vertex']]]
+  ['updatebounding_0',['UpdateBounding',['../classvcg_1_1tri_1_1UpdateBounding.html',1,'vcg::tri']]],
+  ['updatecolor_1',['UpdateColor',['../classvcg_1_1tri_1_1UpdateColor.html',1,'vcg::tri']]],
+  ['updatecomponentep_2',['UpdateComponentEP',['../classvcg_1_1tri_1_1UpdateComponentEP.html',1,'vcg::tri']]],
+  ['updatecurvature_3',['UpdateCurvature',['../classvcg_1_1tri_1_1UpdateCurvature.html',1,'vcg::tri']]],
+  ['updatecurvaturefitting_4',['UpdateCurvatureFitting',['../classvcg_1_1tri_1_1UpdateCurvatureFitting.html',1,'vcg::tri']]],
+  ['updateflags_5',['UpdateFlags',['../classvcg_1_1tri_1_1UpdateFlags.html',1,'vcg::tri']]],
+  ['updatehalfedges_6',['UpdateHalfEdges',['../classvcg_1_1tri_1_1UpdateHalfEdges.html',1,'vcg::tri']]],
+  ['updateindexed_7',['UpdateIndexed',['../structvcg_1_1tri_1_1UpdateIndexed.html',1,'vcg::tri']]],
+  ['updatenormal_8',['UpdateNormal',['../classvcg_1_1tri_1_1UpdateNormal.html',1,'vcg::tri']]],
+  ['updateposition_9',['UpdatePosition',['../classvcg_1_1tri_1_1UpdatePosition.html',1,'vcg::tri']]],
+  ['updatequality_10',['UpdateQuality',['../classvcg_1_1tri_1_1UpdateQuality.html',1,'vcg::tri']]],
+  ['updateselection_11',['UpdateSelection',['../classvcg_1_1tri_1_1UpdateSelection.html',1,'vcg::tri']]],
+  ['updatetexture_12',['UpdateTexture',['../classvcg_1_1tri_1_1UpdateTexture.html',1,'vcg::tri']]],
+  ['updatetopology_13',['UpdateTopology',['../classvcg_1_1tri_1_1UpdateTopology.html',1,'vcg::tri']]]
 ];
