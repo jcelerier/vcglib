@@ -26,6 +26,7 @@ set(VCG_EXAMPLE_PROJECTS
 	trimesh_curvature
 	trimesh_cylinder_clipping
 	trimesh_disk_parametrization
+	trimesh_fast_winding_number
 	trimesh_fitting
 	trimesh_geodesic
  	trimesh_geodesic_heat
