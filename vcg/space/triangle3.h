@@ -279,6 +279,51 @@ Point3<typename TriangleType::ScalarType> Circumcenter(const TriangleType &t)
    return c;
 }
 
+/**
+ * @brief GradientScalarField
+ * 
+ * @param t the triangle for which to compute the gradient
+ * @param q0 the scalar field value at vertex 0
+ * @param q1 the scalar field value at vertex 1
+ * @param q2 the scalar field value at vertex 2 
+ * 
+ * @return the gradient of the scalar field defined by q0, q1, q2 at the vertices of the triangle t
+ * it is a vector that is tangent to the triangle plane and points in the direction of the maximum increase of the scalar field, its magnitude is the rate of change of the scalar field in that direction.
+ */
+
+template<class TriangleType>
+Point3<typename TriangleType::ScalarType> GradientScalarField(const TriangleType &t, typename TriangleType::ScalarType q0, typename TriangleType::ScalarType q1, typename TriangleType::ScalarType q2)    
+{
+   typedef typename TriangleType::ScalarType ScalarType;
+    typedef Point3<typename TriangleType::ScalarType> Vec3;
+    const Point3<typename TriangleType::ScalarType> &p0 = t.cP(0);
+    const Point3<typename TriangleType::ScalarType> &p1 = t.cP(1);
+    const Point3<typename TriangleType::ScalarType> &p2 = t.cP(2);
+
+    const Vec3 e1 = p1 - p0;
+    const Vec3 e2 = p2 - p0;
+
+    const ScalarType d1 = q1 - q0;
+    const ScalarType d2 = q2 - q0;
+
+    const ScalarType a11 = e1*e1;
+    const ScalarType a12 = e1*e2;
+    const ScalarType a22 = e2*e2;
+
+    const ScalarType det = a11 * a22 - a12 * a12;
+
+    constexpr ScalarType eps = 1e-15;
+    if (std::abs(det) < eps)
+    {
+        throw std::runtime_error("Degenerate triangle: gradient is undefined.");
+    }
+
+    const ScalarType alpha = ( a22 * d1 - a12 * d2) / det;
+    const ScalarType beta  = (-a12 * d1 + a11 * d2) / det;
+
+    return e1 * alpha + e2 * beta;
+} 
+
 
 }	 // end namespace
 
