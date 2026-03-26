@@ -7,8 +7,8 @@ var searchData=
   ['matrix_4',['Matrix',['../classvcg_1_1tri_1_1UpdatePosition.html#a7acde4b5bdae91bbd585a8c2294e3f18',1,'vcg::tri::UpdatePosition']]],
   ['max_5',['max',['../classvcg_1_1Box3.html#a4d25fd6f083de08fc7f86832c564aa3f',1,'vcg::Box3']]],
   ['maxdim_6',['MaxDim',['../classvcg_1_1Box3.html#af06480f591b0ce4a3b70b2b44e3093bd',1,'vcg::Box3']]],
-  ['maxsimpedgelen_7',['maxSimpEdgeLen',['../classvcg_1_1tri_1_1CoM_1_1Param.html#a4f13bdfdb20352f754babfcd00ff0132',1,'vcg::tri::CoM::Param']]],
-  ['maxsmoothdelta_8',['maxSmoothDelta',['../classvcg_1_1tri_1_1CoM_1_1Param.html#a87d67192c7211ebfd775f4eba5b0f967',1,'vcg::tri::CoM::Param']]],
+  ['maxmovedelta_7',['maxMoveDelta',['../classvcg_1_1tri_1_1CoM_1_1Param.html#a18a823f227c9994b5d959299598798e6',1,'vcg::tri::CoM::Param']]],
+  ['maxsimpedgelen_8',['maxSimpEdgeLen',['../classvcg_1_1tri_1_1CoM_1_1Param.html#a4f13bdfdb20352f754babfcd00ff0132',1,'vcg::tri::CoM::Param']]],
   ['maxsnapthr_9',['maxSnapThr',['../classvcg_1_1tri_1_1CoM_1_1Param.html#a7b464c7f382700562a2cd5a59c9c1d62',1,'vcg::tri::CoM::Param']]],
   ['meanandgaussian_10',['MeanAndGaussian',['../classvcg_1_1tri_1_1UpdateCurvature.html#ad6a11c9cd017c8db0e6f626548207b03',1,'vcg::tri::UpdateCurvature']]],
   ['mergeclosevertex_11',['MergeCloseVertex',['../classvcg_1_1tri_1_1Clean.html#af8ad23d3eb1163420424223fa2f4b2b5',1,'vcg::tri::Clean']]],
@@ -31,5 +31,5 @@ var searchData=
   ['minrefedgelen_28',['minRefEdgeLen',['../classvcg_1_1tri_1_1CoM_1_1Param.html#a6b60b33001d39c816d8856d64f98b10e',1,'vcg::tri::CoM::Param']]],
   ['montecarlo_29',['Montecarlo',['../classvcg_1_1tri_1_1SurfaceSampling.html#a127d15e8a19b2670dcbb2238ff28eded',1,'vcg::tri::SurfaceSampling']]],
   ['montecarlopoisson_30',['MontecarloPoisson',['../classvcg_1_1tri_1_1SurfaceSampling.html#acbc37a380eca136de902d92f74aec1d1',1,'vcg::tri::SurfaceSampling']]],
-  ['moveandproject_31',['MoveAndProject',['../classvcg_1_1tri_1_1CoM.html#a6ee00ba603a6dbd4777cb02797a7e172',1,'vcg::tri::CoM']]]
+  ['moveandproject_31',['MoveAndProject',['../classvcg_1_1tri_1_1CoM.html#aa8611bc0164c7af891e2b9242e35d253',1,'vcg::tri::CoM']]]
 ];

@@ -17,8 +17,9 @@ var searchData=
   ['quality_3c_20short_2c_20t_20_3e_14',['Quality&lt; short, T &gt;',['../classvcg_1_1face_1_1Quality.html',1,'vcg::face']]],
   ['quality_3c_20short_2c_20tt_20_3e_15',['Quality&lt; short, TT &gt;',['../classvcg_1_1edge_1_1Quality.html',1,'vcg::edge']]],
   ['qualityd_16',['Qualityd',['../classvcg_1_1edge_1_1Qualityd.html',1,'vcg::edge::Qualityd&lt; TT &gt;'],['../classvcg_1_1face_1_1Qualityd.html',1,'vcg::face::Qualityd&lt; T &gt;'],['../classvcg_1_1vertex_1_1Qualityd.html',1,'vcg::vertex::Qualityd&lt; TT &gt;']]],
-  ['qualityedgepredicate_17',['QualityEdgePredicate',['../classvcg_1_1tri_1_1QualityEdgePredicate.html',1,'vcg::tri']]],
-  ['qualityf_18',['Qualityf',['../classvcg_1_1edge_1_1Qualityf.html',1,'vcg::edge::Qualityf&lt; TT &gt;'],['../classvcg_1_1face_1_1Qualityf.html',1,'vcg::face::Qualityf&lt; T &gt;'],['../classvcg_1_1vertex_1_1Qualityf.html',1,'vcg::vertex::Qualityf&lt; TT &gt;']]],
-  ['qualitymidpointfunctor_19',['QualityMidPointFunctor',['../classvcg_1_1tri_1_1QualityMidPointFunctor.html',1,'vcg::tri']]],
-  ['qualitys_20',['Qualitys',['../classvcg_1_1edge_1_1Qualitys.html',1,'vcg::edge::Qualitys&lt; TT &gt;'],['../classvcg_1_1face_1_1Qualitys.html',1,'vcg::face::Qualitys&lt; T &gt;'],['../classvcg_1_1vertex_1_1Qualitys.html',1,'vcg::vertex::Qualitys&lt; TT &gt;']]]
+  ['qualitydistancefieldfunctor_17',['QualityDistanceFieldFunctor',['../structvcg_1_1tri_1_1CoM_1_1QualityDistanceFieldFunctor.html',1,'vcg::tri::CoM']]],
+  ['qualityedgepredicate_18',['QualityEdgePredicate',['../classvcg_1_1tri_1_1QualityEdgePredicate.html',1,'vcg::tri']]],
+  ['qualityf_19',['Qualityf',['../classvcg_1_1edge_1_1Qualityf.html',1,'vcg::edge::Qualityf&lt; TT &gt;'],['../classvcg_1_1face_1_1Qualityf.html',1,'vcg::face::Qualityf&lt; T &gt;'],['../classvcg_1_1vertex_1_1Qualityf.html',1,'vcg::vertex::Qualityf&lt; TT &gt;']]],
+  ['qualitymidpointfunctor_20',['QualityMidPointFunctor',['../classvcg_1_1tri_1_1QualityMidPointFunctor.html',1,'vcg::tri']]],
+  ['qualitys_21',['Qualitys',['../classvcg_1_1edge_1_1Qualitys.html',1,'vcg::edge::Qualitys&lt; TT &gt;'],['../classvcg_1_1face_1_1Qualitys.html',1,'vcg::face::Qualitys&lt; T &gt;'],['../classvcg_1_1vertex_1_1Qualitys.html',1,'vcg::vertex::Qualitys&lt; TT &gt;']]]
 ];
