@@ -197,8 +197,7 @@ Matrix44<S> ComputeLeastSquaresRigidMotion(std::vector<Point3<S> > &pFix,
 	q.rowwise() -= avgQ.transpose();
 
 	Eigen::Matrix3d cov = p * q;
-	Eigen::JacobiSVD<Eigen::Matrix3d> svd;
-	svd.compute(cov, Eigen::ComputeFullU | Eigen::ComputeFullV);
+	Eigen::JacobiSVD<Eigen::Matrix3d, Eigen::ComputeFullU | Eigen::ComputeFullV> svd(cov);
 
 	Eigen::Matrix3d d = Eigen::Matrix3d::Identity();
 	d(2,2) = (svd.matrixV() * svd.matrixU().transpose()).determinant() > 0 ? 1 : -1;
