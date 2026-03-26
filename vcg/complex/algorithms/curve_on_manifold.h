@@ -119,7 +119,7 @@ public:
     ScalarType surfDistThr;        ///< Max distance between surface and curve; used in simplify and refine
     ScalarType minRefEdgeLen;      ///< Minimal admitted edge length (used in refine: never make edges shorter than this) 
     ScalarType maxSimpEdgeLen;     ///< Maximal admitted edge length (used in simplify: never make edges longer than this) 
-    ScalarType maxSmoothDelta;     ///< The maximum movement admitted during smoothing (currently unused)
+    ScalarType maxMoveDelta;       ///< The maximum movement admitted during MoveAndProject (before projection) 
     ScalarType maxSnapThr;         ///< The maximum distance allowed when snapping a polyline vertex onto a mesh vertex (currently unused)
     ScalarType gridBailout;        ///< The maximum distance bailout used in grid-based spatial queries
     ScalarType barycentricSnapThr; ///< Threshold for snapping barycentric coords to 0 or 1 (controls vertex/edge snapping)
@@ -133,7 +133,7 @@ public:
       surfDistThr        = m.bbox.Diag()/1000.0;
       minRefEdgeLen      = m.bbox.Diag()/16000.0;
       maxSimpEdgeLen     = m.bbox.Diag()/100.0;
-      maxSmoothDelta     = m.bbox.Diag()/100.0;
+      maxMoveDelta       = m.bbox.Diag()/100.0;
       maxSnapThr         = m.bbox.Diag()/1000.0;
       gridBailout        = m.bbox.Diag()/20.0;
       barycentricSnapThr = 0.05;
@@ -145,7 +145,7 @@ public:
       printf("surfDistThr    = %6.4f\n",surfDistThr   );
       printf("minRefEdgeLen  = %6.4f\n",minRefEdgeLen    );
       printf("maxSimpEdgeLen = %6.4f\n",maxSimpEdgeLen    );
-      printf("maxSmoothDelta = %6.4f\n",maxSmoothDelta);
+      printf("maxMoveDelta   = %6.4f\n",maxMoveDelta);
     }
   };
   
@@ -1334,8 +1334,11 @@ bool TagFaceEdgeSelWithPolyLine(MeshType &poly,bool markFlag=true)
   
   
   /**
-   * @brief 
-   * 
+   * @brief LaplacianFunctor basic Laplacian smoothing functor
+   *
+   * It computes the desired position for each vertex as the average of its
+   * current position and the positions of its 1-ring neighbors. Used as the
+   * position functor in the SmoothProject function.
    */
   struct LaplacianFunctor {
     std::vector<CoordType> operator()(const MeshType &poly) const {
@@ -1354,6 +1357,70 @@ bool TagFaceEdgeSelWithPolyLine(MeshType &poly,bool markFlag=true)
   };
 
   /**
+   * @brief QualityDistanceFieldFunctor quality field based smoothing functor
+   *
+   * @param poly the input curve mesh
+   * @param com the CurveOnManifold class itself to quick access closest face 
+   * @param scale a scaling factor to control the step size of the movement
+   * along the quality, if 0 it will be automatically set to 1/2 of the CoM parameter `par.maxMoveDelta` (default is 0)
+   * @param smoothBlend a blending factor to control the influence of the
+   * smoothing (default is 0.5)
+   *
+   * It compute the new position using the quality field of the mesh assuming
+   * that it is a distance field sampled per vertices and that we would like to move toward the zero of the distance field. 
+   * We use gradient of the quality field for the direction and the sign of the quality for the versus of the direction. 
+   * We move of a quantity proportional to the quality value at the vertex.
+   *
+   */
+
+  struct QualityDistanceFieldFunctor
+  {
+
+    CoM<MeshType> &com;
+    ScalarType scale;
+    ScalarType smoothBlend = 0.5;
+    QualityDistanceFieldFunctor(CoM<MeshType> &_com, ScalarType _scale=0, ScalarType _smoothBlend = 0.5) : com(_com), scale(_scale), smoothBlend(_smoothBlend) {};
+
+    std::vector<CoordType> operator()(const MeshType &poly) const
+    {
+      // Step 1: Compute smoothed position using Laplacian smoothing
+      std::vector<CoordType> smoothPosVec(poly.vn, CoordType(0, 0, 0));
+      std::vector<int> cntVec(poly.vn, 0);
+      for (int i = 0; i < poly.en; ++i)
+        for (int j = 0; j < 2; ++j)
+        {
+          int vi = tri::Index(poly, poly.edge[i].V0(j));
+          smoothPosVec[vi] += poly.edge[i].V1(j)->P();
+          cntVec[vi] += 1;
+        }
+      for (int i = 0; i < poly.vn; ++i)
+        smoothPosVec[i] = (poly.vert[i].P() + smoothPosVec[i]) / ScalarType(cntVec[i] + 1);
+
+      // Step 2: Compute field-based position using the gradient of the quality field and moving toward zero
+      std::vector<CoordType> fieldPosVec(poly.vn, CoordType(0, 0, 0));
+      for (const VertexType &v : poly.vert)
+      {
+        CoordType ip; 
+        FacePointer f = com.GetClosestFaceIP(v.P(),ip);
+        if(!f) {
+          printf("Fail to get closest face for vertex at position (%f, %f, %f)\n", v.P().X(), v.P().Y(), v.P().Z()); fflush(stdout);
+        }
+        else {
+          ScalarType q = f->V(0)->Q() * ip[0] + f->V(1)->Q() * ip[1] + f->V(2)->Q() * ip[2];        
+          CoordType fieldDir = GradientScalarField(*f, f->V(0)->Q(),f->V(1)->Q(),f->V(2)->Q());
+          
+          fieldPosVec[tri::Index(poly, v)] = v.P() + fieldDir * scale * q; // Move towards higher quality (lower distance)
+        }
+      }
+      std::vector<CoordType> PosVec(poly.vn, CoordType(0, 0, 0));
+      for (int i = 0; i < poly.vn; ++i)
+        PosVec[i] = (smoothPosVec[i] * smoothBlend + fieldPosVec[i] * (1.0 - smoothBlend));
+
+      return PosVec;
+    }
+  };
+
+  /**
    * @brief MoveAndProject
    * @param poly
    * @param iterNum
@@ -1366,21 +1433,27 @@ bool TagFaceEdgeSelWithPolyLine(MeshType &poly,bool markFlag=true)
    */
   template<typename PositionFunctor>
   void MoveAndProject(MeshType &poly, int iterNum, ScalarType moveWeight, ScalarType projectWeight,
-                      PositionFunctor desiredPos)
+                      PositionFunctor &desiredPos)
   {
     tri::RequireCompactness(poly);
     tri::UpdateTopology<MeshType>::VertexEdge(poly);
-//    printf("SmoothProject: Selected vert num %i\n",tri::UpdateSelection<MeshType>::VertexCount(poly));
     assert(poly.en>0 && base.fn>0);
     for(int k=0;k<iterNum;++k)
     {
       if(k==iterNum-1) projectWeight=1;
-
       std::vector<CoordType> desired = desiredPos(poly);
 
       for(int i=0; i<poly.vn; ++i)
         if(!poly.vert[i].IsS())
         {
+          // Clamp the movement towards the desired position by maxMoveDist
+          CoordType delta = desired[i] - poly.vert[i].P();
+          ScalarType deltaLen = delta.Norm();
+          if(deltaLen > par.maxMoveDelta) {
+            delta *= (par.maxMoveDelta / deltaLen);
+            desired[i] = poly.vert[i].P() + delta;
+          } 
+
           CoordType newP = poly.vert[i].P()*(1.0-moveWeight) + desired[i]*moveWeight;
           
           CoordType closestP;
@@ -1405,7 +1478,8 @@ bool TagFaceEdgeSelWithPolyLine(MeshType &poly,bool markFlag=true)
 
   void SmoothProject(MeshType &poly, int iterNum, ScalarType smoothWeight, ScalarType projectWeight)
   {
-    MoveAndProject(poly, iterNum, smoothWeight, projectWeight, LaplacianFunctor{});
+    LaplacianFunctor lapFunct;
+    MoveAndProject(poly, iterNum, smoothWeight, projectWeight, lapFunct);
   }
 
 
