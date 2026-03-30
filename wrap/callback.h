@@ -60,7 +60,7 @@ inline bool CErrCallBackPos(const int ,  const char *str ) {
  * Quite useful for formatting the above callback... 
  */
 
-inline char* StrFormat(const std::string fmt_str, ...) {
+inline std::string StrFormat(const std::string fmt_str, ...) {
     int final_n, n = ((int)fmt_str.size()) * 2; /* Reserve two times as much as the length of the fmt_str */
     std::unique_ptr<char[]> formatted;
     va_list ap;
@@ -75,7 +75,7 @@ inline char* StrFormat(const std::string fmt_str, ...) {
         else
             break;
     }
-    return formatted.get();
+    return std::string(formatted.get());
 }
 
 }// End namespace

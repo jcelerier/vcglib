@@ -1214,7 +1214,7 @@ static int RestrictedVoronoiRelaxing(MeshType &m, std::vector<CoordType> &seedPo
   ScalarType perturb = m.bbox.Diag()*vpp.seedPerturbationAmount;
   for(i=0;i<relaxStep;++i)
   {
-    vpp.lcb(i*100/relaxStep,StrFormat("RestrictedVoronoiRelaxing %i on %i",i,relaxStep));    
+    vpp.lcb(i*100/relaxStep,StrFormat("RestrictedVoronoiRelaxing %i on %i",i,relaxStep).c_str());    
     // Kdtree for the seeds must be rebuilt at each step;
     VectorConstDataWrapper<std::vector<CoordType> > vdw(seedPosVec);
     KdTree<ScalarType> seedTree(vdw);
@@ -1657,7 +1657,7 @@ static void PreprocessForVoronoi(MeshType &m, ScalarType radius,
 
   for(int i=0;i<maxSubDiv;++i)
   {
-    vpp.lcb(0,StrFormat("Subdividing %i vn %i",i,m.vn));
+    vpp.lcb(0,StrFormat("Subdividing %i vn %i",i,m.vn).c_str());
     bool ret = tri::Refine<MeshType, MidPointType >(m,mid,std::min(edgeLen*2.0f,radius/vpp.refinementRatio));
     if(!ret) break;
   }

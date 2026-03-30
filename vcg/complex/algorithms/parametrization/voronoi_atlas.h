@@ -136,7 +136,7 @@ public:
     tri::PoissonSampling(m,PoissonSamples,pp.sampleNum,diskRadius);
     int st1=clock();
     pp.vas.samplingTime+= st1-st0;
-    pp.cb(50,StrFormat("Sampling created a new mesh of %lu points\n",PoissonSamples.size()));
+    pp.cb(50,StrFormat("Sampling created a new mesh of %lu points\n",PoissonSamples.size()).c_str());
     EuclideanDistance<VoroMesh> edFunc;
     std::vector<VertexType *> seedVec;
     tri::VoronoiProcessing<VoroMesh>::SeedToVertexConversion(m,PoissonSamples,seedVec);
@@ -151,7 +151,7 @@ public:
     {
       VoroMesh *rm = new VoroMesh();
       int selCnt = tri::VoronoiProcessing<VoroMesh>::FaceSelectAssociateRegion(m,seedVec[i]);
-       pp.cb(50,StrFormat("Region %i of %i faces",i,selCnt));
+       pp.cb(50,StrFormat("Region %i of %i faces",i,selCnt).c_str());
       if(selCnt==0) continue;
       assert(selCnt>0);
       if(pp.overlap){
