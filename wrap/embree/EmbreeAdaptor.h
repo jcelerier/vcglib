@@ -13,38 +13,48 @@
 #include <embree4/rtcore.h>
 #include <vcg/math/gen_normal.h>
 #include <limits>
-#include <math.h>
-#include <time.h>
+#include <cmath>
+#include <ctime>
 #include <omp.h>
 #include <tuple>
+#include <algorithm>
 
-using namespace vcg;
-using namespace std;
+
 
 
 
 
 /*
     @Author: Paolo Fasano
-    @Description: This class aims to integrate intel embree3 with the vcglib giving some basic methods that can be used to build more complex features.
+    @Description: This class aims to integrate intel embree4 with the vcglib giving some basic methods that can be used to build more complex features.
 */
 namespace vcg{
     template <class MeshType>
     class EmbreeAdaptor{
 
-        RTCDevice device = rtcNewDevice(NULL);
-        RTCScene scene = rtcNewScene(device);
-        //RTCGeometry geometry = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
-        int threads;
-
-        public: EmbreeAdaptor(){}
-
+        RTCDevice device = rtcNewDevice(nullptr);
+        RTCScene scene = nullptr;
         public:
-         EmbreeAdaptor(MeshType &m){
+            // Number of chunks the face array is split into for progress reporting.
+            // Higher values give more frequent callback updates and finer cancellation
+            // granularity, at the cost of slightly more synchronisation overhead.
+            int callbackChunkCount = 24;
+
+            // Minimum ray distance (tnear) used when shooting rays from face barycenters.
+            // Acts as a self-intersection offset: the ray starts this far from the surface
+            // so it does not immediately hit the face it originates from.
+            // Increase for meshes with large absolute scale; decrease for very fine geometry.
+            float rayEpsilon = 1e-4f;
+
+            EmbreeAdaptor() : scene(rtcNewScene(device)) {}
+
+            EmbreeAdaptor(MeshType &m) {
                 scene = loadVCGMeshInScene(m);
             }
 
-
+            ~EmbreeAdaptor() {
+                release_global_resources();
+            }
 
         /*
         @Author: Paolo Fasano
@@ -53,11 +63,26 @@ namespace vcg{
             something the face color is set to black else is set to white.
         */
         public:
-         void selectVisibleFaces(MeshType &m, Point3f rayDirection, bool incrementalSelect){
-            
+         void selectVisibleFaces(
+             MeshType &m,
+             Point3f rayDirection,
+             bool incrementalSelect,
+             CallBackPos *cb = nullptr){
+
+            const int faceCount = m.FN();
+            if (faceCount <= 0) {
+                release_global_resources();
+                return;
+            }
+
+            if (cb && !(*cb)(0, "Selecting visible faces")) {
+                release_global_resources();
+                return;
+            }
+
             if (incrementalSelect == false){
                 //deselect all previously selected faces
-                for(int i = 0;i<m.FN(); i++){
+                for(int i = 0;i<faceCount; i++){
                     if(m.face[i].IsS()){
                         m.face[i].ClearS();
                     }
@@ -65,13 +90,12 @@ namespace vcg{
             }
 
             Point3f normalizedDir = rayDirection;
+            const int blockSize = (cb != nullptr) ? std::max(1, faceCount / callbackChunkCount) : faceCount;
+            bool interrupted = false;
 
-            RTCRayHit rayhit = initRayValues();
-
-            for(int i = 0;i<m.FN(); i++)
-            {
+            auto computeFace = [&](int i) {
+                RTCRayHit rayhit = initRayValues();
                 Point3f b = vcg::Barycenter(m.face[i]);
-                std::vector<Point3f> unifDirVec;
                 Point3f dir = normalizedDir;
 
                 rayhit = setRayValues(b, dir, 4);
@@ -88,14 +112,24 @@ namespace vcg{
                 //if (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID)
                 if (rayhit.ray.tfar == std::numeric_limits<float>::infinity())
                     m.face[i].SetS();
+            };
 
+            for (int begin = 0; begin < faceCount && !interrupted; begin += blockSize) {
+                const int end = std::min(faceCount, begin + blockSize);
+                #pragma omp parallel for
+                for (int i = begin; i < end; ++i)
+                    computeFace(i);
+
+                if (cb) {
+                    const int pos = int((100.0 * double(end)) / double(faceCount));
+                    const std::string msg = vcg::StrFormat("Selecting visible faces (%d/%d)", end, faceCount);
+                    if (!(*cb)(pos, msg.c_str()))
+                        interrupted = true;
+                }
             }
-            rtcReleaseScene(scene);
-            rtcReleaseDevice(device);
 
+            release_global_resources();
         }
-
-        
 
         /*
         @Author: Paolo Fasano
@@ -148,10 +182,10 @@ namespace vcg{
             If the ray intersect something than the face quality of the mesh is updated with the normal of the fica multiplied by the direction.
         */
         public:
-         void computeAmbientOcclusion(MeshType &inputM, int nRay){
+         void computeAmbientOcclusion(MeshType &inputM, int nRay, CallBackPos *cb = nullptr){
             std::vector<Point3f> unifDirVec;
             GenNormal<float>::Fibonacci(nRay,unifDirVec);
-            computeAmbientOcclusion(inputM, unifDirVec);
+            computeAmbientOcclusion(inputM, unifDirVec, cb);
         }
 
         /*
@@ -165,55 +199,83 @@ namespace vcg{
             One more operation done in the AmbientOcclusion is to calculate the bent normal foreach face and save it in an attribute named "BentNormal"
         */
         public:
-         void computeAmbientOcclusion(MeshType &inputM, std::vector<Point3f> unifDirVec){
+         void computeAmbientOcclusion(
+             MeshType &inputM,
+             std::vector<Point3f> unifDirVec,
+             CallBackPos *cb = nullptr){
+            if (cb && !(*cb)(0, "Computing ambient occlusion")) {
+                release_global_resources();
+                return;
+            }
             tri::UpdateQuality<MeshType>::FaceConstant(inputM,0);
-            typename MeshType::template PerFaceAttributeHandle<Point3f> bentNormal = vcg::tri::Allocator<MeshType>:: template GetPerFaceAttribute<Point3f>(inputM,string("BentNormal"));
+            typename MeshType::template PerFaceAttributeHandle<Point3f> bentNormal = vcg::tri::Allocator<MeshType>:: template GetPerFaceAttribute<Point3f>(inputM, std::string("BentNormal"));
 
-            #pragma omp parallel shared(inputM)
-            {
-                #pragma omp for
-                for(int i = 0;i<inputM.FN(); i++)
-                {
-                    RTCRayHit rayhit = initRayValues();
-                    Point3f b = vcg::Barycenter(inputM.face[i]);
-                    updateRayOrigin(rayhit, b);
-                    rayhit.ray.tnear  = 0.00001f;
+            const int faceCount = inputM.FN();
+            if (faceCount <= 0) {
+                release_global_resources();
+                return;
+            }
+            const int blockSize = (cb != nullptr) ? std::max(1, faceCount / callbackChunkCount) : faceCount;
+            bool interrupted = false;
 
-                    Point3f bN;
-                    int accRays=0;
-                    for(int r = 0; r<unifDirVec.size(); r++){
-                        Point3f dir = unifDirVec.at(r);
-                        float scalarP = inputM.face[i].N()*dir;
+            auto computeFace = [&](int i) {
+                RTCRayHit rayhit = initRayValues();
+                Point3f b = vcg::Barycenter(inputM.face[i]);
+                updateRayOrigin(rayhit, b);
+                rayhit.ray.tnear  = rayEpsilon;
 
-                        if(scalarP>0){
+                Point3f bN;
+                int accRays=0;
+                for(int r = 0; r<int(unifDirVec.size()); r++){
+                    Point3f dir = unifDirVec[r];
+                    float scalarP = inputM.face[i].N()*dir;
 
-                            updateRayDirection(rayhit, dir);
-                            rayhit.ray.tfar   = std::numeric_limits<float>::infinity();
-                            rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
+                    if(scalarP>0){
 
-                            RTCRayQueryContext context;
-                            rtcInitRayQueryContext(&context);
+                        updateRayDirection(rayhit, dir);
+                        rayhit.ray.tfar   = std::numeric_limits<float>::infinity();
+                        rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
 
-                            RTCIntersectArguments intersectArgs;
-                            rtcInitIntersectArguments(&intersectArgs);
-                            intersectArgs.context = &context;
+                        RTCRayQueryContext context;
+                        rtcInitRayQueryContext(&context);
 
-                            rtcIntersect1(scene, &rayhit, &intersectArgs);
+                        RTCIntersectArguments intersectArgs;
+                        rtcInitIntersectArguments(&intersectArgs);
+                        intersectArgs.context = &context;
 
-                            if (rayhit.hit.geomID == RTC_INVALID_GEOMETRY_ID){
-                                bN+=dir;
-                                accRays++;
-                                inputM.face[i].Q()+=scalarP;
-                            }
+                        rtcIntersect1(scene, &rayhit, &intersectArgs);
 
+                        if (rayhit.hit.geomID == RTC_INVALID_GEOMETRY_ID){
+                            bN+=dir;
+                            accRays++;
+                            inputM.face[i].Q()+=scalarP;
                         }
+
                     }
+                }
+                if (accRays > 0)
                     bentNormal[i] = bN/accRays;
+                else
+                    bentNormal[i] = Point3f(0,0,0);
+            };
+
+            for (int begin = 0; begin < faceCount && !interrupted; begin += blockSize) {
+                const int end = std::min(faceCount, begin + blockSize);
+                #pragma omp parallel for
+                for(int i = begin; i < end; i++)
+                    computeFace(i);
+
+                if (cb) {
+                    const int pos = int((100.0 * double(end)) / double(faceCount));
+                    const std::string msg = vcg::StrFormat("Computing ambient occlusion (%d/%d)", end, faceCount);
+                    if (!(*cb)(pos, msg.c_str()))
+                        interrupted = true;
                 }
             }
-            tri::UpdateColor<MeshType>::PerFaceQualityGray(inputM);
-            rtcReleaseScene(scene);
-            rtcReleaseDevice(device);
+
+            if (!interrupted)
+                tri::UpdateColor<MeshType>::PerFaceQualityGray(inputM);
+            release_global_resources();
         }
 
         /*
@@ -227,11 +289,11 @@ namespace vcg{
             else, if there are no hits, the face get updated of 1-distanceHit^tau
         */
         public:
-         void computeObscurance(MeshType &inputM, int nRay, float tau){
+         void computeObscurance(MeshType &inputM, int nRay, float tau, CallBackPos *cb = nullptr){
             std::vector<Point3f> unifDirVec;
                 GenNormal<float>::Fibonacci(nRay,unifDirVec);
 
-           computeObscurance(inputM, unifDirVec, tau);
+           computeObscurance(inputM, unifDirVec, tau, cb);
         }
 
         /*
@@ -245,49 +307,74 @@ namespace vcg{
             else, if there are no hits, the face get updated of 1-distanceHit^tau
         */
         public:
-         void computeObscurance(MeshType &inputM, std::vector<Point3f> unifDirVec, float tau){
+         void computeObscurance(
+             MeshType &inputM,
+             std::vector<Point3f> unifDirVec,
+             float tau,
+             CallBackPos *cb = nullptr){
+            if (cb && !(*cb)(0, "Computing obscurance")) {
+                release_global_resources();
+                return;
+            }
             tri::UpdateQuality<MeshType>::FaceConstant(inputM,0);
 
-            #pragma omp parallel
-            {
-                #pragma omp for
-                for(int i = 0;i<inputM.FN(); i++)
-                {
-                    RTCRayHit rayhit = initRayValues();
-                    Point3f b = vcg::Barycenter(inputM.face[i]);
-                    updateRayOrigin(rayhit, b);
-                    rayhit.ray.tnear  = 0.00001f;
+            const int faceCount = inputM.FN();
+            if (faceCount <= 0) {
+                release_global_resources();
+                return;
+            }
+            const int blockSize = (cb != nullptr) ? std::max(1, faceCount / callbackChunkCount) : faceCount;
+            bool interrupted = false;
 
-                    for(int r = 0; r<unifDirVec.size(); r++){
-                        Point3f dir = unifDirVec.at(r);
-                        float scalarP = inputM.face[i].N()*dir;
+            auto computeFace = [&](int i) {
+                RTCRayHit rayhit = initRayValues();
+                Point3f b = vcg::Barycenter(inputM.face[i]);
+                updateRayOrigin(rayhit, b);
+                rayhit.ray.tnear  = rayEpsilon;
 
-                        if(scalarP>0){
-                            updateRayDirection(rayhit, dir);
-                            rayhit.ray.tfar   = std::numeric_limits<float>::infinity();
-                            rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
+                for(int r = 0; r<int(unifDirVec.size()); r++){
+                    Point3f dir = unifDirVec[r];
+                    float scalarP = inputM.face[i].N()*dir;
 
-                            RTCRayQueryContext context;
-                            rtcInitRayQueryContext(&context);
+                    if(scalarP>0){
+                        updateRayDirection(rayhit, dir);
+                        rayhit.ray.tfar   = std::numeric_limits<float>::infinity();
+                        rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
 
-                            RTCIntersectArguments intersectArgs;
-                            rtcInitIntersectArguments(&intersectArgs);
-                            intersectArgs.context = &context;
+                        RTCRayQueryContext context;
+                        rtcInitRayQueryContext(&context);
 
-                            rtcIntersect1(scene, &rayhit, &intersectArgs);
+                        RTCIntersectArguments intersectArgs;
+                        rtcInitIntersectArguments(&intersectArgs);
+                        intersectArgs.context = &context;
 
-                            if (rayhit.hit.geomID == RTC_INVALID_GEOMETRY_ID)
-                                inputM.face[i].Q()+=scalarP;
-                            else
-                                inputM.face[i].Q()+=(1-powf(rayhit.ray.tfar,tau));
+                        rtcIntersect1(scene, &rayhit, &intersectArgs);
 
-                        }
+                        if (rayhit.hit.geomID == RTC_INVALID_GEOMETRY_ID)
+                            inputM.face[i].Q()+=scalarP;
+                        else
+                            inputM.face[i].Q()+=(1-std::pow(rayhit.ray.tfar,tau));
+
                     }
                 }
+            };
+
+            for (int begin = 0; begin < faceCount && !interrupted; begin += blockSize) {
+                const int end = std::min(faceCount, begin + blockSize);
+                #pragma omp parallel for
+                for(int i = begin; i < end; i++)
+                    computeFace(i);
+
+                if (cb) {
+                    const int pos = int((100.0 * double(end)) / double(faceCount));
+                    const std::string msg = vcg::StrFormat("Computing obscurance (%d/%d)", end, faceCount);
+                    if (!(*cb)(pos, msg.c_str()))
+                        interrupted = true;
+                }
             }
-            tri::UpdateColor<MeshType>::PerFaceQualityGray(inputM);
-            rtcReleaseScene(scene);
-            rtcReleaseDevice(device);
+            if (!interrupted)
+                tri::UpdateColor<MeshType>::PerFaceQualityGray(inputM);
+            release_global_resources();
         }
 
         /*
@@ -307,7 +394,12 @@ namespace vcg{
 
         */
         public:
-         void computeSDF(MeshType &inputM, int nRay, float degree){
+         void computeSDF(MeshType &inputM, int nRay, float degree, CallBackPos *cb = nullptr){
+
+            if (cb && !(*cb)(0, "Computing shape diameter")) {
+                release_global_resources();
+                return;
+            }
 
             if (degree >= 180)
                 degree = 120;
@@ -318,20 +410,22 @@ namespace vcg{
             //the ones that fall in the desired degree (in respect to the opposite of face norm)
             std::vector<Point3f> unifDirVec;
             GenNormal<float>::Fibonacci(nRay,unifDirVec);
+            const int faceCount = inputM.FN();
+            const int blockSize = (cb != nullptr) ? std::max(1, faceCount / callbackChunkCount) : faceCount;
+            bool interrupted = false;
 
-            for (int i = 0; i < inputM.FN(); i++)
+            for (int i = 0; i < faceCount; i++)
             {
                 RTCRayHit rayhit = initRayValues();
                 Point3f b = vcg::Barycenter(inputM.face[i]);
                 updateRayOrigin(rayhit, b);
-                rayhit.ray.tnear  = 1e-4;
+                rayhit.ray.tnear  = rayEpsilon;
 
-                float weight = 0;
                 float weight_sum = 0;
                 float weighted_sum = 0;
 
-                for(int r = 0; r<unifDirVec.size(); r++){
-                    Point3f dir = unifDirVec.at(r);
+                for(int r = 0; r < int(unifDirVec.size()); r++){
+                    Point3f dir = unifDirVec[r];
                     float scalarP = inputM.face[i].N()*dir;
 
                     float angle_dir_b = Angle(b, dir);
@@ -352,21 +446,28 @@ namespace vcg{
 
                         if (rayhit.ray.tfar != std::numeric_limits<float>::infinity())
                         {
-                            weight = 1/angle_dir_b;
-                            //nominator and denominator for weigthed avarage
+                            const float weight = 1.0f / angle_dir_b;
                             weighted_sum += weight * rayhit.ray.tfar;
                             weight_sum += weight;
-
                         }
                     }
                 }
                 //we assign the result of the weighted average to the quality of the face
                 inputM.face[i].Q() = (weighted_sum / weight_sum);
+
+                if (cb && (((i + 1) % blockSize == 0) || (i == faceCount - 1))) {
+                    const int pos = int((100.0 * double(i + 1)) / double(faceCount));
+                    const std::string msg = vcg::StrFormat("Computing shape diameter (%d/%d)", i + 1, faceCount);
+                    if (!(*cb)(pos, msg.c_str())) {
+                        interrupted = true;
+                        break;
+                    }
+                }
             }
 
-            tri::UpdateColor<MeshType>::PerFaceQualityRamp(inputM);
-            rtcReleaseScene(scene);
-            rtcReleaseDevice(device);
+            if (!interrupted)
+                tri::UpdateColor<MeshType>::PerFaceQualityRamp(inputM);
+            release_global_resources();
         }
 
         /*
@@ -383,9 +484,16 @@ namespace vcg{
             Available online http://jcgt.org/published/0003/04/02/
         */
         public:
-         void computeNormalAnalysis(MeshType &inputM, int nRay,bool parity_computation){
+         void computeNormalAnalysis(
+             MeshType &inputM,
+             int nRay,
+             bool parity_computation,
+             CallBackPos *cb = nullptr){
 
-            //bool fast_computation = false;
+            if (cb && !(*cb)(0, "Analyzing face normals")) {
+                release_global_resources();
+                return;
+            }
 
             std::vector<Point3f> unifDirVec;
             GenNormal<float>::Fibonacci(nRay,unifDirVec);
@@ -400,12 +508,16 @@ namespace vcg{
             tri::UpdateSelection<MeshType>::FaceClear(inputM);
 
 
+            bool completed = true;
             if (parity_computation){
-                paritySampling(inputM,unifDirVec_EXPAND);
+                completed = paritySampling(inputM,unifDirVec_EXPAND, cb);
             }
             else{
-                visibilitySamplig(inputM, unifDirVec_EXPAND);
+                completed = visibilitySampling(inputM, unifDirVec_EXPAND, cb);
             }
+
+            if (!completed)
+                return;
 
             // Iterate over the selected faces and flip them
             for (auto& face : inputM.face)
@@ -416,6 +528,8 @@ namespace vcg{
                 }
             }
             tri::UpdateSelection<MeshType>::FaceClear(inputM);
+            if (cb)
+                (*cb)(100, "Analyzing face normals");
 
         }
 
@@ -430,8 +544,6 @@ namespace vcg{
          int findInterceptNumber(Point3f origin, Point3f direction){
 
             int totInterception = 0;
-            //float totDistance = 0;
-            //float previous_distance = 0;
 
             RTCRayHit rayhit;
             rayhit = setRayValues(origin, direction, 0.5);
@@ -446,133 +558,134 @@ namespace vcg{
                 rtcIntersect1(scene, &rayhit, &intersectArgs);
                 if (rayhit.ray.tfar != std::numeric_limits<float>::infinity()){
                     totInterception++;
-                    //totDistance += rayhit.ray.tfar - previous_distance;
-                    //previous_distance = rayhit.ray.tfar;
-
-                    // we keep the same origin point and direction but update how far from the face the ray starts shooting
-                    rayhit.ray.tnear += rayhit.ray.tfar ;//+ rayhit.ray.tfar * 0.05f;
+                    rayhit.ray.tnear += rayhit.ray.tfar;
                     rayhit.ray.tfar = std::numeric_limits<float>::infinity();
                 }
                 else
                     return totInterception;
             }
-
-             return totInterception;
         }
 
 
         public:
-            void visibilitySamplig(MeshType &inputM, std::vector<Point3f> unifDirVec_EXPAND){
+            bool visibilitySampling(
+                MeshType &inputM,
+                std::vector<Point3f> unifDirVec_EXPAND,
+                CallBackPos *cb = nullptr){
+            const int faceCount = inputM.FN();
+            const int blockSize = (cb != nullptr) ? std::max(1, faceCount / callbackChunkCount) : faceCount;
+            bool interrupted = false;
 
-            #pragma omp parallel
-            {
-                #pragma omp for
-                for(int i = 0;i<inputM.FN(); i++)
-                {
-                    RTCRayHit rayhit;
-                    Point3f b = vcg::Barycenter(inputM.face[i]);
-                    Point3f dir(0.0f, 0.0f, 0.0f);
-                    rayhit = setRayValues(b, dir, 1e-4f);
+            auto computeFace = [&](int i) {
+                Point3f b = vcg::Barycenter(inputM.face[i]);
 
-                    int frontHit = 0;
-                    int backHit = 0;
+                int frontHit = 0;
+                int backHit = 0;
 
-                    float frontDistance = 0;
-                    float backDistance = 0;
+                for(int r = 0; r<int(unifDirVec_EXPAND.size()); r++){
+                    const Point3f dir = unifDirVec_EXPAND[r];
+                    float scalarP = inputM.face[i].N()*dir;
 
-                    for(int r = 0; r<unifDirVec_EXPAND.size(); r++){
-                        dir = unifDirVec_EXPAND.at(r);
-                        float scalarP = inputM.face[i].N()*dir;
+                    RTCRayHit rayhit = setRayValues(b, dir, rayEpsilon);
+                    RTCRayQueryContext context;
+                    rtcInitRayQueryContext(&context);
 
-                        rayhit = setRayValues(b, dir, 1e-4f);
-                        RTCRayQueryContext context;
-                        rtcInitRayQueryContext(&context);
+                    RTCIntersectArguments intersectArgs;
+                    rtcInitIntersectArguments(&intersectArgs);
+                    intersectArgs.context = &context;
 
-                        RTCIntersectArguments intersectArgs;
-                        rtcInitIntersectArguments(&intersectArgs);
-                        intersectArgs.context = &context;
+                    rtcIntersect1(scene, &rayhit, &intersectArgs);
 
-                        rtcIntersect1(scene, &rayhit, &intersectArgs);
-
-                        if (rayhit.ray.tfar  == std::numeric_limits<float>::infinity()) {
-
-                            if (scalarP > 0){
-                                frontHit++;
-                                frontDistance += rayhit.ray.tfar;
-                            }
-                            else{
-                                backHit++;
-                                backDistance += rayhit.ray.tfar;
-                            }
-                        }
+                    if (rayhit.ray.tfar == std::numeric_limits<float>::infinity()) {
+                        if (scalarP > 0)
+                            frontHit++;
+                        else
+                            backHit++;
                     }
+                }
 
-                    //std::cout<< "face "<< i <<"front hit: " << frontHit << " backhit "<< backHit << " frontDistance " << frontDistance << " backDistance " << backDistance << endl;
-                    if(frontHit  < backHit || (frontHit  == backHit && frontDistance < backDistance))
-                        inputM.face[i].SetS();
+                if(frontHit < backHit)
+                    inputM.face[i].SetS();
+            };
 
+            for (int begin = 0; begin < faceCount && !interrupted; begin += blockSize) {
+                const int end = std::min(faceCount, begin + blockSize);
+                #pragma omp parallel for
+                for(int i = begin; i < end; i++)
+                    computeFace(i);
+
+                if (cb) {
+                    const int pos = int((100.0 * double(end)) / double(faceCount));
+                    const std::string msg = vcg::StrFormat("Analyzing normals (visibility %d/%d)", end, faceCount);
+                    if (!(*cb)(pos, msg.c_str()))
+                        interrupted = true;
                 }
             }
 
-            //tri::Clean<MeshType>::FlipMesh(inputM,true);
-            rtcReleaseScene(scene);
-            rtcReleaseDevice(device);
-            return;
+            release_global_resources();
+            return !interrupted;
         }
 
         public:
-        void paritySampling(MeshType &inputM, std::vector<Point3f> unifDirVec_EXPAND){
+        bool paritySampling(
+            MeshType &inputM,
+            std::vector<Point3f> unifDirVec_EXPAND,
+            CallBackPos *cb = nullptr){
 
-            #pragma omp parallel
-            {
-                #pragma omp for
-                for(int i = 0;i<inputM.FN(); i++)
-                {
-                    RTCRayHit rayhit;
-                    Point3f b = vcg::Barycenter(inputM.face[i]);
-                    Point3f dir(0.0f, 0.0f, 0.0f);
-                    rayhit = setRayValues(b, dir, 1e-4f);
+            const int faceCount = inputM.FN();
+            const int blockSize = (cb != nullptr) ? std::max(1, faceCount / callbackChunkCount) : faceCount;
+            bool interrupted = false;
 
-                    int frontHit = 0;
-                    int backHit = 0;
+            auto computeFace = [&](int i) {
+                Point3f b = vcg::Barycenter(inputM.face[i]);
 
-                    for(int r = 0; r<unifDirVec_EXPAND.size(); r++){
-                        dir = unifDirVec_EXPAND.at(r);
-                        float scalarP = inputM.face[i].N()*dir;
+                int frontHit = 0;
+                int backHit = 0;
 
-                        rayhit = setRayValues(b, dir, 1e-4f);
-                        RTCRayQueryContext context;
-                        rtcInitRayQueryContext(&context);
+                for(int r = 0; r<int(unifDirVec_EXPAND.size()); r++){
+                    const Point3f dir = unifDirVec_EXPAND[r];
+                    float scalarP = inputM.face[i].N()*dir;
 
-                        RTCIntersectArguments intersectArgs;
-                        rtcInitIntersectArguments(&intersectArgs);
-                        intersectArgs.context = &context;
+                    RTCRayHit rayhit = setRayValues(b, dir, rayEpsilon);
+                    RTCRayQueryContext context;
+                    rtcInitRayQueryContext(&context);
 
-                        rtcIntersect1(scene, &rayhit, &intersectArgs);
+                    RTCIntersectArguments intersectArgs;
+                    rtcInitIntersectArguments(&intersectArgs);
+                    intersectArgs.context = &context;
 
-                        if (rayhit.ray.tfar  != std::numeric_limits<float>::infinity()) {
+                    rtcIntersect1(scene, &rayhit, &intersectArgs);
 
-                            int n_hits = findInterceptNumber(b,dir);
+                    if (rayhit.ray.tfar != std::numeric_limits<float>::infinity()) {
+                        int n_hits = findInterceptNumber(b, dir);
 
-                            if (scalarP > 0){
-                                frontHit += (n_hits % 2);
-                            }
-                            else{
-                                backHit += (n_hits % 2);
-                            }
-                        }
+                        if (scalarP > 0)
+                            frontHit += (n_hits % 2);
+                        else
+                            backHit += (n_hits % 2);
                     }
+                }
 
-                    if(frontHit > backHit )
-                        inputM.face[i].SetS();
+                if(frontHit > backHit)
+                    inputM.face[i].SetS();
+            };
 
+            for (int begin = 0; begin < faceCount && !interrupted; begin += blockSize) {
+                const int end = std::min(faceCount, begin + blockSize);
+                #pragma omp parallel for
+                for(int i = begin; i < end; i++)
+                    computeFace(i);
+
+                if (cb) {
+                    const int pos = int((100.0 * double(end)) / double(faceCount));
+                    const std::string msg = vcg::StrFormat("Analyzing normals (parity %d/%d)", end, faceCount);
+                    if (!(*cb)(pos, msg.c_str()))
+                        interrupted = true;
                 }
             }
 
-            //tri::Clean<MeshType>::FlipMesh(inputM,true);
-            rtcReleaseScene(scene);
-            rtcReleaseDevice(device);
-            return;
+            release_global_resources();
+            return !interrupted;
         }
 
         /*
@@ -609,7 +722,7 @@ namespace vcg{
         */
         public:
             inline std::tuple<bool, Point3f, float, int> shoot_ray(Point3f origin, Point3f direction, bool release_resources = true){
-                return shoot_ray(origin, direction, 1e-4, release_resources);
+                return shoot_ray(origin, direction, rayEpsilon, release_resources);
             }
 
         public:
@@ -620,8 +733,7 @@ namespace vcg{
                 float hit_distance = 0;
                 int hit_face_id = 0;
 
-                RTCRayHit rayhit = initRayValues();
-                rayhit = setRayValues(origin, direction, tnear);
+                RTCRayHit rayhit = setRayValues(origin, direction, tnear);
 
                 RTCRayQueryContext context;
                 rtcInitRayQueryContext(&context);
@@ -632,25 +744,13 @@ namespace vcg{
 
                 rtcIntersect1(scene, &rayhit, &intersectArgs);
 
-
-                if (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID){
+                if (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID) {
                     hit_something = true;
                     hit_face_id = rayhit.hit.primID;
                     hit_distance = rayhit.ray.tfar;
-
-                    // Calculate the displacement vector along the direction
-                    float magnitude = sqrt(direction[0] * direction[0] + direction[1] * direction[1] + direction[2] * direction[2]);
-                    float scaleFactor = hit_distance / magnitude;
-                    Point3f displacement(direction[0] * scaleFactor, direction[1] * scaleFactor, direction[2] * scaleFactor);
-
-                    // Calculate the coordinates at the given distance
-                    hit_face_coords[0] = origin[0] + displacement[0];
-                    hit_face_coords[1] = origin[1] + displacement[1];
-                    hit_face_coords[2] = origin[2] + displacement[2];
-
+                    hit_face_coords = origin + direction * (hit_distance / direction.Norm());
                 }
-                else{
-                    hit_something = false;
+                else {
                     hit_face_id = rayhit.hit.primID;
                     hit_distance = rayhit.ray.tfar;
                 }
@@ -664,9 +764,9 @@ namespace vcg{
 
 
         public:
-            void release_global_resources(){
-                rtcReleaseScene(scene);
-                rtcReleaseDevice(device);
+            void release_global_resources() {
+                if (scene)  { rtcReleaseScene(scene);  scene  = nullptr; }
+                if (device) { rtcReleaseDevice(device); device = nullptr; }
             }
 
 
@@ -699,7 +799,7 @@ namespace vcg{
                     }
                 }
                 else
-                    std::cout<<"Error executing visualize_ray_shoot: std::vector<Point3f> origins and std::vector<Point3f> directions must have same size"<<endl;
+                    std::cout<<"Error executing visualize_ray_shoot: std::vector<Point3f> origins and std::vector<Point3f> directions must have same size"<<std::endl;
                 
             }
         public:
@@ -732,10 +832,10 @@ namespace vcg{
         public:
             void print_ray_informations(RTCRayHit rayhit){
 
-                std::cout<< "origin of ray " << rayhit.ray.org_x<< " " << rayhit.ray.org_y<< " " << rayhit.ray.org_z<< " " <<endl;
-                std::cout<< "direction of ray " << rayhit.ray.dir_x<< " " << rayhit.ray.dir_y<< " " << rayhit.ray.dir_z<< " " <<endl;
-                std::cout<< "tnear " << rayhit.ray.tnear <<endl;
-                std::cout<< "tfar " << rayhit.ray.tfar <<endl;
+                std::cout<< "origin of ray " << rayhit.ray.org_x<< " " << rayhit.ray.org_y<< " " << rayhit.ray.org_z<< " " <<std::endl;
+                std::cout<< "direction of ray " << rayhit.ray.dir_x<< " " << rayhit.ray.dir_y<< " " << rayhit.ray.dir_z<< " " <<std::endl;
+                std::cout<< "tnear " << rayhit.ray.tnear <<std::endl;
+                std::cout<< "tfar " << rayhit.ray.tfar <<std::endl;
             }
 
 
