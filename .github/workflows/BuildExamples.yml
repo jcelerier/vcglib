@@ -29,10 +29,13 @@ jobs:
     - name: Setup env macOS
       if: runner.os == 'macOS'
       run: |
-        brew install ninja qt@5
+        brew install ninja qt5
     - name: Build Samples
       shell: bash
       run: |
+        if [[ "$RUNNER_OS" == "macOS" ]]; then
+          export Qt5_DIR=$(brew --prefix qt5)
+        fi
         mkdir build
         cd build
         cmake -GNinja -DVCG_BUILD_EXAMPLES=ON ..
