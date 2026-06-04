@@ -64,6 +64,7 @@ namespace vcg {
 	void TessellatePlanarPolygon2( POINT_CONTAINER &  points2, std::vector<int> & output){
 		typedef typename POINT_CONTAINER::value_type Point2x;
 		typedef typename Point2x::ScalarType S;
+		if(points2.size() < 3) return;
 		// tessellate
 		//  first very inefficient implementation
 		std::vector<int> next,prev;
@@ -72,33 +73,71 @@ namespace vcg {
 		int v1,v2;
 		// check orientation
 		S orient = 0.0;
-		for(size_t i = 0 ; i < points2.size(); ++i){
-			v1 =  next[i];
-			v2 =  next[v1];
-			orient+= (points2[v1] - points2[0]) ^ (points2[v2] - points2[0]);
-		}
-		orient = (orient>0)? 1.0:-1.0;
+		for(size_t i = 0 ; i < points2.size(); ++i)
+			orient += points2[i] ^ points2[next[i]];
+		orient = (orient>=0)? 1.0:-1.0;
 
 		int cur = 0;
-		while(output.size()<3*(points2.size()-2)){
-			v1 =  next[cur];
-			v2 =  next[v1];
-			if( ( (orient*((points2[v1] - points2[cur]) ^ (points2[v2] - points2[cur]))) >= 0.0) && 
-				  !Intersect(cur, v2,next,points2))
+		int activeCnt = int(points2.size());
+		while(activeCnt > 2)
+		{
+			bool earFound = false;
+			int attempts = 0;
+			while(attempts < activeCnt)
 			{
-				// output the face
-				output.push_back(cur);
-				output.push_back(v1);
-				output.push_back(v2);
+				v1 = next[cur];
+				v2 = next[v1];
+				if( ( (orient*((points2[v1] - points2[cur]) ^ (points2[v2] - points2[cur]))) >= 0.0) &&
+					!Intersect(cur, v2,next,points2))
+				{
+					// output the face
+					output.push_back(cur);
+					output.push_back(v1);
+					output.push_back(v2);
 
-				// readjust the topology
-				next[cur] = v2;
-				prev[v2] = cur;
-				prev[v1] = -1;//unnecessary
-				next[v1] = -1;//unnecessary
-			} 
-			else
+					// readjust the topology: remove v1 from active ring
+					next[cur] = v2;
+					prev[v2] = cur;
+					prev[v1] = -1;
+					next[v1] = -1;
+					--activeCnt;
+					earFound = true;
+					break;
+				}
 				do{cur = (cur+1)%points2.size();} while(next[cur]==-1);
+				++attempts;
+			}
+
+			if(earFound)
+			{
+				do{cur = (cur+1)%points2.size();} while(next[cur]==-1);
+				continue;
+			}
+
+			// Fallback for degenerate / numerically problematic cases:
+			// triangulate remaining active ring as a fan to guarantee n-2 output triangles.
+			std::vector<int> ring;
+			ring.reserve(size_t(activeCnt));
+			int start = -1;
+			for(size_t i = 0; i < next.size(); ++i)
+				if(next[i] != -1) { start = int(i); break; }
+			if(start == -1)
+				break;
+			int it = start;
+			do {
+				ring.push_back(it);
+				it = next[it];
+			} while(it != -1 && it != start && ring.size() <= size_t(activeCnt));
+
+			if(ring.size() < 3)
+				break;
+			for(size_t i = 1; i + 1 < ring.size(); ++i)
+			{
+				output.push_back(ring[0]);
+				output.push_back(ring[i]);
+				output.push_back(ring[i+1]);
+			}
+			break;
 		}
 	}
 
@@ -163,7 +202,7 @@ namespace vcg {
 			if(sn > bestsn){ bestsn = sn; bestn = n;} 
 		}
 		
-		GetUV(n,u,v);
+		GetUV(bestn,u,v);
 		// project the coordinates
 		std::vector<Point2<S> > points2;
 		for(size_t i = 0; i < points.size(); ++i){
