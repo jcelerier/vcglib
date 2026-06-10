@@ -1139,6 +1139,10 @@ public:
 					}
 			}
 		}
+
+		FaceType::DeleteBitFlag(nmfBit[2]);
+		FaceType::DeleteBitFlag(nmfBit[1]);
+		FaceType::DeleteBitFlag(nmfBit[0]);
 		return edgeCnt;
 	}
 
