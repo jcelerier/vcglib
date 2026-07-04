@@ -318,3 +318,6 @@ if(VCG_BUILD_EXAMPLES)
 	add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/apps)
 	add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/wrap)
 endif()
+
+install(DIRECTORY vcg DESTINATION include FILES_MATCHING PATTERN "*.h" PATTERN "*.ipp")
+install(FILES wrap/callback.h DESTINATION include/vcg/wrap)
