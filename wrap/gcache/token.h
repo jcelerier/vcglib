@@ -66,16 +66,20 @@ public:
         count.testAndSetOrdered(CACHE, REMOVE);
 #if(QT_VERSION < 0x050000)
         return count <= REMOVE;
+#elif(QT_VERSION < 0x060000)
+		return count.load() <= REMOVE;                   //might have become OUSIDE in the meanwhile
 #else
-        return count.load() <= REMOVE;                   //might have become OUSIDE in the meanwhile
+		return count.loadRelaxed() <= REMOVE;
 #endif
     }
 
     bool isLocked() {
 #if(QT_VERSION < 0x050000)
         return count > 0;
+#elif(QT_VERSION < 0x060000)
+		return count.load() > 0;                   //might have become OUSIDE in the meanwhile
 #else
-        return count.load() > 0;
+		return count.loadRelaxed() > 0;
 #endif
     }
     bool isInCache() { return count != OUTSIDE; }  //careful, can be used only when provider thread is locked.
@@ -90,10 +94,14 @@ public:
         if(count == a.count)
             return priority < a.priority;
         return count < a.count;
-#else
+#elif(QT_VERSION < 0x060000)
         if(count.load() == a.count.load())
             return priority < a.priority;
         return count.load() < a.count.load();
+#else
+		if(count.loadRelaxed() == a.count.loadRelaxed())
+			return priority < a.priority;
+		return count.loadRelaxed() < a.count.loadRelaxed();
 #endif
     }
     bool operator>(const Token &a) const {
@@ -101,10 +109,14 @@ public:
         if(count == a.count)
             return priority > a.priority;
         return count > a.count;
+#elif(QT_VERSION < 0x060000)
+		if(count.load() == a.count.load())
+			return priority > a.priority;
+		return count.load() > a.count.load();
 #else
-        if(count.load() == a.count.load())
+		if(count.loadRelaxed() == a.count.loadRelaxed())
             return priority > a.priority;
-        return count.load() > a.count.load();
+		return count.loadRelaxed() > a.count.loadRelaxed();
 #endif
     }
 };

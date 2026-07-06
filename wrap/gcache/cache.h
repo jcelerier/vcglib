@@ -168,7 +168,6 @@ protected:
             if(unload() || load()) {
                 new_data.testAndSetOrdered(0, 1);  //if not changed, set as changed
                 input->check_queue.open();        //we signal ourselves to check again
-                std::cout << "loaded or unloaded\n";
             }
             input->check_queue.leave();
         }
@@ -203,8 +202,10 @@ protected:
                         last.count.testAndSetOrdered(Token::READY, Token::CACHE);
 #if(QT_VERSION < 0x050000)
                 int last_count = last.count;
+#elif(QT_VERSION < 0x060000)
+				int last_count = last.count.load();
 #else
-                int last_count = last.count.load();
+				int last_count = last.count.loadRelaxed();
 #endif
                         if(last_count <= Token::CACHE) { //was not locked and now can't be locked, remove it.
                             remove = this->heap.popMin();
@@ -255,8 +256,10 @@ protected:
                 Token &first = input->heap.max();
 #if(QT_VERSION < 0x050000)
                 int first_count = first.count;
-#else
+#elif(QT_VERSION < 0x060000)
                 int first_count = first.count.load();
+#else
+				int first_count = first.count.loadRelaxed();
 #endif
                 if(first_count > Token::REMOVE &&
                         (!last || first.priority > last->priority)) { //if !last we already decided we want a transfer., otherwise check for a swap
