@@ -48,8 +48,12 @@ namespace vcg{
 
             EmbreeAdaptor() : scene(rtcNewScene(device)) {}
 
-            EmbreeAdaptor(MeshType &m) {
-                scene = loadVCGMeshInScene(m);
+            // preprocess=true recomputes normals/bbox/flags on the mesh (needed by
+            // the AO/SDF/obscurance algorithms). Pass false for pure ray-cast use
+            // (e.g. occlusion queries): the scene needs only positions + indices,
+            // so the mesh is left untouched.
+            EmbreeAdaptor(MeshType &m, bool preprocess = true) {
+                scene = loadVCGMeshInScene(m, preprocess);
             }
 
             ~EmbreeAdaptor() {
@@ -132,6 +136,33 @@ namespace vcg{
         }
 
         /*
+        @Description: perspective visibility query. Returns true if the open segment
+            between 'from' and 'to' is unobstructed by the scene geometry, i.e. 'to'
+            is directly visible from 'from'. The endpoints are excluded via rayEpsilon
+            so a segment ending on a surface face does not report itself as occluder.
+            Unlike the other methods this does NOT release the scene, so the adaptor
+            can be kept alive and queried many times (e.g. viewpoint occlusion tests).
+        */
+        public:
+         bool segmentUnoccluded(Point3f from, Point3f to){
+            Point3f dir = to - from;
+            const float dist = dir.Norm();
+            if (dist <= rayEpsilon)
+                return true;
+            dir /= dist;
+
+            RTCRayHit rayhit = setRayValues(from, dir, rayEpsilon, dist - rayEpsilon);
+            RTCRayQueryContext context;
+            rtcInitRayQueryContext(&context);
+            RTCIntersectArguments intersectArgs;
+            rtcInitIntersectArguments(&intersectArgs);
+            intersectArgs.context = &context;
+
+            rtcIntersect1(scene, &rayhit, &intersectArgs);
+            return rayhit.hit.geomID == RTC_INVALID_GEOMETRY_ID;
+        }
+
+        /*
         @Author: Paolo Fasano
         @Parameter: MeshType &m, reference to a mesh
         @Description: this method apply some preprocessing over it using standard vcglib methods.
@@ -139,17 +170,20 @@ namespace vcg{
             are global to the class in order to be used with the other methods.
         */
         public:
-            RTCScene loadVCGMeshInScene(MeshType &m){
+            RTCScene loadVCGMeshInScene(MeshType &m, bool preprocess = true){
 
             RTCScene loaded_scene = rtcNewScene(device);
             RTCGeometry geometry = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
 
-            //a little mesh preprocessing before adding it to a RTCScene
-            tri::RequirePerVertexNormal(m);
-            tri::UpdateNormal<MeshType>::PerVertexNormalized(m);
-            tri::UpdateNormal<MeshType>::PerFaceNormalized(m);
-            tri::UpdateBounding<MeshType>::Box(m);
-            tri::UpdateFlags<MeshType>::FaceClearV(m);
+            //a little mesh preprocessing before adding it to a RTCScene (skipped
+            //for pure ray-cast use, which reads only positions + indices)
+            if (preprocess) {
+                tri::RequirePerVertexNormal(m);
+                tri::UpdateNormal<MeshType>::PerVertexNormalized(m);
+                tri::UpdateNormal<MeshType>::PerFaceNormalized(m);
+                tri::UpdateBounding<MeshType>::Box(m);
+                tri::UpdateFlags<MeshType>::FaceClearV(m);
+            }
 
             float* vb = (float*) rtcSetNewGeometryBuffer(geometry, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, 3*sizeof(float), m.VN());
             for (int i = 0;i<m.VN(); i++){
