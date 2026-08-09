@@ -29,6 +29,7 @@
 #include<wrap/io_trimesh/io_mask.h>
 #include<wrap/io_trimesh/io_ply.h>
 #include<vcg/complex/algorithms/create/platonic.h>
+#include<vcg/space/planar_polygon_tessellation.h>
 
 namespace vcg {
 namespace tri {
@@ -59,6 +60,7 @@ public:
 	typedef ::vcg::ply::PropDescriptor PropDescriptor ;
 	typedef typename OpenMeshType::VertexPointer VertexPointer;
 	typedef typename OpenMeshType::ScalarType ScalarType;
+	typedef typename OpenMeshType::CoordType CoordType;
 	typedef typename OpenMeshType::VertexType VertexType;
 	typedef typename VertexType::QualityType VertQualityType;
 	typedef typename OpenMeshType::FaceType FaceType;
@@ -337,9 +339,10 @@ public:
 			ply_error_msg[PlyInfo::E_BAD_VERT_INDEX_EDGE ]="Bad vertex index in edge";
 			ply_error_msg[PlyInfo::E_NO_6TCOORD     ]="Face with no 6 texture coordinates";
 			ply_error_msg[PlyInfo::E_DIFFER_COLORS  ]="Number of color differ from vertices";
+			ply_error_msg[PlyInfo::E_INVALID_POLYGON ]="Face is not a valid simple planar polygon";
 		}
 
-		if(error>PlyInfo::E_MAXPLYINFOERRORS || error<0) return "Unknown error";
+		if(error>=PlyInfo::E_MAXPLYINFOERRORS || error<0) return "Unknown error";
 		else return ply_error_msg[error].c_str();
 	};
 
@@ -800,171 +803,130 @@ public:
 						pi.status = PlyInfo::E_SHORTFILE;
 						return pi.status;
 					}
-					if(fa.size!=3)
-					{ // Non triangular face are manageable ONLY if there are no Per Wedge attributes
-						if( ( pi.mask & Mask::IOM_WEDGCOLOR ) || ( pi.mask & Mask::IOM_WEDGTEXCOORD ) )
-						{
-							pi.status = PlyInfo::E_NO_3VERTINFACE;
-							return pi.status;
-						}
+					if(fa.size<3)
+					{
+						pi.status = PlyInfo::E_INVALID_POLYGON;
+						return pi.status;
+					}
+					if(fa.size!=3 && ((pi.mask & Mask::IOM_WEDGCOLOR) || (pi.mask & Mask::IOM_WEDGTEXCOORD)))
+					{
+						pi.status = PlyInfo::E_NO_3VERTINFACE;
+						return pi.status;
 					}
 
-					if(HasPolyInfo(m)) (*fi).Alloc(fa.size);
-
-					if(HasPerFaceFlags(m) &&( pi.mask & Mask::IOM_FACEFLAGS) )
-					{
-						(*fi).Flags() = fa.flags;
-					}
-
-					if (pi.mask & Mask::IOM_FACENORMAL)
-					{
-						(*fi).N()[0] = fa.n[0];
-						(*fi).N()[1] = fa.n[1];
-						(*fi).N()[2] = fa.n[2];
-					}
-
-					if( pi.mask & Mask::IOM_FACEQUALITY )
-					{
-						(*fi).Q() = (typename OpenMeshType::FaceType::QualityType) fa.q;
-					}
-
-					if( pi.mask & Mask::IOM_FACECOLOR )
-					{
-						(*fi).C()[0] = fa.r;
-						(*fi).C()[1] = fa.g;
-						(*fi).C()[2] = fa.b;
-						(*fi).C()[3] = fa.a;
-					}
-
-					if( pi.mask & Mask::IOM_WEDGTEXCOORD )
-					{
-						for(int k=0;k<3;++k)
-						{
-							(*fi).WT(k).u() = fa.texcoord[k*2+0];
-							(*fi).WT(k).v() = fa.texcoord[k*2+1];
-							if(multit) (*fi).WT(k).n() = fa.texcoordind;
-							else (*fi).WT(k).n()=0; // safely intialize texture index
-						}
-					}
-
-					if( pi.mask & Mask::IOM_WEDGCOLOR )
-					{
-						if(FaceType::HasWedgeColor()){
-							for(int k=0;k<3;++k)
-							{
-								(*fi).WC(k)[0] = (unsigned char)(fa.colors[k*3+0]*255);
-								(*fi).WC(k)[1] = (unsigned char)(fa.colors[k*3+1]*255);
-								(*fi).WC(k)[2] = (unsigned char)(fa.colors[k*3+2]*255);
-							}
-						}
-						//if(FaceType::HasFaceColor()){
-						//if(pi.mask & Mask::IOM_FACECOLOR){
-						if(HasPerFaceColor(m))	{
-							(*fi).C()[0] = (unsigned char)((fa.colors[0*3+0]*255+fa.colors[1*3+0]*255+fa.colors[2*3+0]*255)/3.0f);
-							(*fi).C()[1] = (unsigned char)((fa.colors[0*3+1]*255+fa.colors[1*3+1]*255+fa.colors[2*3+1]*255)/3.0f);
-							(*fi).C()[2] = (unsigned char)((fa.colors[0*3+2]*255+fa.colors[1*3+2]*255+fa.colors[2*3+2]*255)/3.0f);
-						}
-					}
-
-					if (HasPolyInfo(m))
-					{
-						for(int k=0; k<fa.size; ++k)
-						{
-							if( fa.v[k]<0 || fa.v[k]>=m.vn )
-							{
-								pi.status = PlyInfo::E_BAD_VERT_INDEX;
-								return pi.status;
-							}
-							(*fi).V(k) = index[ fa.v[k] ];
-						}
-						fi++;
-						continue;
-					}
-
-					/// Now the temporary struct 'fa' is ready to be copied into the real face '*fi'
-					/// This loop
-					for(int k=0;k<3;++k)
-					{
-						if( fa.v[k]<0 || fa.v[k]>=m.vn )
+					for(int k=0;k<fa.size;++k)
+						if(fa.v[k]<0 || fa.v[k]>=m.vn)
 						{
 							pi.status = PlyInfo::E_BAD_VERT_INDEX;
 							return pi.status;
 						}
-						(*fi).V(k) = index[ fa.v[k] ];
+
+					auto importFaceAttributes = [&](FaceIterator dst, const int *local)
+					{
+						if(HasPerFaceFlags(m) && (pi.mask & Mask::IOM_FACEFLAGS))
+							(*dst).Flags() = fa.flags;
+						if(pi.mask & Mask::IOM_FACENORMAL)
+						{
+							(*dst).N()[0] = fa.n[0];
+							(*dst).N()[1] = fa.n[1];
+							(*dst).N()[2] = fa.n[2];
+						}
+						if(pi.mask & Mask::IOM_FACEQUALITY)
+							(*dst).Q() = (FaceQualityType)fa.q;
+						if(pi.mask & Mask::IOM_FACECOLOR)
+							(*dst).C() = Color4b(fa.r, fa.g, fa.b, fa.a);
+
+						if(pi.mask & Mask::IOM_WEDGTEXCOORD)
+							for(int k=0;k<3;++k)
+							{
+								(*dst).WT(k).u() = fa.texcoord[local[k]*2+0];
+								(*dst).WT(k).v() = fa.texcoord[local[k]*2+1];
+								(*dst).WT(k).n() = multit ? fa.texcoordind : 0;
+							}
+
+						if(pi.mask & Mask::IOM_WEDGCOLOR)
+						{
+							if(FaceType::HasWedgeColor())
+								for(int k=0;k<3;++k)
+									for(int c=0;c<3;++c)
+										(*dst).WC(k)[c] = (unsigned char)(fa.colors[local[k]*3+c]*255);
+							if(HasPerFaceColor(m))
+								for(int c=0;c<3;++c)
+									(*dst).C()[c] = (unsigned char)((fa.colors[local[0]*3+c]
+										+ fa.colors[local[1]*3+c] + fa.colors[local[2]*3+c])*255/3.0f);
+						}
+
+						for(size_t k=0;k<pi.FaceDescriptorVec.size();++k)
+						{
+							if(pi.FaceAttrNameVec.size() && !pi.FaceAttrNameVec[k].empty())
+							{
+								double td(0); float tf(0); int ti; short ts; char tc; unsigned char tu;
+								char *vad = (char *)(&fa) + FPV[k].offset1;
+								switch(pi.FaceDescriptorVec[k].stotype1)
+								{
+								case ply::T_FLOAT:  tf = *((float*)vad);         PAH.thff[k][&*dst] = tf; break;
+								case ply::T_DOUBLE: td = *((double*)vad);        PAH.thdf[k][&*dst] = td; break;
+								case ply::T_INT:    ti = *((int*)vad);           PAH.thif[k][&*dst] = ti; break;
+								case ply::T_SHORT:  ts = *((short*)vad);         PAH.thsf[k][&*dst] = ts; break;
+								case ply::T_CHAR:   tc = *((char*)vad);          PAH.thcf[k][&*dst] = tc; break;
+								case ply::T_UCHAR:  tu = *((unsigned char*)vad); PAH.thuf[k][&*dst] = tu; break;
+								default: assert(0);
+								}
+							}
+							else
+								memcpy((char *)(&*dst) + pi.FaceDescriptorVec[k].offset1,
+								       (char *)(&fa) + FPV[k].offset1, FPV[k].memtypesize());
+						}
+					};
+
+					if(HasPolyInfo(m))
+					{
+						(*fi).Alloc(fa.size);
+						for(int k=0;k<fa.size;++k)
+							(*fi).V(k) = index[fa.v[k]];
+						const int firstCorners[3] = {0, 1, 2};
+						importFaceAttributes(fi, firstCorners);
+						++fi;
+						continue;
 					}
 
-					// tag faux vertices of first face
-					if (fa.size>3) fi->SetF(2);
-                    
-                    // Now try to read additional data as described in the PlyInfo FaceDescriptorVe; two cases:
-                    // 1) you are using attributes (so the corresponding entry of FaceAttrNameVec is not empty)
-                    // 2) your face type has some space and you just use memcopy
-                    
-					for(size_t k=0;k<pi.FaceDescriptorVec.size();k++)
-                    {
-                        if(pi.FaceAttrNameVec.size() && !pi.FaceAttrNameVec[k].empty())
-                        {
-                            double td(0); float tf(0);int ti;short ts; char tc; unsigned char tu;
-                            char *vad = (char *)(&fa) + FPV[k].offset1;
-                            
-                            switch (pi.FaceDescriptorVec[k].stotype1)
-                            {
-                            case ply::T_FLOAT  : tf = *((float*)vad);           PAH.thff[k][&*fi] = tf; break;
-                            case ply::T_DOUBLE : td = *((double*)vad);          PAH.thdf[k][&*fi] = td; break;
-                            case ply::T_INT    : ti = *((int*)vad);             PAH.thif[k][&*fi] = ti; break;
-                            case ply::T_SHORT  : ts = *((short*)vad);           PAH.thsf[k][&*fi] = ts; break;
-                            case ply::T_CHAR   : tc = *((char*)vad);            PAH.thcf[k][&*fi] = tc; break;
-                            case ply::T_UCHAR  : tu = *((unsigned char*)vad);   PAH.thuf[k][&*fi] = tu; break;
-                            default : assert(0);
-                            }
-                         
-                        }
-                        else
-                        {                            
-						memcpy((char *)(&(*fi)) + pi.FaceDescriptorVec[k].offset1,
-						       (char *)(&fa) + FPV[k].offset1,
-						       FPV[k].memtypesize());
-                        }
-                    }   
-
-					++fi;
-
-					// Non Triangular Faces Loop
-					// It performs a simple fan triangulation.
-					if(fa.size>3)
+					std::vector<int> localTriangles;
+					if(fa.size==3)
+						localTriangles = {0, 1, 2};
+					else
 					{
-						int curpos=int(fi-m.face.begin());
-						Allocator<OpenMeshType>::AddFaces(m,fa.size-3);
-						fi=m.face.begin()+curpos;
+						std::vector<CoordType> polygonPoints(fa.size);
+						for(int k=0;k<fa.size;++k)
+							polygonPoints[k] = index[fa.v[k]]->cP();
+						if(!TessellatePlanarPolygon3(polygonPoints, localTriangles))
+						{
+							pi.status = PlyInfo::E_INVALID_POLYGON;
+							return pi.status;
+						}
 						pi.mask |= Mask::IOM_BITPOLYGONAL;
 					}
-					for(int qq=0;qq<fa.size-3;++qq)
+
+					if(localTriangles.size()>3)
 					{
-						if(HasPolyInfo(m)) (*fi).Alloc(3);
+						const int curpos = int(fi-m.face.begin());
+						Allocator<OpenMeshType>::AddFaces(m,localTriangles.size()/3-1);
+						fi = m.face.begin()+curpos;
+					}
+					for(size_t triangle=0;triangle<localTriangles.size();triangle+=3)
+					{
+						const int *local = &localTriangles[triangle];
+						for(int k=0;k<3;++k)
+							(*fi).V(k) = index[fa.v[local[k]]];
+						importFaceAttributes(fi, local);
 
-						(*fi).V(0) = index[ fa.v[0] ];
-						for(int k=1;k<3;++k)
-						{
-							if( fa.v[2+qq]<0 || fa.v[2+qq]>=m.vn )
+						if(fa.size>3)
+							for(int edge=0;edge<3;++edge)
 							{
-								pi.status = PlyInfo::E_BAD_VERT_INDEX;
-								return pi.status;
+								const int from = local[edge];
+								const int to = local[(edge+1)%3];
+								if((from+1)%fa.size==to) (*fi).ClearF(edge);
+								else (*fi).SetF(edge);
 							}
-							(*fi).V(k) = index[ fa.v[1+qq+k] ];
-
-						}
-						if( pi.mask & Mask::IOM_FACEQUALITY )
-							(*fi).Q() = (typename OpenMeshType::FaceType::QualityType)
-						                fa.q;
-						if( pi.mask & Mask::IOM_FACECOLOR )
-							(*fi).C() =  Color4b(fa.r,fa.g,fa.b,255);
-						// tag faux vertices of extra faces
-						fi->SetF(0);
-						if(qq<(fa.size-4)) fi->SetF(2);
-
-						for(size_t k=0;k<pi.FaceDescriptorVec.size();k++)
-							memcpy((char *)(&(*fi)) + pi.FaceDescriptorVec[k].offset1,
-							       (char *)(&fa) + FPV[k].offset1, FPV[k].memtypesize());
 						++fi;
 					}
 
@@ -1298,4 +1260,3 @@ public:
 } // end namespace vcg
 
 #endif
-

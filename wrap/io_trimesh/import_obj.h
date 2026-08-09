@@ -26,14 +26,11 @@
 #define __VCGLIB_IMPORT_OBJ
 
 #include <vcg/complex/allocate.h>
+#include <vcg/space/planar_polygon_tessellation.h>
 
 #include <wrap/callback.h>
 #include <wrap/io_trimesh/io_mask.h>
 #include <wrap/io_trimesh/io_material.h>
-#include <wrap/io_trimesh/io_fan_tessellator.h>
-#ifdef __gl_h_
-#include <wrap/gl/glu_tesselator.h>
-#endif
 #include <vcg/space/color4.h>
 
 
@@ -135,7 +132,8 @@ public:
     E_BAD_VERT_INDEX                    =14*2+0,
     E_BAD_VERT_TEX_INDEX                =15*2+0,
     E_BAD_VERT_NORMAL_INDEX             =16*2+0,
-    E_LESS_THAN_4_VERT_IN_QUAD          =17*2+0
+    E_LESS_THAN_4_VERT_IN_QUAD          =17*2+0,
+    E_INVALID_POLYGON                   =18*2+0
   };
   
   // to check if a given error is critical or not.
@@ -148,7 +146,7 @@ public:
   
   static const char* ErrorMsg(int error)
   {
-    const int MAXST = 18;
+    const int MAXST = 19;
     static const char* obj_error_msg[MAXST] =
     {
       /*  0 */ "No errors",
@@ -170,7 +168,8 @@ public:
       /* 14 */ "Bad vertex index in face",
       /* 15 */ "Bad texture coords index in face",
       /* 16 */ "Bad vertex normal index in face",
-      /* 17 */ "Quad faces with number of corners different from 4"
+      /* 17 */ "Quad faces with number of corners different from 4",
+      /* 18 */ "Face is not a valid simple planar polygon"
     };
     
     error >>= 1;
@@ -184,11 +183,11 @@ public:
   
   static bool GoodObjIndex(int &index, const int maxVal)
   {
-    if (index > maxVal)	return false;
+    if (index >= maxVal)	return false;
     if (index < 0)
     {
       index += maxVal+1;
-      if (index<0 || index > maxVal)	return false;
+      if (index<0 || index >= maxVal)	return false;
     }
     return true;
   }
@@ -457,8 +456,7 @@ public:
           else
           {
             //_BEGIN___ if you are filling a vcg mesh with TRIANGLES 
-            std::vector<std::vector<vcg::Point3f> > polygonVect(1); // it is a vector of polygon loops
-            polygonVect[0].resize(vertexesPerFace);
+            std::vector<CoordType> polygonPoints(vertexesPerFace);
             std::vector<int> indexVVect(vertexesPerFace);
             std::vector<int> indexNVect(vertexesPerFace);
             std::vector<int> indexTVect(vertexesPerFace);
@@ -468,38 +466,25 @@ public:
             {
               SplitToken(tokens[pi+1], indexVVect[pi],indexNVect[pi],indexTVect[pi], inputMask);
               if(QuadFlag) indexVVect[pi]++; // NOTE THAT THE STUPID QOBJ FORMAT IS ZERO INDEXED!!!!
-              GoodObjIndex(indexVVect[pi],numVertices);
+              if(!GoodObjIndex(indexVVect[pi],numVertices))
+              {
+                stream.close();
+                return E_BAD_VERT_INDEX;
+              }
               GoodObjIndex(indexTVect[pi],oi.numTexCoords);
-              polygonVect[0][pi].Import(m.vert[indexVVect[pi]].cP());
+              polygonPoints[pi] = m.vert[indexVVect[pi]].cP();
             }
             if(vertexesPerFace>3)
               oi.mask |= Mask::IOM_BITPOLYGONAL;
-            
-            if(vertexesPerFace<5)
-              FanTessellator(polygonVect, indexTriangulatedVect);
-            else
+
+            if(vertexesPerFace==3)
+              indexTriangulatedVect = {0, 1, 2};
+            else if(!TessellatePlanarPolygon3(polygonPoints, indexTriangulatedVect))
             {
-#ifdef __gl_h_
-              //qDebug("OK: using opengl tessellation for a polygon of %i verteces",vertexesPerFace);
-              vcg::glu_tesselator::tesselate<vcg::Point3f>(polygonVect, indexTriangulatedVect);
-              if(indexTriangulatedVect.size()==0)
-                FanTessellator(polygonVect, indexTriangulatedVect);
-#else
-              //qDebug("Warning: using fan tessellation for a polygon of %i verteces",vertexesPerFace);
-              FanTessellator(polygonVect, indexTriangulatedVect);
-#endif
+              stream.close();
+              return E_INVALID_POLYGON;
             }
             extraTriangles+=((indexTriangulatedVect.size()/3) -1);
-#ifdef QT_VERSION
-            if( int(indexTriangulatedVect.size()/3) != vertexesPerFace-2)
-            {
-              qDebug("Warning there is a degenerate poligon of %i verteces that was triangulated into %i triangles",vertexesPerFace,int(indexTriangulatedVect.size()/3));
-              for(size_t qq=0;qq<polygonVect[0].size();++qq)
-                qDebug("      (%f %f %f)",polygonVect[0][qq][0],polygonVect[0][qq][1],polygonVect[0][qq][2]);
-              for(size_t qq=0;qq<tokens.size();++qq) qDebug("<%s>",tokens[qq].c_str());
-            }
-#endif
-            //qDebug("Triangulated a face of %i vertexes into %i triangles",polygonVect[0].size(),indexTriangulatedVect.size());
             
             for(size_t pi=0;pi<indexTriangulatedVect.size();pi+=3)
             {

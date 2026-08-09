@@ -860,9 +860,10 @@ public:
 			ply_error_msg[PlyInfo::E_BAD_VERT_INDEX ]="Bad vertex index in face";
 			ply_error_msg[PlyInfo::E_NO_6TCOORD	 ]="Face with no 6 texture coordinates";
 			ply_error_msg[PlyInfo::E_DIFFER_COLORS  ]="Number of color differ from vertices";
+			ply_error_msg[PlyInfo::E_INVALID_POLYGON ]="Face is not a valid simple planar polygon";
 		}
 
-		if(error>PlyInfo::E_MAXPLYINFOERRORS || error<0) return "Unknown error";
+		if(error>=PlyInfo::E_MAXPLYINFOERRORS || error<0) return "Unknown error";
 		else return ply_error_msg[error].c_str();
 	};
 
