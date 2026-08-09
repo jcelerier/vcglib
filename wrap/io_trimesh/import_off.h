@@ -490,8 +490,7 @@ namespace vcg {
 									// latter for boundary/faux classification and map through
 									// vertIndices only when creating mesh faces.
 									std::vector<int> localTriangles;
-									TessellatePlanarPolygon3(polygonPoints, localTriangles);
-									if (localTriangles.size() != size_t(3 * (vert_per_face - 2)))
+									if (!TessellatePlanarPolygon3(polygonPoints, localTriangles))
 										return InvalidFile;
 									for (size_t j = 0; j < localTriangles.size(); j += 3)
 									{

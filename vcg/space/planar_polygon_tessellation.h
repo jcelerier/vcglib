@@ -24,212 +24,235 @@
 #ifndef __VCGLIB_PLANAR_POLYGON_TESSELLATOR
 #define __VCGLIB_PLANAR_POLYGON_TESSELLATOR
 
-#include <assert.h>
+#include <algorithm>
+#include <cmath>
+#include <limits>
 #include <vector>
-#include <vcg/space/segment2.h>
+#include <vcg/space/point2.h>
 #include <vcg/space/point3.h>
-#include <vcg/math/random_generator.h>
 
 namespace vcg {
 
 /** \addtogroup space */
 /*@{*/
-    /**
-     * Given four 2D points p00,p01,p10,p11, it returns true if the segments p00-p01 and p10-p11 intersect.
-	*/
-	template <class ScalarType> 
-	bool Cross(	 const Point2<ScalarType> & p00,
-				 const Point2<ScalarType> & p01,
-				 const Point2<ScalarType> & p10,
-				 const Point2<ScalarType> & p11)
-	{
-		Point2<ScalarType> vec0 = p01-p00;
-		Point2<ScalarType> vec1 = p11-p10;
-		if ( ( vec0^ (p11-p00)) *  ( vec0^ (p10 - p00)) >=0) return false;
-		if ( ( vec1^ (p01-p10)) *  ( vec1^ (p00 - p10)) >=0) return false;
-		return true;
-	}
+namespace planar_polygon_detail {
 
-	template <class S>
-	bool Intersect(size_t cur , int v2, std::vector<int> & next, std::vector<Point2<S> > & points2){
-		for(size_t i  = 0; i < points2.size();++i)
-			if( (next[i]!=-1) && (i!=cur))
-				if( Cross(points2[cur], points2[v2],points2[i],points2[next[i]]))
-					return true;
+inline long double Orient2D(const Point2d &a, const Point2d &b, const Point2d &c)
+{
+	return (static_cast<long double>(b.X()) - static_cast<long double>(a.X())) *
+	           (static_cast<long double>(c.Y()) - static_cast<long double>(a.Y())) -
+	       (static_cast<long double>(b.Y()) - static_cast<long double>(a.Y())) *
+	           (static_cast<long double>(c.X()) - static_cast<long double>(a.X()));
+}
+
+inline bool PointInTriangle(
+	const Point2d &point,
+	const Point2d &a,
+	const Point2d &b,
+	const Point2d &c,
+	long double winding,
+	long double epsilon)
+{
+	return winding * Orient2D(a, b, point) >= -epsilon
+		&& winding * Orient2D(b, c, point) >= -epsilon
+		&& winding * Orient2D(c, a, point) >= -epsilon;
+}
+
+} // namespace planar_polygon_detail
+
+/**
+ * Triangulate one finite, simple 2D polygon with ear clipping.
+ *
+ * The input must be one boundary loop, without holes, repeated consecutive
+ * points, or self-intersections. Output indices are local to points, retain
+ * its winding, and are appended only on success. Collinear vertices are supported;
+ * no zero-area triangles are emitted. False means the polygon is degenerate,
+ * invalid, or could not be triangulated reliably, and leaves output unchanged.
+ */
+template <class POINT_CONTAINER>
+bool TessellatePlanarPolygon2(const POINT_CONTAINER &points, std::vector<int> &output)
+{
+	using namespace planar_polygon_detail;
+	const size_t count = points.size();
+	if (count < 3)
 		return false;
+
+	// Work in translated double coordinates. Translation avoids losing the small
+	// differences that define the polygon when coordinates have a large offset.
+	std::vector<Point2d> p(count);
+	const double originX = double(points[0][0]);
+	const double originY = double(points[0][1]);
+	double scale = 0;
+	for (size_t i = 0; i < count; ++i) {
+		const double x = double(points[i][0]) - originX;
+		const double y = double(points[i][1]) - originY;
+		if (!std::isfinite(x) || !std::isfinite(y))
+			return false;
+		p[i] = Point2d(x, y);
+		scale = std::max(scale, std::max(std::abs(x), std::abs(y)));
+	}
+	if (!(scale > 0))
+		return false;
+
+	const long double scale2 = static_cast<long double>(scale) * scale;
+	const long double epsilon = scale2 * 64 * std::numeric_limits<double>::epsilon();
+	const long double edgeEpsilon2 = scale2 * 1024
+		* std::numeric_limits<double>::epsilon() * std::numeric_limits<double>::epsilon();
+
+	long double signedDoubleArea = 0;
+	for (size_t i = 0; i < count; ++i) {
+		const Point2d &a = p[i];
+		const Point2d &b = p[(i + 1) % count];
+		const long double dx = static_cast<long double>(b.X()) - static_cast<long double>(a.X());
+		const long double dy = static_cast<long double>(b.Y()) - static_cast<long double>(a.Y());
+		if (dx * dx + dy * dy <= edgeEpsilon2)
+			return false;
+		signedDoubleArea += static_cast<long double>(a.X()) * static_cast<long double>(b.Y()) -
+		                    static_cast<long double>(a.Y()) * static_cast<long double>(b.X());
+	}
+	if (std::abs(signedDoubleArea) <= epsilon * count)
+		return false;
+	const long double winding = signedDoubleArea > 0 ? 1 : -1;
+
+	std::vector<int> previous(count), next(count);
+	std::vector<unsigned char> active(count, 1);
+	for (size_t i = 0; i < count; ++i) {
+		previous[i] = int((i + count - 1) % count);
+		next[i] = int((i + 1) % count);
 	}
 
-
-	/**
-	 * Triangulate one simple 2D polygon with ear clipping.
-	 *
-	 * The input points describe a single boundary loop in either orientation;
-	 * holes and self-intersections are not supported. Output indices refer to
-	 * positions in points2 and triangles retain the input winding. An ear is
-	 * accepted when it is convex and its replacement diagonal does not cross
-	 * any active boundary edge. Degenerate input falls back to a fan over the
-	 * remaining loop so callers still receive a complete n-2 triangulation.
-	 *
-	 * output is appended to rather than cleared.
-	 */
-	template <class POINT_CONTAINER>
-	void TessellatePlanarPolygon2( POINT_CONTAINER &  points2, std::vector<int> & output){
-		typedef typename POINT_CONTAINER::value_type Point2x;
-		typedef typename Point2x::ScalarType S;
-		if(points2.size() < 3) return;
-		// tessellate
-		//  first very inefficient implementation
-		std::vector<int> next,prev;
-		for(size_t i = 0; i < points2.size(); ++i) next.push_back((i+1)%points2.size());
-		for(size_t i = 0; i < points2.size(); ++i) prev.push_back((i+points2.size()-1)%points2.size());
-		int v1,v2;
-		// check orientation
-		S orient = 0.0;
-		for(size_t i = 0 ; i < points2.size(); ++i)
-			orient += points2[i] ^ points2[next[i]];
-		orient = (orient>=0)? 1.0:-1.0;
-
-		int cur = 0;
-		int activeCnt = int(points2.size());
-		while(activeCnt > 2)
-		{
-			bool earFound = false;
-			int attempts = 0;
-			while(attempts < activeCnt)
-			{
-				v1 = next[cur];
-				v2 = next[v1];
-				// Removing v1 replaces boundary edges cur-v1 and v1-v2 with
-				// cur-v2. Convexity plus a non-crossing replacement diagonal
-				// identifies a valid ear for a simple polygon.
-				if( ( (orient*((points2[v1] - points2[cur]) ^ (points2[v2] - points2[cur]))) >= 0.0) &&
-					!Intersect(cur, v2,next,points2))
-				{
-					// output the face
-					output.push_back(cur);
-					output.push_back(v1);
-					output.push_back(v2);
-
-					// readjust the topology: remove v1 from active ring
-					next[cur] = v2;
-					prev[v2] = cur;
-					prev[v1] = -1;
-					next[v1] = -1;
-					--activeCnt;
-					earFound = true;
+	std::vector<int> triangles;
+	triangles.reserve(3 * (count - 2));
+	int current = 0;
+	int activeCount = int(count);
+	while (activeCount > 2) {
+		bool foundEar = false;
+		for (int attempts = 0; attempts < activeCount; ++attempts) {
+			const int before = previous[current];
+			const int after = next[current];
+			if (winding * Orient2D(p[before], p[current], p[after]) > epsilon) {
+				// Convexity alone is insufficient: another active vertex inside
+				// this triangle means the replacement diagonal is not an ear.
+				bool containsVertex = false;
+				for (size_t candidate = 0; candidate < count; ++candidate) {
+					if (!active[candidate] || int(candidate) == before
+						|| int(candidate) == current || int(candidate) == after)
+						continue;
+					if (PointInTriangle(
+							p[candidate], p[before], p[current], p[after], winding, epsilon)) {
+						containsVertex = true;
+						break;
+					}
+				}
+				if (!containsVertex) {
+					triangles.push_back(before);
+					triangles.push_back(current);
+					triangles.push_back(after);
+					next[before] = after;
+					previous[after] = before;
+					active[current] = 0;
+					current = after;
+					--activeCount;
+					foundEar = true;
 					break;
 				}
-				do{cur = (cur+1)%points2.size();} while(next[cur]==-1);
-				++attempts;
 			}
-
-			if(earFound)
-			{
-				do{cur = (cur+1)%points2.size();} while(next[cur]==-1);
-				continue;
-			}
-
-			// Fallback for degenerate / numerically problematic cases:
-			// triangulate remaining active ring as a fan to guarantee n-2 output triangles.
-			std::vector<int> ring;
-			ring.reserve(size_t(activeCnt));
-			int start = -1;
-			for(size_t i = 0; i < next.size(); ++i)
-				if(next[i] != -1) { start = int(i); break; }
-			if(start == -1)
-				break;
-			int it = start;
-			do {
-				ring.push_back(it);
-				it = next[it];
-			} while(it != -1 && it != start && ring.size() <= size_t(activeCnt));
-
-			if(ring.size() < 3)
-				break;
-			for(size_t i = 1; i + 1 < ring.size(); ++i)
-			{
-				output.push_back(ring[0]);
-				output.push_back(ring[i]);
-				output.push_back(ring[i+1]);
-			}
-			break;
+			current = next[current];
 		}
+		if (!foundEar)
+			return false;
 	}
 
-	/**
-	 * Triangulate one simple planar polygon embedded in 3D.
-	 *
-	 * A stable projection plane is selected from a large-area input triangle,
-	 * the polygon is projected to 2D, and TessellatePlanarPolygon2 performs the
-	 * ear clipping. Input vertices must form one approximately planar boundary;
-	 * holes and self-intersections are not supported. Output is a flat sequence
-	 * of triangle indices local to points, preserving the boundary winding, and
-	 * is appended to rather than cleared.
-	 */
+	if (triangles.size() != 3 * (count - 2))
+		return false;
 
-	template <class POINT_CONTAINER>
-	void TessellatePlanarPolygon3( POINT_CONTAINER &  points, std::vector<int> & output){
-		typedef typename POINT_CONTAINER::value_type Point3x;
-		typedef typename Point3x::ScalarType S;
-		Point3x n;
-		if(points.size()==3)
-		{
-			output.push_back(0);
-			output.push_back(1);
-			output.push_back(2);
-			return;
-		}
-		
-		// if the polygon is a quad we can optimize the tessellation just checking to the shortest diagonal
-		if(points.size()==4)
-		{
-			if(Distance(points[0],points[2])<Distance(points[1],points[3])){
-				output.push_back(0);
-				output.push_back(1);
-				output.push_back(2);
-				output.push_back(0);
-				output.push_back(2);
-				output.push_back(3);
-			}else{
-				output.push_back(0);
-				output.push_back(1);
-				output.push_back(3);
-				output.push_back(1);
-				output.push_back(2);
-				output.push_back(3);
-			}
-			return;
-		}
-		
-		math::SubtractiveRingRNG rg;
-		size_t i12[2]={0,0};
-		S bestsn = -1.0;
-		Point3x bestn,u,v;
-		
-		// find the best normal for projection on the plane
-		for(size_t i  =0; i < points.size();++i){
-			do{
-				i12[0] = rg.generate(points.size());
-			} while(i12[0]==i);
-			do{
-				i12[1] = rg.generate(points.size());
-			} while((i12[1]==i || i12[1]==i12[0]));
-			if(!(i12[0]!=i12[1] && i12[0]!=i))
-				assert(0);
-			n = (points[i12[0]]-points[i])^(points[i12[1]]-points[i]);
-			S sn = n.SquaredNorm();
-			if(sn > bestsn){ bestsn = sn; bestn = n;} 
-		}
-		
-		GetUV(bestn,u,v);
-		// project the coordinates
-		std::vector<Point2<S> > points2;
-		for(size_t i = 0; i < points.size(); ++i){
-			Point3x & p = points[i];
-			points2.push_back(Point2<S>(p*u,p*v));
-		}
-		TessellatePlanarPolygon2( points2,output);
+	// Validate the postcondition independently from ear selection. Consistent
+	// winding and equal area reject overlaps, outside triangles, and gaps.
+	long double triangleDoubleArea = 0;
+	for (size_t i = 0; i < triangles.size(); i += 3) {
+		const long double area = winding * Orient2D(
+			p[triangles[i]], p[triangles[i + 1]], p[triangles[i + 2]]);
+		if (area <= epsilon)
+			return false;
+		triangleDoubleArea += area;
 	}
+	const long double areaTolerance = std::max(
+		std::abs(signedDoubleArea) * 1e-12L, epsilon * count * 4);
+	if (std::abs(triangleDoubleArea - std::abs(signedDoubleArea)) > areaTolerance)
+		return false;
+
+	output.insert(output.end(), triangles.begin(), triangles.end());
+	return true;
+}
+
+/**
+ * Triangulate one finite, simple, approximately planar polygon embedded in 3D.
+ *
+ * A Newell area vector supplies a deterministic normal. Coordinates relative
+ * to the first point are projected to the dominant coordinate plane, avoiding
+ * an unstable arbitrary basis and large-offset cancellation. The 2D routine
+ * defines output and failure behavior. False also reports a degenerate normal
+ * or a departure from planarity larger than the input scalar precision allows.
+ */
+template <class POINT_CONTAINER>
+bool TessellatePlanarPolygon3(const POINT_CONTAINER &points, std::vector<int> &output)
+{
+	typedef typename POINT_CONTAINER::value_type Point3x;
+	typedef typename Point3x::ScalarType ScalarType;
+	const size_t count = points.size();
+	if (count < 3)
+		return false;
+
+	const Point3d origin{
+		static_cast<double>(points[0][0]),
+		static_cast<double>(points[0][1]),
+		static_cast<double>(points[0][2])};
+	std::vector<Point3d> relative(count);
+	double scale = 0;
+	for (size_t i = 0; i < count; ++i) {
+		relative[i] = Point3d(
+			double(points[i][0]) - origin.X(),
+			double(points[i][1]) - origin.Y(),
+			double(points[i][2]) - origin.Z());
+		if (!std::isfinite(relative[i].X()) || !std::isfinite(relative[i].Y())
+			|| !std::isfinite(relative[i].Z()))
+			return false;
+		scale = std::max(scale, relative[i].Norm());
+	}
+	if (!(scale > 0))
+		return false;
+
+	Point3d normal(0, 0, 0);
+	for (size_t i = 0; i < count; ++i)
+		normal += relative[i] ^ relative[(i + 1) % count];
+	const double normalNorm = normal.Norm();
+	const double normalTolerance = scale * scale * count * 64
+		* std::numeric_limits<double>::epsilon();
+	if (!(normalNorm > normalTolerance))
+		return false;
+	normal /= normalNorm;
+
+	double scalarEpsilon = double(std::numeric_limits<ScalarType>::epsilon());
+	if (!(scalarEpsilon > 0))
+		scalarEpsilon = std::numeric_limits<double>::epsilon();
+	const double planarityTolerance = scale * std::max(1e-12, 32 * scalarEpsilon);
+	for (size_t i = 0; i < count; ++i)
+		if (std::abs(relative[i] * normal) > planarityTolerance)
+			return false;
+
+	std::vector<Point2d> projected;
+	projected.reserve(count);
+	const Point3d absoluteNormal(std::abs(normal.X()), std::abs(normal.Y()), std::abs(normal.Z()));
+	for (size_t i = 0; i < count; ++i) {
+		if (absoluteNormal.X() >= absoluteNormal.Y() && absoluteNormal.X() >= absoluteNormal.Z())
+			projected.push_back(Point2d(relative[i].Y(), relative[i].Z()));
+		else if (absoluteNormal.Y() >= absoluteNormal.Z())
+			projected.push_back(Point2d(relative[i].X(), relative[i].Z()));
+		else
+			projected.push_back(Point2d(relative[i].X(), relative[i].Y()));
+	}
+	return TessellatePlanarPolygon2(projected, output);
+}
 
 /*@}*/
 } // end namespace

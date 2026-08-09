@@ -80,8 +80,9 @@ namespace tri {
 	 * @param pm: input polygonal mesh
 	 * @param birthFaces: a mapping that tells, for each face of the triangle mesh,
 	 * which one is its birth face in the polygonal mesh.
+	 * @return false if a face is not a valid simple planar polygon; outputs are then cleared.
 	 */
-	static void ImportFromPolyMesh(TriMeshType& tm, PolyMeshType& pm, std::vector<unsigned int>& birthFaces)
+	static bool ImportFromPolyMesh(TriMeshType& tm, PolyMeshType& pm, std::vector<unsigned int>& birthFaces)
 	{
 		tm.Clear();
 		birthFaces.clear();
@@ -109,10 +110,11 @@ namespace tri {
 				// triples of integers describing the triangulation of the current polygon
 				std::vector<int> faces;
 				
-				TessellatePlanarPolygon3(points,faces);
-				
-				// the number of expected tri is 2 for a quad, 3 for a pentagon, vn-2 for a generic polygon
-				assert(faces.size()==(size_t)(fi->VN()-2)*3); 				
+				if (!TessellatePlanarPolygon3(points, faces)) {
+					tm.Clear();
+					birthFaces.clear();
+					return false;
+				}
 				
 				//all the faces we add in tm have as a birth face fi
 				birthFaces.insert(birthFaces.end(), faces.size()/3, tri::Index(pm, *fi));
@@ -132,12 +134,13 @@ namespace tri {
 				}
 			}
 		}
+		return true;
 	}
 
-	static void ImportFromPolyMesh(TriMeshType & tm,  PolyMeshType & pm)
+	static bool ImportFromPolyMesh(TriMeshType & tm,  PolyMeshType & pm)
 	{
 		std::vector<unsigned int> dummyVector;
-		ImportFromPolyMesh(tm, pm, dummyVector);
+		return ImportFromPolyMesh(tm, pm, dummyVector);
 	}
 
 

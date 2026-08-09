@@ -735,7 +735,8 @@ public:
     {
         //transform into triangular
         TempMesh GuideSurf;
-        vcg::tri::PolygonSupport<TempMesh,PolyMeshType>::ImportFromPolyMesh(GuideSurf,poly_m);
+        if (!vcg::tri::PolygonSupport<TempMesh,PolyMeshType>::ImportFromPolyMesh(GuideSurf,poly_m))
+            return;
         vcg::tri::UpdateBounding<TempMesh>::Box(GuideSurf);
         vcg::tri::UpdateNormal<TempMesh>::PerVertexNormalizedPerFace(GuideSurf);
         vcg::tri::UpdateTopology<TempMesh>::FaceFace(GuideSurf);
