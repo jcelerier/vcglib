@@ -60,6 +60,18 @@ namespace vcg {
 	}
 
 
+	/**
+	 * Triangulate one simple 2D polygon with ear clipping.
+	 *
+	 * The input points describe a single boundary loop in either orientation;
+	 * holes and self-intersections are not supported. Output indices refer to
+	 * positions in points2 and triangles retain the input winding. An ear is
+	 * accepted when it is convex and its replacement diagonal does not cross
+	 * any active boundary edge. Degenerate input falls back to a fan over the
+	 * remaining loop so callers still receive a complete n-2 triangulation.
+	 *
+	 * output is appended to rather than cleared.
+	 */
 	template <class POINT_CONTAINER>
 	void TessellatePlanarPolygon2( POINT_CONTAINER &  points2, std::vector<int> & output){
 		typedef typename POINT_CONTAINER::value_type Point2x;
@@ -87,6 +99,9 @@ namespace vcg {
 			{
 				v1 = next[cur];
 				v2 = next[v1];
+				// Removing v1 replaces boundary edges cur-v1 and v1-v2 with
+				// cur-v2. Convexity plus a non-crossing replacement diagonal
+				// identifies a valid ear for a simple polygon.
 				if( ( (orient*((points2[v1] - points2[cur]) ^ (points2[v2] - points2[cur]))) >= 0.0) &&
 					!Intersect(cur, v2,next,points2))
 				{
@@ -141,12 +156,16 @@ namespace vcg {
 		}
 	}
 
-    /**
-	A very simple earcut tessellation of planar 2D polygon.
-	Input: a vector or Point3<>
-	Output: a vector of faces as a triple of indices to the input vector
-
-	*/
+	/**
+	 * Triangulate one simple planar polygon embedded in 3D.
+	 *
+	 * A stable projection plane is selected from a large-area input triangle,
+	 * the polygon is projected to 2D, and TessellatePlanarPolygon2 performs the
+	 * ear clipping. Input vertices must form one approximately planar boundary;
+	 * holes and self-intersections are not supported. Output is a flat sequence
+	 * of triangle indices local to points, preserving the boundary winding, and
+	 * is appended to rather than cleared.
+	 */
 
 	template <class POINT_CONTAINER>
 	void TessellatePlanarPolygon3( POINT_CONTAINER &  points, std::vector<int> & output){
