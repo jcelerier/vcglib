@@ -25,8 +25,8 @@
 
 #include <fstream>
 #include<vcg/complex/algorithms/bitquad_support.h>
+#include <vcg/space/planar_polygon_tessellation.h>
 #include <wrap/io_trimesh/io_mask.h>
-#include <wrap/io_trimesh/io_fan_tessellator.h>
 
 namespace vcg {
 	namespace tri {
@@ -459,15 +459,18 @@ namespace vcg {
 							if(vert_per_face > 3) // The face must be triangulated
 							{
 								std::vector<int> vertIndices(vert_per_face);
-								std::vector<vcg::Point3f > polygonVect(vert_per_face); // vec of polygon loops used for the triangulation of polygonal face
+								std::vector<CoordType> polygonPoints(vert_per_face);
 								for (int j = 0; j < vert_per_face; j++)
 								{
 									vertIndices[j] = atoi(tokens[j+1].c_str());
-									polygonVect[j].Import<ScalarType>(mesh.vert[vertIndices[j]].P());									
+									polygonPoints[j] = mesh.vert[vertIndices[j]].P();
 								}
+								// Polygonal faces are represented by triangles whose introduced
+								// diagonals carry the per-face faux-edge bit. This lets algorithms
+								// and exporters recover the original polygon boundary.
+								if (tri::HasPerFaceFlags(mesh)) loadmask |= Mask::IOM_BITPOLYGONAL;
 								if (vert_per_face == 4)
 								{   // To well triangulate use the bitquad support function that reorders vertex for a simple fan
-									if (tri::HasPerFaceFlags(mesh)) loadmask |= Mask::IOM_BITPOLYGONAL;
 									std::vector<VertexPointer> q(4);
 									for (int qqi = 0; qqi < 4; ++qqi)
 										q[qqi] = &mesh.vert[vertIndices[qqi]];
@@ -480,30 +483,33 @@ namespace vcg {
 									Allocator<MESH_TYPE>::AddFace(mesh, vertIndices[0],vertIndices[2],vertIndices[3]);
 									if (tri::HasPerFaceFlags(mesh)) mesh.face.back().SetF(0);
 								}
-								else // standard fan triangulation (we hope the polygon is convex...)
+								else
 								{
-									std::vector<int> indexTriangulatedVect;
-									//                              TessellatePlanarPolygon3(polygonVect,indexTriangulatedVect);
-									std::vector< std::vector<Point3f> > loopVect;
-									loopVect.push_back(polygonVect);
-#ifdef __gl_h_
-									//qDebug("OK: using opengl tessellation for a polygon of %i vertices",vertexesPerFace);
-									vcg::glu_tesselator::tesselate<vcg::Point3f>(loopVect, indexTriangulatedVect);
-#else
-									//qDebug("Warning: using fan tessellation for a polygon of %i vertices",vertexesPerFace);
-									tri::io::FanTessellator(loopVect, indexTriangulatedVect);
-#endif
-									for (size_t j = 0; j < indexTriangulatedVect.size(); j += 3)
+									// OFF indices are mesh-global, whereas the planar tessellator
+									// deliberately returns indices local to polygonPoints. Keep the
+									// latter for boundary/faux classification and map through
+									// vertIndices only when creating mesh faces.
+									std::vector<int> localTriangles;
+									TessellatePlanarPolygon3(polygonPoints, localTriangles);
+									if (localTriangles.size() != size_t(3 * (vert_per_face - 2)))
+										return InvalidFile;
+									for (size_t j = 0; j < localTriangles.size(); j += 3)
 									{
-										Allocator<MESH_TYPE>::AddFace(mesh, indexTriangulatedVect[j], indexTriangulatedVect[j+1], indexTriangulatedVect[j+2]);
-										if (tri::HasPerFaceFlags(mesh)) mesh.face.back().SetF(0);
-										// To correctly set Faux edges we have to clear the faux bit for all the edges that do not correspond to consecutive vertices
-										// Consecutivity is in the space of the index of the polygon.
-										for (int qq = 0; qq < 3; ++qq)
+										Allocator<MESH_TYPE>::AddFace(mesh,
+											vertIndices[localTriangles[j]],
+											vertIndices[localTriangles[j + 1]],
+											vertIndices[localTriangles[j + 2]]);
+										if (tri::HasPerFaceFlags(mesh))
 										{
-											if ((indexTriangulatedVect[j + qq] + 1) % vert_per_face == indexTriangulatedVect[j + (qq + 1) % 3])
-												mesh.face.back().ClearF(qq);
-											else mesh.face.back().SetF(qq);
+											for (int edge = 0; edge < 3; ++edge)
+											{
+												const int from = localTriangles[j + edge];
+												const int to = localTriangles[j + (edge + 1) % 3];
+												if ((from + 1) % vert_per_face == to)
+													mesh.face.back().ClearF(edge); // original polygon boundary
+												else
+													mesh.face.back().SetF(edge);   // introduced diagonal
+											}
 										}
 									}
 								}
@@ -533,8 +539,8 @@ namespace vcg {
 									}
 									case 1:
 									{
-										for (int i=0; i<vert_per_face-2;++i)
-											mesh.face[mesh.fn - vert_per_face + i].C().Import(ColorMap(atoi(tokens[vert_per_face + 1].c_str())));
+										for (int i=0; i<triToColor;++i)
+											mesh.face[mesh.fn - triToColor + i].C().Import(ColorMap(atoi(tokens[vert_per_face + 1].c_str())));
 										break;
 									}
 									case 3:
