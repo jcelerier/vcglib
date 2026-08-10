@@ -339,7 +339,7 @@ public:
 			ply_error_msg[PlyInfo::E_BAD_VERT_INDEX_EDGE ]="Bad vertex index in edge";
 			ply_error_msg[PlyInfo::E_NO_6TCOORD     ]="Face with no 6 texture coordinates";
 			ply_error_msg[PlyInfo::E_DIFFER_COLORS  ]="Number of color differ from vertices";
-			ply_error_msg[PlyInfo::E_INVALID_POLYGON ]="Face is not a valid simple planar polygon";
+			ply_error_msg[PlyInfo::E_INVALID_POLYGON ]="Face is not a valid simple polygon under planar projection";
 		}
 
 		if(error>=PlyInfo::E_MAXPLYINFOERRORS || error<0) return "Unknown error";
@@ -898,7 +898,8 @@ public:
 						std::vector<CoordType> polygonPoints(fa.size);
 						for(int k=0;k<fa.size;++k)
 							polygonPoints[k] = index[fa.v[k]]->cP();
-						if(!TessellatePlanarPolygon3(polygonPoints, localTriangles))
+						if(!TessellatePlanarPolygon3(
+							polygonPoints, localTriangles, false /* accept non-planar file faces */))
 						{
 							pi.status = PlyInfo::E_INVALID_POLYGON;
 							return pi.status;

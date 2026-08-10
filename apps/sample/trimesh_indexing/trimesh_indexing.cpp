@@ -6,6 +6,7 @@
 #include "nanoflann.hpp"
 
 #include <vcg/complex/complex.h>
+#include <vcg/math/random_generator.h>
 
 #include <wrap/io_trimesh/import.h>
 #include <wrap/io_trimesh/export.h>

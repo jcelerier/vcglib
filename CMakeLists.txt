@@ -18,7 +18,9 @@ set (VCG_INCLUDE_DIRS ${CMAKE_CURRENT_LIST_DIR})
 set (VCG_INCLUDE_DIRS ${CMAKE_CURRENT_LIST_DIR} PARENT_SCOPE)
 
 ### Build settings
-set(CMAKE_CXX_STANDARD 11)
+# C++17 is the floor: the bundled Eigen 3.5 requires at least C++14.
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ### OpenMP
 if (VCG_USE_OPENMP)

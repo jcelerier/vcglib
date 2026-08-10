@@ -30,6 +30,7 @@ and splicing the mesh in the two components below and over the plane
 */
 
 #include <vcg/complex/complex.h>
+#include <vcg/math/random_generator.h>
 #include <vcg/complex/algorithms/clean.h>
 #include <vcg/complex/algorithms/intersection.h>
 #include <vcg/complex/algorithms/refine.h>

@@ -191,11 +191,16 @@ bool TessellatePlanarPolygon2(const POINT_CONTAINER &points, std::vector<int> &o
  * A Newell area vector supplies a deterministic normal. Coordinates relative
  * to the first point are projected to the dominant coordinate plane, avoiding
  * an unstable arbitrary basis and large-offset cancellation. The 2D routine
- * defines output and failure behavior. False also reports a degenerate normal
- * or a departure from planarity larger than the input scalar precision allows.
+ * defines output and failure behavior. False also reports a degenerate normal.
+ * By default, a departure from planarity larger than the input scalar precision
+ * is rejected. File importers may disable that check for modeling polygons such
+ * as quads, whose planar projection still provides a valid triangulation.
  */
 template <class POINT_CONTAINER>
-bool TessellatePlanarPolygon3(const POINT_CONTAINER &points, std::vector<int> &output)
+bool TessellatePlanarPolygon3(
+	const POINT_CONTAINER &points,
+	std::vector<int> &output,
+	bool requirePlanarity = true)
 {
 	typedef typename POINT_CONTAINER::value_type Point3x;
 	typedef typename Point3x::ScalarType ScalarType;
@@ -232,13 +237,15 @@ bool TessellatePlanarPolygon3(const POINT_CONTAINER &points, std::vector<int> &o
 		return false;
 	normal /= normalNorm;
 
-	double scalarEpsilon = double(std::numeric_limits<ScalarType>::epsilon());
-	if (!(scalarEpsilon > 0))
-		scalarEpsilon = std::numeric_limits<double>::epsilon();
-	const double planarityTolerance = scale * std::max(1e-12, 32 * scalarEpsilon);
-	for (size_t i = 0; i < count; ++i)
-		if (std::abs(relative[i] * normal) > planarityTolerance)
-			return false;
+	if (requirePlanarity) {
+		double scalarEpsilon = double(std::numeric_limits<ScalarType>::epsilon());
+		if (!(scalarEpsilon > 0))
+			scalarEpsilon = std::numeric_limits<double>::epsilon();
+		const double planarityTolerance = scale * std::max(1e-12, 32 * scalarEpsilon);
+		for (size_t i = 0; i < count; ++i)
+			if (std::abs(relative[i] * normal) > planarityTolerance)
+				return false;
+	}
 
 	std::vector<Point2d> projected;
 	projected.reserve(count);
