@@ -24,7 +24,11 @@ jobs:
         # and only Qt5::OpenGL (part of qtbase) and Qt5::Svg. Restricting the
         # archives skips ~20 unused ones - including the QtMultimedia archive
         # whose corrupt download was failing the Windows job outright.
-        archives: qtbase qtsvg
+        # icu is mandatory on Linux and does not exist as an archive elsewhere:
+        # the official gcc_64 Qt5Core links against ICU 56 shipped in that
+        # archive, so omitting it leaves every Qt sample failing to link with
+        # undefined u_*/ucnv_*/ucal_* symbols.
+        archives: ${{ runner.os == 'Linux' && 'qtbase qtsvg icu' || 'qtbase qtsvg' }}
     - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
     - name: Setup env Linux
