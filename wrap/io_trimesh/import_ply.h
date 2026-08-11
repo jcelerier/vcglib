@@ -81,10 +81,12 @@ public:
 		int flags;
 		S n[3];
 		S q;
-		float texcoord[32];
+		// The list counts stored below are uchar. Keep room for every value the
+		// reader can accept, then validate the per-corner arity after parsing.
+		float texcoord[255];
 		unsigned char ntexcoord;
 		int texcoordind;
-		float colors[32];
+		float colors[255];
 		unsigned char ncolors;
 
 		unsigned char r;
@@ -337,8 +339,8 @@ public:
 			ply_error_msg[PlyInfo::E_NO_3VERTINFACE ]="Face with more than 3 vertices";
 			ply_error_msg[PlyInfo::E_BAD_VERT_INDEX ]="Bad vertex index in face";
 			ply_error_msg[PlyInfo::E_BAD_VERT_INDEX_EDGE ]="Bad vertex index in edge";
-			ply_error_msg[PlyInfo::E_NO_6TCOORD     ]="Face with no 6 texture coordinates";
-			ply_error_msg[PlyInfo::E_DIFFER_COLORS  ]="Number of color differ from vertices";
+			ply_error_msg[PlyInfo::E_NO_6TCOORD     ]="Texture coordinate count does not match face corners";
+			ply_error_msg[PlyInfo::E_DIFFER_COLORS  ]="Wedge color count does not match face corners";
 			ply_error_msg[PlyInfo::E_INVALID_POLYGON ]="Face has fewer than three vertices or non-finite coordinates";
 		}
 
@@ -808,9 +810,17 @@ public:
 						pi.status = PlyInfo::E_INVALID_POLYGON;
 						return pi.status;
 					}
-					if(fa.size!=3 && ((pi.mask & Mask::IOM_WEDGCOLOR) || (pi.mask & Mask::IOM_WEDGTEXCOORD)))
+					// Texture and color properties are flattened per-corner lists.
+					// Validate their arity before triangulation indexes them through
+					// polygon-local corner numbers.
+					if((pi.mask & Mask::IOM_WEDGTEXCOORD) && fa.ntexcoord!=fa.size*2)
 					{
-						pi.status = PlyInfo::E_NO_3VERTINFACE;
+						pi.status = PlyInfo::E_NO_6TCOORD;
+						return pi.status;
+					}
+					if((pi.mask & Mask::IOM_WEDGCOLOR) && fa.ncolors!=fa.size*3)
+					{
+						pi.status = PlyInfo::E_DIFFER_COLORS;
 						return pi.status;
 					}
 

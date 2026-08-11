@@ -36,6 +36,9 @@
 #include<wrap/io_trimesh/precision.h>
 #include<vcg/container/simple_temporary_data.h>
 #include <vcg/complex/base.h>
+#include <vcg/complex/algorithms/clean.h>
+#include <vcg/complex/algorithms/polygon_support.h>
+#include <vcg/complex/algorithms/update/topology.h>
 
 
 #include <stdio.h>
@@ -75,27 +78,55 @@ public:
 	typedef typename SaveMeshType::ScalarType ScalarType;
 	typedef typename SaveMeshType::VertexType VertexType;
 	typedef typename SaveMeshType::FaceType FaceType;
-	typedef typename SaveMeshType::ConstFacePointer FacePointer;
+	typedef typename SaveMeshType::FacePointer FacePointer;
 	typedef typename SaveMeshType::ConstVertexIterator VertexIterator;
-	typedef typename SaveMeshType::ConstFaceIterator FaceIterator;
+	typedef typename SaveMeshType::FaceIterator FaceIterator;
 	typedef typename SaveMeshType::ConstEdgeIterator EdgeIterator;
 	typedef typename vcg::Shot<ScalarType>::ScalarType ShotScalarType;
 
-	static int Save(const SaveMeshType &m, const char * filename, bool binary=true)
+	// Preserve the historical const API for ordinary triangular export.
+	// Polygon reconstruction needs mutable FF adjacency and visited scratch flags.
+	static int Save(const SaveMeshType &m, const char *filename, bool binary=true)
+	{
+		return Save(const_cast<SaveMeshType &>(m),filename,binary);
+	}
+
+	static int Save(const SaveMeshType &m, const char *filename, int savemask, bool binary=true, CallBackPos *cb=0)
+	{
+		if(savemask & Mask::IOM_BITPOLYGONAL) return ply::E_STREAMERROR;
+		return Save(const_cast<SaveMeshType &>(m),filename,savemask,binary,cb);
+	}
+
+	static int Save(const SaveMeshType &m, const char *filename, bool binary, const PlyInfo &pi, CallBackPos *cb=0)
+	{
+		if(pi.mask & Mask::IOM_BITPOLYGONAL) return ply::E_STREAMERROR;
+		return Save(const_cast<SaveMeshType &>(m),filename,binary,pi,cb);
+	}
+
+	static int Save(SaveMeshType &m, const char * filename, bool binary=true)
 	{
 		PlyInfo pi;
 		return Save(m,filename,binary,pi);
 	}
 
-	static int Save(const SaveMeshType &m,  const char * filename, int savemask, bool binary = true, CallBackPos *cb=0 )
+	static int Save(SaveMeshType &m,  const char * filename, int savemask, bool binary = true, CallBackPos *cb=0 )
 	{
 		PlyInfo pi;
 		pi.mask=savemask;
 		return Save(m,filename,binary,pi,cb);
 	}
 
-	static int Save(const SaveMeshType &m,  const char * filename, bool binary, const PlyInfo &pi, CallBackPos *cb=0)	// V1.0
+	static int Save(SaveMeshType &m,  const char * filename, bool binary, const PlyInfo &pi, CallBackPos *cb=0)	// V1.0
 	{
+		const bool savePolygons = (pi.mask & Mask::IOM_BITPOLYGONAL) != 0;
+		if(savePolygons)
+		{
+			// Faux edges encode polygon interiors. Recompute FF adjacency here so
+			// traversal never relies on stale topology supplied by the caller.
+			tri::RequireFFAdjacency(m);
+			tri::UpdateTopology<SaveMeshType>::FaceFace(m);
+		}
+
 		FILE * fpout;
 		const char * hbin = "binary_little_endian";
 		const char * hasc = "ascii";
@@ -229,10 +260,15 @@ public:
 			}
 		}
 
+		// PLY declares the number of face records before their data, hence the
+		// inexpensive first traversal when triangles must be grouped as polygons.
+		const int faceCount = savePolygons
+			? tri::Clean<SaveMeshType>::CountBitLargePolygons(m)
+			: m.fn;
 		fprintf(fpout,
 				"element face %d\n"
 				"property list uchar int vertex_indices\n",
-				m.fn );
+				faceCount );
 
 		if(HasPerFaceFlags(m)   && (pi.mask & Mask::IOM_FACEFLAGS) )
 		{
@@ -562,61 +598,105 @@ public:
 		// this assert triggers when the vn != number of vertexes in vert that are not deleted.
 		assert(j==m.vn);
 
-		unsigned char b3char = 3;
-		unsigned char b9char = 9;
-		unsigned char b6char = 6;
 		FacePointer fp;
-		int vv[3];
 		FaceIterator fi;
 		int fcnt=0;
+		typedef std::pair<FacePointer, int> BoundaryCorner;
+		std::vector<typename SaveMeshType::VertexPointer> polygonVertices;
+		std::vector<FacePointer> polygonFaces;
+		std::vector<BoundaryCorner> boundaryCorners;
+		std::vector<int> vertexIndices;
+		// ExtractPolygon uses VISITED as scratch state. The corner pairs retain the
+		// source triangle and local corner needed for boundary wedge attributes.
+		if(savePolygons)
+			tri::UpdateFlags<SaveMeshType>::FaceClearV(m);
 		for(j=0,fi=m.face.begin();fi!=m.face.end();++fi)
 		{
 			//((m.vn+m.fn) != 0) all vertices and faces have been marked as deleted but the are still in the vert/face vectors
 			if(cb && ((j%1000)==0) && ((m.vn+m.fn) != 0))
-				(*cb)( 100*(m.vn+j)/(m.vn+m.fn), "Saving Vertices");
+				(*cb)( 100*(m.vn+j)/(m.vn+m.fn), "Saving Faces");
 
 			fp=&(*fi);
-			if( ! fp->IsD() )
+			if( !fp->IsD() && !(savePolygons && fp->IsV()) )
 			{ fcnt++;
+				boundaryCorners.clear();
+				polygonFaces.clear();
+				if(savePolygons)
+				{
+					vcg::tri::PolygonSupport<SaveMeshType,SaveMeshType>::ExtractPolygon(
+						fp, polygonVertices, polygonFaces, boundaryCorners);
+					// Multi-triangle polygons are traversed clockwise; restore the
+					// source winding. Plain triangles already have the correct order.
+					if(boundaryCorners.size()>3)
+						std::reverse(boundaryCorners.begin(), boundaryCorners.end());
+				}
+				else
+				{
+					polygonFaces.push_back(fp);
+					for(int k=0;k<fp->VN();++k)
+						boundaryCorners.emplace_back(fp,k);
+				}
+				const size_t cornerCount = boundaryCorners.size();
+				// PLY list counts are declared as uchar; account for the number of
+				// index/UV/color scalars written for each polygon corner.
+				const size_t listScalarsPerCorner = (HasPerWedgeColor(m) && (pi.mask & Mask::IOM_WEDGCOLOR)) ? 3
+					: ((pi.mask & Mask::IOM_WEDGTEXCOORD) ? 2 : 1);
+				if(cornerCount<3 || cornerCount>255/listScalarsPerCorner)
+				{
+					if(savePolygons) tri::UpdateFlags<SaveMeshType>::FaceClearV(m);
+					fclose(fpout);
+					return ply::E_STREAMERROR;
+				}
+				// Progress is measured in source triangles. Scalar face attributes
+				// below necessarily come from fp, the polygon's representative face.
+				j += int(polygonFaces.size());
 				if(binary)
 				{
-					vv[0]=indices[fp->cV(0)];
-					vv[1]=indices[fp->cV(1)];
-					vv[2]=indices[fp->cV(2)];
-					fwrite(&b3char,sizeof(char),1,fpout);
-					fwrite(vv,sizeof(int),3,fpout);
+					const unsigned char listSize = static_cast<unsigned char>(cornerCount);
+					vertexIndices.resize(cornerCount);
+					for(size_t k=0;k<cornerCount;++k)
+						vertexIndices[k]=indices[boundaryCorners[k].first->cV(boundaryCorners[k].second)];
+					fwrite(&listSize,sizeof(char),1,fpout);
+					fwrite(vertexIndices.data(),sizeof(int),cornerCount,fpout);
 
 					if(HasPerFaceFlags(m)&&( pi.mask & Mask::IOM_FACEFLAGS) ){
 						auto fl = fp->Flags();
+						// VISITED is exporter scratch state and faux bits describe the
+						// discarded triangulation, not the emitted polygon boundary.
+						if(savePolygons)
+							fl &= ~(FaceType::VISITED | FaceType::FAUX012);
 						fwrite(&fl,sizeof(int),1,fpout);
 					}
 
 					if( HasPerVertexTexCoord(m) && (!HasPerWedgeTexCoord(m)) && (pi.mask & Mask::IOM_WEDGTEXCOORD) )  // Note that you can save VT as WT if you really want it...
 					{
-						fwrite(&b6char,sizeof(char),1,fpout);
-						typename FaceType::TexCoordType::ScalarType t[6];
-						for(int k=0;k<3;++k)
+						const unsigned char listSize = static_cast<unsigned char>(cornerCount*2);
+						fwrite(&listSize,sizeof(char),1,fpout);
+						for(const BoundaryCorner &corner : boundaryCorners)
 						{
-							t[k*2+0] = fp->V(k)->T().u();
-							t[k*2+1] = fp->V(k)->T().v();
+							typename FaceType::TexCoordType::ScalarType t = corner.first->V(corner.second)->T().u();
+							fwrite(&t,sizeof(t),1,fpout);
+							t = corner.first->V(corner.second)->T().v();
+							fwrite(&t,sizeof(t),1,fpout);
 						}
-						fwrite(t,sizeof(typename FaceType::TexCoordType::ScalarType),6,fpout);
 					}
 					else if( HasPerWedgeTexCoord(m) && (pi.mask & Mask::IOM_WEDGTEXCOORD)  )
 					{
-						fwrite(&b6char,sizeof(char),1,fpout);
-						typename FaceType::TexCoordType::ScalarType t[6];
-						for(int k=0;k<3;++k)
+						const unsigned char listSize = static_cast<unsigned char>(cornerCount*2);
+						fwrite(&listSize,sizeof(char),1,fpout);
+						for(const BoundaryCorner &corner : boundaryCorners)
 						{
-							t[k*2+0] = fp->WT(k).u();
-							t[k*2+1] = fp->WT(k).v();
+							typename FaceType::TexCoordType::ScalarType t = corner.first->WT(corner.second).u();
+							fwrite(&t,sizeof(t),1,fpout);
+							t = corner.first->WT(corner.second).v();
+							fwrite(&t,sizeof(t),1,fpout);
 						}
-						fwrite(t,sizeof(typename FaceType::TexCoordType::ScalarType),6,fpout);
 					}
 
 					if(saveTexIndexFlag)
 					{
-						int t = fp->WT(0).n();
+						const BoundaryCorner &corner = boundaryCorners.front();
+						int t = corner.first->WT(corner.second).n();
 						fwrite(&t,sizeof(int),1,fpout);
 					}
 
@@ -626,13 +706,14 @@ public:
 
 					if( HasPerWedgeColor(m) && (pi.mask & Mask::IOM_WEDGCOLOR)  )
 					{
-						fwrite(&b9char,sizeof(char),1,fpout);
+						const unsigned char listSize = static_cast<unsigned char>(cornerCount*3);
+						fwrite(&listSize,sizeof(char),1,fpout);
 						float t[3];
-						for(int z=0;z<3;++z)
+						for(const BoundaryCorner &corner : boundaryCorners)
 						{
-							t[0] = float(fp->WC(z)[0])/255;
-							t[1] = float(fp->WC(z)[1])/255;
-							t[2] = float(fp->WC(z)[2])/255;
+							t[0] = float(corner.first->WC(corner.second)[0])/255;
+							t[1] = float(corner.first->WC(corner.second)[1])/255;
+							t[2] = float(corner.first->WC(corner.second)[2])/255;
 							fwrite( t,sizeof(float),3,fpout);
 						}
 					}
@@ -703,49 +784,59 @@ public:
 				}
 				else	// ***** ASCII *****
 				{
-					fprintf(fpout,"%d " ,fp->VN());
-					for(int k=0;k<fp->VN();++k)
-						fprintf(fpout,"%d ",indices[fp->cV(k)]);
+					fprintf(fpout,"%d " ,int(cornerCount));
+					for(const BoundaryCorner &corner : boundaryCorners)
+						fprintf(fpout,"%d ",indices[corner.first->cV(corner.second)]);
 
 					if(HasPerFaceFlags(m)&&( pi.mask & Mask::IOM_FACEFLAGS ))
-						fprintf(fpout,"%d ",fp->Flags());
-
-					if( HasPerVertexTexCoord(m) && (pi.mask & Mask::IOM_WEDGTEXCOORD) ) // you can save VT as WT if you really want it...
 					{
-						fprintf(fpout,"%d ",fp->VN()*2);
-						for(int k=0;k<fp->VN();++k)
+						int flags = fp->Flags();
+						// Do not leak traversal or internal-triangulation flags into PLY.
+						if(savePolygons)
+							flags &= ~(FaceType::VISITED | FaceType::FAUX012);
+						fprintf(fpout,"%d ",flags);
+					}
+
+					// Match the binary path: genuine wedge UVs take precedence over
+					// vertex UVs because only they can preserve texture seams.
+					if( HasPerVertexTexCoord(m) && !HasPerWedgeTexCoord(m) && (pi.mask & Mask::IOM_WEDGTEXCOORD) ) // you can save VT as WT if you really want it...
+					{
+						fprintf(fpout,"%d ",int(cornerCount*2));
+						for(const BoundaryCorner &corner : boundaryCorners)
 							fprintf(fpout,"%.*g %.*g "
-									,DGTFT,fp->V(k)->T().u()
-									,DGTFT,fp->V(k)->T().v()
+									,DGTFT,corner.first->V(corner.second)->T().u()
+									,DGTFT,corner.first->V(corner.second)->T().v()
 									);
 					}
 					else if( HasPerWedgeTexCoord(m) && (pi.mask & Mask::IOM_WEDGTEXCOORD)  )
 					{
-						fprintf(fpout,"%d ",fp->VN()*2);
-						for(int k=0;k<fp->VN();++k)
+						fprintf(fpout,"%d ",int(cornerCount*2));
+						for(const BoundaryCorner &corner : boundaryCorners)
 							fprintf(fpout,"%f %f "
-									,fp->WT(k).u()
-									,fp->WT(k).v()
+									,corner.first->WT(corner.second).u()
+									,corner.first->WT(corner.second).v()
 									);
 					}
 
 					if(saveTexIndexFlag)
 					{
-						fprintf(fpout,"%d ",fp->WT(0).n());
+						const BoundaryCorner &corner = boundaryCorners.front();
+						fprintf(fpout,"%d ",corner.first->WT(corner.second).n());
 					}
 
+					// Face and wedge colors are separate PLY properties and may coexist.
 					if( HasPerFaceColor(m) && (pi.mask & Mask::IOM_FACECOLOR)  )
 					{
 						fprintf(fpout, "%u %u %u %u ", fp->C()[0], fp->C()[1], fp->C()[2], fp->C()[3]);
 					}
-					else if( HasPerWedgeColor(m) && (pi.mask & Mask::IOM_WEDGCOLOR)  )
+					if( HasPerWedgeColor(m) && (pi.mask & Mask::IOM_WEDGCOLOR)  )
 					{
-						fprintf(fpout,"9 ");
-						for(int z=0;z<3;++z)
+						fprintf(fpout,"%d ",int(cornerCount*3));
+						for(const BoundaryCorner &corner : boundaryCorners)
 							fprintf(fpout,"%g %g %g "
-									,double(fp->WC(z)[0])/255
-									,double(fp->WC(z)[1])/255
-									,double(fp->WC(z)[2])/255
+									,double(corner.first->WC(corner.second)[0])/255
+									,double(corner.first->WC(corner.second)[1])/255
+									,double(corner.first->WC(corner.second)[2])/255
 									);
 					}
 
@@ -801,7 +892,10 @@ public:
 				}
 			}
 		}
-		assert(fcnt==m.fn);
+		// Restore the only face state used as exporter scratch storage.
+		if(savePolygons)
+			tri::UpdateFlags<SaveMeshType>::FaceClearV(m);
+		assert(fcnt==faceCount);
 		(void)fcnt;
 		int eauxvv[2];
 		if( pi.mask & Mask::IOM_EDGEINDEX )
@@ -858,8 +952,8 @@ public:
 			ply_error_msg[PlyInfo::E_SHORTFILE	  ]="Unexpected EOF";
 			ply_error_msg[PlyInfo::E_NO_3VERTINFACE ]="Face with more than 3 vertices";
 			ply_error_msg[PlyInfo::E_BAD_VERT_INDEX ]="Bad vertex index in face";
-			ply_error_msg[PlyInfo::E_NO_6TCOORD	 ]="Face with no 6 texture coordinates";
-			ply_error_msg[PlyInfo::E_DIFFER_COLORS  ]="Number of color differ from vertices";
+			ply_error_msg[PlyInfo::E_NO_6TCOORD	 ]="Texture coordinate count does not match face corners";
+			ply_error_msg[PlyInfo::E_DIFFER_COLORS  ]="Wedge color count does not match face corners";
 			ply_error_msg[PlyInfo::E_INVALID_POLYGON ]="Face is not a valid simple planar polygon";
 		}
 
@@ -881,13 +975,14 @@ public:
 		capability |= vcg::tri::io::Mask::IOM_FACEFLAGS	;
 		capability |= vcg::tri::io::Mask::IOM_FACECOLOR	;
 		capability |= vcg::tri::io::Mask::IOM_FACEQUALITY  ;
-		// capability |= vcg::tri::io::Mask::IOM_FACENORMAL   ;
+		// Face normals have explicit nx/ny/nz PLY properties below.
+		capability |= vcg::tri::io::Mask::IOM_FACENORMAL   ;
 		capability |= vcg::tri::io::Mask::IOM_WEDGCOLOR	;
 		capability |= vcg::tri::io::Mask::IOM_WEDGTEXCOORD ;
 		capability |= vcg::tri::io::Mask::IOM_WEDGTEXMULTI ;
-		capability |= vcg::tri::io::Mask::IOM_WEDGNORMAL   ;
+		// PLY has no standard per-corner normal property.
 		capability |= vcg::tri::io::Mask::IOM_CAMERA   ;
-		//capability |= vcg::tri::io::Mask::IOM_BITPOLYGONAL;
+		capability |= vcg::tri::io::Mask::IOM_BITPOLYGONAL;
 		return capability;
 	}
 
