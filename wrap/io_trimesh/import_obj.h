@@ -134,7 +134,7 @@ public:
     E_BAD_VERT_NORMAL_INDEX             =16*2+0,
     E_LESS_THAN_4_VERT_IN_QUAD          =17*2+0,
     E_INVALID_POLYGON                   =18*2+0,
-    E_QUAD_TESSELLATION_FALLBACK        =19*2+1
+    E_POLYGON_TESSELLATION_FALLBACK     =19*2+1
   };
   
   // to check if a given error is critical or not.
@@ -170,8 +170,8 @@ public:
       /* 15 */ "Bad texture coords index in face",
       /* 16 */ "Bad vertex normal index in face",
       /* 17 */ "Quad faces with number of corners different from 4",
-      /* 18 */ "Face is not a valid simple polygon under planar projection",
-      /* 19 */ "One or more quads could not be tessellated under planar projection; the shortest diagonal was used"
+      /* 18 */ "Face has non-finite coordinates and cannot be triangulated",
+      /* 19 */ "One or more polygon faces required fallback triangulation"
     };
     
     error >>= 1;
@@ -481,25 +481,17 @@ public:
 
             if(vertexesPerFace==3)
               indexTriangulatedVect = {0, 1, 2};
-            else if(!TessellatePlanarPolygon3(
-              polygonPoints, indexTriangulatedVect, false /* accept non-planar file faces */))
+            else
             {
-              if(vertexesPerFace!=4)
+              bool usedFallback = false;
+              if(!TessellatePlanarPolygon3(
+                polygonPoints, indexTriangulatedVect, &usedFallback))
               {
                 stream.close();
                 return E_INVALID_POLYGON;
               }
-
-              // OBJ quads are frequently non-planar or numerically awkward. If
-              // projection cannot establish a simple polygon, split along the
-              // shorter diagonal and let the normal faux-edge logic below retain
-              // the original quad boundary.
-              if(SquaredDistance(polygonPoints[0], polygonPoints[2]) <=
-                 SquaredDistance(polygonPoints[1], polygonPoints[3]))
-                indexTriangulatedVect = {0, 1, 2, 0, 2, 3};
-              else
-                indexTriangulatedVect = {0, 1, 3, 1, 2, 3};
-              result = E_QUAD_TESSELLATION_FALLBACK;
+              if(usedFallback)
+                result = E_POLYGON_TESSELLATION_FALLBACK;
             }
             extraTriangles+=((indexTriangulatedVect.size()/3) -1);
             

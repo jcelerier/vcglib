@@ -80,7 +80,8 @@ namespace tri {
 	 * @param pm: input polygonal mesh
 	 * @param birthFaces: a mapping that tells, for each face of the triangle mesh,
 	 * which one is its birth face in the polygonal mesh.
-	 * @return false if a face is not a valid simple planar polygon; outputs are then cleared.
+	 * @return false if a face has fewer than three vertices or non-finite coordinates;
+	 * outputs are then cleared.
 	 */
 	static bool ImportFromPolyMesh(TriMeshType& tm, PolyMeshType& pm, std::vector<unsigned int>& birthFaces)
 	{

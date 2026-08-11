@@ -186,24 +186,28 @@ bool TessellatePlanarPolygon2(const POINT_CONTAINER &points, std::vector<int> &o
 }
 
 /**
- * Triangulate one finite, simple, approximately planar polygon embedded in 3D.
+ * Triangulate one finite polygon embedded in 3D.
  *
- * A Newell area vector supplies a deterministic normal. Coordinates relative
- * to the first point are projected to the dominant coordinate plane, avoiding
- * an unstable arbitrary basis and large-offset cancellation. The 2D routine
- * defines output and failure behavior. False also reports a degenerate normal.
- * By default, a departure from planarity larger than the input scalar precision
- * is rejected. File importers may disable that check for modeling polygons such
- * as quads, whose planar projection still provides a valid triangulation.
+ * The preferred path projects along the dominant component of its Newell
+ * normal and uses the validated 2D ear clipper above. Real-world polygon meshes
+ * frequently contain non-planar, degenerate, or self-intersecting faces, so a
+ * failed projection is not a fatal error: quads are split along their shorter
+ * diagonal and larger polygons use a deterministic fan. Such a fallback may
+ * contain degenerate, overlapping, or crossing triangles, but always preserves
+ * the input boundary order and emits exactly n-2 triangles.
+ *
+ * False is reserved for inputs for which triangle indices cannot be produced
+ * (fewer than three points or non-finite coordinates), and leaves output
+ * unchanged. Callers interested in geometry quality may inspect usedFallback.
  */
 template <class POINT_CONTAINER>
 bool TessellatePlanarPolygon3(
 	const POINT_CONTAINER &points,
 	std::vector<int> &output,
-	bool requirePlanarity = true)
+	bool *usedFallback = nullptr)
 {
-	typedef typename POINT_CONTAINER::value_type Point3x;
-	typedef typename Point3x::ScalarType ScalarType;
+	if (usedFallback)
+		*usedFallback = false;
 	const size_t count = points.size();
 	if (count < 3)
 		return false;
@@ -224,41 +228,48 @@ bool TessellatePlanarPolygon3(
 			return false;
 		scale = std::max(scale, relative[i].Norm());
 	}
-	if (!(scale > 0))
-		return false;
-
 	Point3d normal(0, 0, 0);
 	for (size_t i = 0; i < count; ++i)
 		normal += relative[i] ^ relative[(i + 1) % count];
 	const double normalNorm = normal.Norm();
 	const double normalTolerance = scale * scale * count * 64
 		* std::numeric_limits<double>::epsilon();
-	if (!(normalNorm > normalTolerance))
-		return false;
-	normal /= normalNorm;
-
-	if (requirePlanarity) {
-		double scalarEpsilon = double(std::numeric_limits<ScalarType>::epsilon());
-		if (!(scalarEpsilon > 0))
-			scalarEpsilon = std::numeric_limits<double>::epsilon();
-		const double planarityTolerance = scale * std::max(1e-12, 32 * scalarEpsilon);
-		for (size_t i = 0; i < count; ++i)
-			if (std::abs(relative[i] * normal) > planarityTolerance)
-				return false;
+	if (normalNorm > normalTolerance) {
+		normal /= normalNorm;
+		std::vector<Point2d> projected;
+		projected.reserve(count);
+		const Point3d absoluteNormal(
+			std::abs(normal.X()), std::abs(normal.Y()), std::abs(normal.Z()));
+		for (size_t i = 0; i < count; ++i) {
+			if (absoluteNormal.X() >= absoluteNormal.Y() && absoluteNormal.X() >= absoluteNormal.Z())
+				projected.push_back(Point2d(relative[i].Y(), relative[i].Z()));
+			else if (absoluteNormal.Y() >= absoluteNormal.Z())
+				projected.push_back(Point2d(relative[i].X(), relative[i].Z()));
+			else
+				projected.push_back(Point2d(relative[i].X(), relative[i].Y()));
+		}
+		if (TessellatePlanarPolygon2(projected, output))
+			return true;
 	}
 
-	std::vector<Point2d> projected;
-	projected.reserve(count);
-	const Point3d absoluteNormal(std::abs(normal.X()), std::abs(normal.Y()), std::abs(normal.Z()));
-	for (size_t i = 0; i < count; ++i) {
-		if (absoluteNormal.X() >= absoluteNormal.Y() && absoluteNormal.X() >= absoluteNormal.Z())
-			projected.push_back(Point2d(relative[i].Y(), relative[i].Z()));
-		else if (absoluteNormal.Y() >= absoluteNormal.Z())
-			projected.push_back(Point2d(relative[i].X(), relative[i].Z()));
-		else
-			projected.push_back(Point2d(relative[i].X(), relative[i].Y()));
+	if (usedFallback)
+		*usedFallback = true;
+	std::vector<int> triangles;
+	triangles.reserve(3 * (count - 2));
+	if (count == 4
+		&& (relative[0] - relative[2]).SquaredNorm()
+			> (relative[1] - relative[3]).SquaredNorm()) {
+		triangles = {0, 1, 3, 1, 2, 3};
 	}
-	return TessellatePlanarPolygon2(projected, output);
+	else {
+		for (size_t i = 1; i + 1 < count; ++i) {
+			triangles.push_back(0);
+			triangles.push_back(int(i));
+			triangles.push_back(int(i + 1));
+		}
+	}
+	output.insert(output.end(), triangles.begin(), triangles.end());
+	return true;
 }
 
 /*@}*/
