@@ -4,6 +4,14 @@
 !/**/
 !*.*
 
+# Eigen's module headers have no extension, so the rule above ignores them.
+# Already-tracked ones are unaffected, which makes the failure invisible: every
+# Eigen update silently drops its *new* headers at "git add" time and only
+# breaks on a case-sensitive filesystem. The vendored tree holds no built
+# binaries, so exempt it wholesale; the *.o/*.a/.DS_Store rules further down
+# still apply, being later matches.
+!eigenlib/**
+
 # QTCreator user prefs
 *.user
 
