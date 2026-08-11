@@ -20,6 +20,11 @@ jobs:
       with:
         cache: true
         version: '5.15.2'
+        # Only trimesh_texture, space_packer and space_rasterized_packer use Qt,
+        # and only Qt5::OpenGL (part of qtbase) and Qt5::Svg. Restricting the
+        # archives skips ~20 unused ones - including the QtMultimedia archive
+        # whose corrupt download was failing the Windows job outright.
+        archives: qtbase qtsvg
     - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
     - name: Setup env Linux
