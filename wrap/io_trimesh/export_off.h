@@ -34,6 +34,7 @@
 #include<wrap/io_trimesh/precision.h>
 #include <vcg/complex/algorithms/clean.h>
 #include <vcg/complex/algorithms/polygon_support.h>
+#include <vcg/complex/algorithms/update/topology.h>
 
 
 namespace vcg {
@@ -46,16 +47,17 @@ class ExporterOFF
 public:
   typedef typename SaveMeshType::VertexPointer VertexPointer;
   typedef typename SaveMeshType::ScalarType ScalarType;
-  typedef typename SaveMeshType::VertexType VertexType;
-  typedef typename SaveMeshType::FaceType FaceType;
-  typedef typename SaveMeshType::FacePointer FacePointer;
-  typedef typename SaveMeshType::VertexIterator VertexIterator;
   typedef typename SaveMeshType::FaceIterator FaceIterator;
 
   static int Save(SaveMeshType &m, const char * filename, int mask=0 )
   {
-    vcg::face::Pos<FaceType> he;
-    vcg::face::Pos<FaceType> hei;
+    const bool savePolygons = (mask & io::Mask::IOM_BITPOLYGONAL) != 0;
+    if(savePolygons)
+    {
+      tri::RequireFFAdjacency(m);
+      tri::UpdateTopology<SaveMeshType>::FaceFace(m);
+    }
+
     FILE * fpout = fopen(filename,"w");
     if(fpout==NULL)	return 1; // 1 is the error code for cant'open, see the ErrorMsg function
 
@@ -69,7 +71,7 @@ public:
     fprintf(fpout,"OFF\n");
 
     int polynumber;
-    if (mask &io::Mask::IOM_BITPOLYGONAL)
+    if(savePolygons)
       polynumber = tri::Clean<SaveMeshType>::CountBitLargePolygons(m);
     else
       polynumber = m.fn;
@@ -98,16 +100,15 @@ public:
     }
 
 
-    if (mask &io::Mask::IOM_BITPOLYGONAL) {
-      tri::RequireFFAdjacency(m);
+    if(savePolygons) {
       std::vector<VertexPointer> polygon;
       tri::UpdateFlags<SaveMeshType>::FaceClearV(m);
       for(FaceIterator fi=m.face.begin();fi!=m.face.end();++fi) if (!fi->IsD()) if (!fi->IsV()) {
         vcg::tri::PolygonSupport<SaveMeshType,SaveMeshType>::ExtractPolygon(&*fi,polygon);
-        //not sure why this std::reverse is needed. ExtractPolygon is used in
-        //many other functions, and nobody complained. however, this list is
-        //clockwise wrt fi normal.
-        std::reverse(polygon.begin(), polygon.end());
+        // Multi-triangle polygons are traversed clockwise; restore the source
+        // winding. Plain triangles already have the correct order.
+        if(polygon.size()>3)
+          std::reverse(polygon.begin(), polygon.end());
         if(!polygon.empty())
         {
           fprintf(fpout,"%d ", int(polygon.size()) );
@@ -118,6 +119,7 @@ public:
           fprintf(fpout,"\n");
         }
       }
+      tri::UpdateFlags<SaveMeshType>::FaceClearV(m);
     }
     else {
       for(FaceIterator fi=m.face.begin();fi!=m.face.end();++fi)
