@@ -591,7 +591,7 @@ void RefineMontecarloVolumeSamplingNearSurface(MeshType &surfaceSamplingMesh, Sc
   
 }
 
- void BuildMontecarloVolumeSampling(int montecarloSampleNum)
+ void BuildMontecarloVolumeSampling(int montecarloSampleNum, vcg::CallBackPos* cb=0)
  {
    montecarloVolumeMesh.Clear();
    
@@ -599,6 +599,8 @@ void RefineMontecarloVolumeSamplingNearSurface(MeshType &surfaceSamplingMesh, Sc
    CoordType closest;
    while(montecarloVolumeMesh.vn < montecarloSampleNum)
     {
+	    if(cb && (montecarloVolumeMesh.vn%1000)==0)
+			        cb((100*montecarloVolumeMesh.vn)/montecarloSampleNum,"Montecarlo Sampling...");
         CoordType point = math::GeneratePointInBox3Uniform(rng,baseMesh.bbox);
         trialNum++;
         ScalarType d = this->psd.DistanceFromSurface(point,closest);
@@ -622,10 +624,10 @@ void RefineMontecarloVolumeSamplingNearSurface(MeshType &surfaceSamplingMesh, Sc
  * 
  *
  */
- void BuildVolumeSampling(int montecarloSampleNum, ScalarType poissonRadius, int randSeed)
+ void BuildVolumeSampling(int montecarloSampleNum, ScalarType poissonRadius, int randSeed, vcg::CallBackPos* cb=0)
  {
    if(montecarloSampleNum >0) 
-     this->BuildMontecarloVolumeSampling(montecarloSampleNum);
+     this->BuildMontecarloVolumeSampling(montecarloSampleNum,cb);
    if(this->seedDomainMesh.vn == 0) 
      tri::Append<MeshType,MeshType>::MeshCopy(seedDomainMesh,montecarloVolumeMesh);     
    
