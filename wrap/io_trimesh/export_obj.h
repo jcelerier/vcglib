@@ -26,6 +26,8 @@
 #ifndef __VCGLIB_EXPORT_OBJ
 #define __VCGLIB_EXPORT_OBJ
 
+#include <vcg/complex/algorithms/polygon_support.h>
+#include <vcg/complex/algorithms/update/topology.h>
 #include <wrap/callback.h>
 #include <wrap/io_trimesh/io_mask.h>
 #include <wrap/io_trimesh/io_material.h>
@@ -48,6 +50,8 @@ public:
   typedef typename SaveMeshType::ConstEdgeIterator ConstEdgeIterator;
   typedef typename SaveMeshType::VertexIterator VertexIterator;
   typedef typename SaveMeshType::VertexType VertexType;
+  typedef typename SaveMeshType::VertexPointer VertexPointer;
+  typedef typename SaveMeshType::FacePointer FacePointer;
   typedef typename SaveMeshType::ScalarType ScalarType;
   typedef typename SaveMeshType::CoordType CoordType;
   typedef typename SaveMeshType::FaceType::TexCoordType TexCoordType;
@@ -111,6 +115,7 @@ public:
     //wedg
     capability |= vcg::tri::io::Mask::IOM_WEDGTEXCOORD;
     capability |= vcg::tri::io::Mask::IOM_WEDGNORMAL;
+    capability |= vcg::tri::io::Mask::IOM_BITPOLYGONAL;
 
     return capability;
   }
@@ -128,10 +133,20 @@ public:
   static int Save(SaveMeshType &m, const char * filename, int mask, bool useMaterialAttribute ,CallBackPos *cb=0)
   {
     const int DGT = vcg::tri::io::Precision<ScalarType>::digits();
-    // texture coord and color: in obj we cannot save BOTH per vertex and per wedge information. We default on wedge
+    const bool savePolygons = (mask & Mask::IOM_BITPOLYGONAL) != 0;
+    if (savePolygons) {
+      tri::RequireFFAdjacency(m);
+      tri::UpdateTopology<SaveMeshType>::FaceFace(m);
+    }
+    // OBJ has one index stream for each attribute, so prefer per-wedge data
+    // whenever both per-vertex and per-wedge variants were requested.
     if (mask & vcg::tri::io::Mask::IOM_WEDGTEXCOORD &&
         mask & vcg::tri::io::Mask::IOM_VERTTEXCOORD ) {
       mask &= ~vcg::tri::io::Mask::IOM_VERTTEXCOORD;
+    }
+    if (mask & vcg::tri::io::Mask::IOM_WEDGNORMAL &&
+        mask & vcg::tri::io::Mask::IOM_VERTNORMAL ) {
+      mask &= ~vcg::tri::io::Mask::IOM_VERTNORMAL;
     }
     if (mask & vcg::tri::io::Mask::IOM_WEDGCOLOR &&
         mask & vcg::tri::io::Mask::IOM_VERTCOLOR ) {
@@ -173,15 +188,6 @@ public:
     for(auto vi=m.vert.begin(); vi!=m.vert.end(); ++vi) if( !(*vi).IsD() )
     {
       VertexId[vi-m.vert.begin()]=numvert;
-      //saves normal per vertex
-      if (mask & Mask::IOM_WEDGNORMAL )
-      {
-        if(AddNewNormalVertex(NormalVertex,(*vi).N(),curNormalIndex))
-        {
-          fprintf(fp,"vn %.*f %.*f %.*f\n", DGT, (*vi).N()[0], DGT, (*vi).N()[1], DGT, (*vi).N()[2]);
-          curNormalIndex++;
-        }
-      }
       if (mask & Mask::IOM_VERTNORMAL ) {
         fprintf(fp,"vn %.*f %.*f %.*f\n", DGT, (*vi).N()[0], DGT, (*vi).N()[1], DGT, (*vi).N()[2]);
       }
@@ -214,15 +220,52 @@ public:
     std::map<TexCoordType,int> CoordIndexTexture;
     int curTexCoordIndex = 1;
     int curMatIndex = -1;
+    int writtenFaces = 0;
     std::vector<Material> materialVec; //used if we do not have material attributes 
-    
-    for(ConstFaceIterator fi=m.face.begin(); fi!=m.face.end(); ++fi) if( !(*fi).IsD() )
+
+    typedef std::pair<FacePointer, int> BoundaryCorner;
+    std::vector<VertexPointer> polygonVertices;
+    std::vector<FacePointer> polygonFaces;
+    std::vector<BoundaryCorner> boundaryCorners;
+    boundaryCorners.reserve(4);
+    if(savePolygons)
+      tri::UpdateFlags<SaveMeshType>::FaceClearV(m);
+
+    for(FaceIterator fi=m.face.begin(); fi!=m.face.end(); ++fi)
     {
+      if((*fi).IsD() || (savePolygons && (*fi).IsV()))
+        continue;
+
+      FacePointer representativeFace = &*fi;
+      boundaryCorners.clear();
+      polygonFaces.clear();
+      if(savePolygons)
+      {
+        vcg::tri::PolygonSupport<SaveMeshType,SaveMeshType>::ExtractPolygon(
+          representativeFace, polygonVertices, polygonFaces, boundaryCorners);
+        // ExtractPolygon follows the boundary clockwise for multi-triangle
+        // polygons; restore the source face winding expected by OBJ.
+        if(boundaryCorners.size()>3)
+          std::reverse(boundaryCorners.begin(), boundaryCorners.end());
+        if(boundaryCorners.empty())
+        {
+          tri::UpdateFlags<SaveMeshType>::FaceClearV(m);
+          fclose(fp);
+          return E_NOTFACESVALID;
+        }
+      }
+      else
+      {
+        polygonFaces.push_back(representativeFace);
+        for(int k=0;k<representativeFace->VN();++k)
+          boundaryCorners.emplace_back(representativeFace,k);
+      }
+
       if((mask & Mask::IOM_FACECOLOR) || (mask & Mask::IOM_WEDGTEXCOORD) || (mask & Mask::IOM_VERTTEXCOORD))
       {
         int index=-1;
-        if(useMaterialAttribute) index = materialIndexHandle[fi];
-        else                     index = Materials<SaveMeshType>::CreateNewMaterial(m,materialVec,*fi);
+        if(useMaterialAttribute) index = materialIndexHandle[representativeFace];
+        else                     index = Materials<SaveMeshType>::CreateNewMaterial(m,materialVec,*representativeFace);
                   
         if(index != curMatIndex) {
           fprintf(fp,"\nusemtl material_%d\n", index);
@@ -232,32 +275,45 @@ public:
 
       //saves texture coord x wedge
       if(HasPerWedgeTexCoord(m) && (mask & Mask::IOM_WEDGTEXCOORD))
-        for(int k=0;k<(*fi).VN();k++)
+        for(const BoundaryCorner &corner : boundaryCorners)
         {
-            if(AddNewTextureCoord(CoordIndexTexture,(*fi).WT(k),curTexCoordIndex))
+            const TexCoordType &texCoord = corner.first->cWT(corner.second);
+            if(AddNewTextureCoord(CoordIndexTexture,texCoord,curTexCoordIndex))
             {
-              fprintf(fp,"vt %.*f %.*f\n", DGT, (*fi).WT(k).u(), DGT, (*fi).WT(k).v());
+              fprintf(fp,"vt %.*f %.*f\n", DGT, texCoord.u(), DGT, texCoord.v());
               curTexCoordIndex++; //ncreases the value number to be associated to the Texture
             }
         }
 
+      if(HasPerWedgeNormal(m) && (mask & Mask::IOM_WEDGNORMAL))
+        for(const BoundaryCorner &corner : boundaryCorners)
+        {
+          const CoordType normal(corner.first->cWN(corner.second));
+          if(AddNewNormalVertex(NormalVertex,normal,curNormalIndex))
+          {
+            fprintf(fp,"vn %.*f %.*f %.*f\n", DGT, normal[0], DGT, normal[1], DGT, normal[2]);
+            curNormalIndex++;
+          }
+        }
+
       fprintf(fp,"f ");
-      for(int k=0;k<(*fi).VN();k++)
+      for(size_t k=0;k<boundaryCorners.size();k++)
       {
         if(k!=0) fprintf(fp," ");
+        const BoundaryCorner &corner = boundaryCorners[k];
         int vInd = -1;
         // +1 because Obj file format begins from index = 1 but not from index = 0.
-        vInd = VertexId[tri::Index(m, (*fi).V(k))] + 1;//index of vertex per face
+        vInd = VertexId[tri::Index(m, corner.first->V(corner.second))] + 1;//index of vertex per face
 
         int vt = -1;
         if(mask & Mask::IOM_WEDGTEXCOORD)
-          vt = GetIndexVertexTexture(CoordIndexTexture,(*fi).WT(k));//index of vertex texture per face
+          vt = GetIndexVertexTexture(CoordIndexTexture,corner.first->cWT(corner.second));//index of vertex texture per face
         if (mask & Mask::IOM_VERTTEXCOORD)
           vt = vInd;
 
         int vn = -1;
-        if(mask & Mask::IOM_WEDGNORMAL )
-          vn = GetIndexVertexNormal(m, NormalVertex, (*fi).V(k)->cN());//index of vertex normal per face.
+        if(HasPerWedgeNormal(m) && (mask & Mask::IOM_WEDGNORMAL))
+          vn = GetIndexVertexNormal(m, NormalVertex, corner.first->cWN(corner.second));//index of wedge normal
         if (mask & Mask::IOM_VERTNORMAL)
           vn = vInd;
 
@@ -265,13 +321,23 @@ public:
         WriteFacesElement(fp,vInd,vt,vn);
       }
       fprintf(fp,"\n");
+      ++writtenFaces;
 
       if (cb !=NULL) {
-        if(!(*cb)((100*++current)/totalPrimitives, "writing vertices "))
-        { fclose(fp); return E_ABORTED;}
+        current += int(polygonFaces.size());
+        if(!(*cb)((100*current)/totalPrimitives, "writing faces "))
+        {
+          if(savePolygons)
+            tri::UpdateFlags<SaveMeshType>::FaceClearV(m);
+          fclose(fp);
+          return E_ABORTED;
+        }
       }
 
     } // end for faces
+
+    if(savePolygons)
+      tri::UpdateFlags<SaveMeshType>::FaceClearV(m);
 
     for(ConstEdgeIterator ei=m.edge.begin(); ei!=m.edge.end(); ++ei) if( !(*ei).IsD() )
     {
@@ -280,7 +346,7 @@ public:
               VertexId[tri::Index(m, (*ei).V(1))] + 1);
     }
 
-    fprintf(fp,"# %d faces, %d coords texture\n\n",m.fn,int(CoordIndexTexture.size()));
+    fprintf(fp,"# %d faces, %d coords texture\n\n",writtenFaces,int(CoordIndexTexture.size()));
 
     fprintf(fp,"# End of File\n");
 

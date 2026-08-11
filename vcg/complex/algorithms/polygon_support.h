@@ -195,18 +195,23 @@ namespace tri {
     /// do not call this function on a visited face.
     static void ExtractPolygon(typename TriMeshType::FacePointer tfp,
                                std::vector<typename TriMeshType::VertexPointer> &vs,
-                               std::vector<typename TriMeshType::FacePointer> &fs)
+                               std::vector<typename TriMeshType::FacePointer> &fs,
+                               std::vector<std::pair<typename TriMeshType::FacePointer, int>> &corners)
     {
         vs.clear();
         fs.clear();
+        corners.clear();
         if(tfp->IsV()) return;
         
         // all faux edges return an empty vertex vector!
         if(  tfp->IsF(0)  &&   tfp->IsF(1)  &&   tfp->IsF(2)) return;
         // all NON faux edges just return triangle!
-        if((!tfp->IsF(0)) && (!tfp->IsF(1)) && (!tfp->IsF(2))) 
+        if((!tfp->IsF(0)) && (!tfp->IsF(1)) && (!tfp->IsF(2)))
         {
-          vs.push_back(tfp->V(0)); vs.push_back(tfp->V(1)); vs.push_back(tfp->V(2));
+          for (int i = 0; i < 3; ++i) {
+            vs.push_back(tfp->V(i));
+            corners.emplace_back(tfp, i);
+          }
           fs.push_back(tfp);
           return;
         }
@@ -227,6 +232,9 @@ namespace tri {
         {
             assert(!p.F()->IsF(p.E()));
             vs.push_back(p.V());
+            // Retain the source face corner for exporters that must preserve
+            // per-wedge attributes along the reconstructed polygon boundary.
+            corners.emplace_back(p.F(), p.VInd());
             p.FlipE();
             while( p.F()->IsF(p.E()) )
             {
@@ -240,6 +248,13 @@ namespace tri {
             p.FlipV();
         } while(p!=start);
         //assert(vs.size() == fs.size()+2);
+    }
+    static void ExtractPolygon(typename TriMeshType::FacePointer tfp,
+                               std::vector<typename TriMeshType::VertexPointer> &vs,
+                               std::vector<typename TriMeshType::FacePointer> &fs)
+    {
+      std::vector<std::pair<typename TriMeshType::FacePointer, int>> corners;
+      ExtractPolygon(tfp,vs,fs,corners);
     }
     static void ExtractPolygon(typename TriMeshType::FacePointer tfp, std::vector<typename TriMeshType::VertexPointer> &vs)
     {
