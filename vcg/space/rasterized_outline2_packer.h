@@ -246,6 +246,12 @@ public:
       // can help to keep the packing area in a rectangular region
       bool minmax;
 
+      // seed for the random permutations tried when 'permutations' is true. Zero
+      // draws a fresh seed from the OS on every call (the historical behaviour);
+      // any other value makes the sequence of permutations - and therefore the
+      // resulting packing - exactly reproducible.
+      unsigned int randomSeed;
+
       ///default constructor
       Parameters()
       {
@@ -256,6 +262,7 @@ public:
           rotationNum = 16;
           gutterWidth = 0;
           minmax = false;
+          randomSeed = 0;
       }
   };
 
@@ -738,9 +745,13 @@ public:
                                  const Parameters& packingPar)
     {
         std::vector<std::vector<int>> trials;
-        std::random_device rd;
-        static std::mt19937 g(rd());
-        
+        // A zero seed means "different every run", so fall back to the OS entropy
+        // source; otherwise the caller gets a reproducible packing. Previously the
+        // shuffle below drew straight from a std::random_device, which no caller
+        // could control.
+        std::mt19937 g(packingPar.randomSeed != 0 ? packingPar.randomSeed
+                                                  : std::random_device{}());
+
         // Build a permutation that holds the indexes of the polys ordered by their area
         std::vector<int> perm(polyPointsVec.size());
         for(size_t i = 0; i < polyPointsVec.size(); i++)
@@ -764,7 +775,7 @@ public:
             int permutationCount = numPermutedObjects * 5;
             //printf("PACKING: trying %d random permutations of the largest %d elements\n", permutationCount, numPermutedObjects);
             for (int k = 0; k < permutationCount; ++k) {
-                std::shuffle(perm.begin(), perm.begin() + numPermutedObjects,rd);
+                std::shuffle(perm.begin(), perm.begin() + numPermutedObjects, g);
                 trials.push_back(perm);
             }
         }

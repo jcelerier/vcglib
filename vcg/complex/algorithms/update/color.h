@@ -500,14 +500,16 @@ Simple Perlin color mixing. Color 1 and 2 are mixed according the perlin noise f
 	/*! \brief Simple Noise adding function.
 It simply add signed noise to the color of the mesh. The noise has uniform distribution and the amplitude is +/-2^(noisebits-1).
 */
-	static void PerVertexAddNoise(MeshType& m, int noiseBits, bool onSelected=false)
+	static void PerVertexAddNoise(MeshType& m, int noiseBits, bool onSelected=false, int randSeed=0)
 	{
 		RequirePerVertexColor(m);
 
 		if(noiseBits>8) noiseBits = 8;
 		if(noiseBits<1) return;
 
-		math::SubtractiveRingRNG randomGen = math::SubtractiveRingRNG(time(NULL));
+		// randSeed==0 keeps the historical behaviour (a different result on every
+		// call); pass a non-zero seed to make the noise exactly reproducible.
+		math::SubtractiveRingRNG randomGen = math::SubtractiveRingRNG(randSeed ? randSeed : int(time(NULL)));
 		for(VertexIterator vi = m.vert.begin(); vi!=m.vert.end(); ++vi)
 			if(!(*vi).IsD())
 				if ((!onSelected) || ((*vi).IsS()))

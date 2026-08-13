@@ -88,6 +88,7 @@ public:
      maxIterNum = 5;
      sampleNum=10;
      overlap=false;
+     randomSeed=0;
    }
 
    struct Stat
@@ -106,6 +107,10 @@ public:
    bool overlap;
    Stat vas;
    int maxIterNum;
+   // Seed for the Poisson sampling that places the atlas regions. Zero keeps the
+   // historical behaviour (whatever state the shared sampling generator is in);
+   // any other value makes the region layout reproducible.
+   unsigned int randomSeed;
    CallBackPos *cb=vcg::CErrCallBackPos;
  };
 
@@ -127,13 +132,18 @@ public:
   std::vector< std::vector<Point2f> > uvBorders;
 
   // Main processing loop
+  unsigned int samplingPass=0;
   do
   {
 //    qDebug("************ ITERATION %i sampling mesh of %i with %i ************",pp.vas.iterNum,m.fn,pp.sampleNum);
     int st0=clock();
     std::vector<Point3f> PoissonSamples;
     float diskRadius=0;
-    tri::PoissonSampling(m,PoissonSamples,pp.sampleNum,diskRadius);
+    // Offset the seed per pass: a region that failed to unwrap is re-sampled with
+    // a different layout, while the whole build still replays from pp.randomSeed.
+    tri::PoissonSampling(m,PoissonSamples,pp.sampleNum,diskRadius,1,0.04f,
+                         pp.randomSeed ? pp.randomSeed+samplingPass : 0);
+    ++samplingPass;
     int st1=clock();
     pp.vas.samplingTime+= st1-st0;
     pp.cb(50,StrFormat("Sampling created a new mesh of %lu points\n",PoissonSamples.size()).c_str());
