@@ -489,492 +489,494 @@ $(function() {
 <div class="line"><a id="l00497" name="l00497"></a><span class="lineno">  497</span>                }</div>
 <div class="line"><a id="l00498" name="l00498"></a><span class="lineno">  498</span>    }</div>
 <div class="line"><a id="l00499" name="l00499"></a><span class="lineno">  499</span> </div>
-<div class="line"><a id="l00503" name="l00503"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#aea3218581647f9eddaeaa42cc555f02f">  503</a></span>    <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#aea3218581647f9eddaeaa42cc555f02f">PerVertexAddNoise</a>(MeshType&amp; m, <span class="keywordtype">int</span> noiseBits, <span class="keywordtype">bool</span> onSelected=<span class="keyword">false</span>)</div>
+<div class="line"><a id="l00503" name="l00503"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#a7a4dcae2ad89e72e8868e37038fe827e">  503</a></span>    <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#a7a4dcae2ad89e72e8868e37038fe827e">PerVertexAddNoise</a>(MeshType&amp; m, <span class="keywordtype">int</span> noiseBits, <span class="keywordtype">bool</span> onSelected=<span class="keyword">false</span>, <span class="keywordtype">int</span> randSeed=0)</div>
 <div class="line"><a id="l00504" name="l00504"></a><span class="lineno">  504</span>    {</div>
 <div class="line"><a id="l00505" name="l00505"></a><span class="lineno">  505</span>        RequirePerVertexColor(m);</div>
 <div class="line"><a id="l00506" name="l00506"></a><span class="lineno">  506</span> </div>
 <div class="line"><a id="l00507" name="l00507"></a><span class="lineno">  507</span>        <span class="keywordflow">if</span>(noiseBits&gt;8) noiseBits = 8;</div>
 <div class="line"><a id="l00508" name="l00508"></a><span class="lineno">  508</span>        <span class="keywordflow">if</span>(noiseBits&lt;1) <span class="keywordflow">return</span>;</div>
 <div class="line"><a id="l00509" name="l00509"></a><span class="lineno">  509</span> </div>
-<div class="line"><a id="l00510" name="l00510"></a><span class="lineno">  510</span>        math::SubtractiveRingRNG randomGen = math::SubtractiveRingRNG(time(NULL));</div>
-<div class="line"><a id="l00511" name="l00511"></a><span class="lineno">  511</span>        <span class="keywordflow">for</span>(VertexIterator vi = m.vert.begin(); vi!=m.vert.end(); ++vi)</div>
-<div class="line"><a id="l00512" name="l00512"></a><span class="lineno">  512</span>            <span class="keywordflow">if</span>(!(*vi).IsD())</div>
-<div class="line"><a id="l00513" name="l00513"></a><span class="lineno">  513</span>                <span class="keywordflow">if</span> ((!onSelected) || ((*vi).IsS()))</div>
-<div class="line"><a id="l00514" name="l00514"></a><span class="lineno">  514</span>                {</div>
-<div class="line"><a id="l00515" name="l00515"></a><span class="lineno">  515</span>                    (*vi).C()[0] = math::Clamp&lt;int&gt;((*vi).C()[0] + randomGen.generate(<span class="keywordtype">int</span>(2*pow(2.0f,noiseBits))) - <span class="keywordtype">int</span>(pow(2.0f,noiseBits)),0,255);</div>
-<div class="line"><a id="l00516" name="l00516"></a><span class="lineno">  516</span>                    (*vi).C()[1] = math::Clamp&lt;int&gt;((*vi).C()[1] + randomGen.generate(<span class="keywordtype">int</span>(2*pow(2.0f,noiseBits))) - <span class="keywordtype">int</span>(pow(2.0f,noiseBits)),0,255);</div>
-<div class="line"><a id="l00517" name="l00517"></a><span class="lineno">  517</span>                    (*vi).C()[2] = math::Clamp&lt;int&gt;((*vi).C()[2] + randomGen.generate(<span class="keywordtype">int</span>(2*pow(2.0f,noiseBits))) - <span class="keywordtype">int</span>(pow(2.0f,noiseBits)),0,255);</div>
-<div class="line"><a id="l00518" name="l00518"></a><span class="lineno">  518</span>                }</div>
-<div class="line"><a id="l00519" name="l00519"></a><span class="lineno">  519</span> </div>
-<div class="line"><a id="l00520" name="l00520"></a><span class="lineno">  520</span>    }</div>
+<div class="line"><a id="l00510" name="l00510"></a><span class="lineno">  510</span>        <span class="comment">// randSeed==0 keeps the historical behaviour (a different result on every</span></div>
+<div class="line"><a id="l00511" name="l00511"></a><span class="lineno">  511</span>        <span class="comment">// call); pass a non-zero seed to make the noise exactly reproducible.</span></div>
+<div class="line"><a id="l00512" name="l00512"></a><span class="lineno">  512</span>        math::SubtractiveRingRNG randomGen = math::SubtractiveRingRNG(randSeed ? randSeed : <span class="keywordtype">int</span>(time(NULL)));</div>
+<div class="line"><a id="l00513" name="l00513"></a><span class="lineno">  513</span>        <span class="keywordflow">for</span>(VertexIterator vi = m.vert.begin(); vi!=m.vert.end(); ++vi)</div>
+<div class="line"><a id="l00514" name="l00514"></a><span class="lineno">  514</span>            <span class="keywordflow">if</span>(!(*vi).IsD())</div>
+<div class="line"><a id="l00515" name="l00515"></a><span class="lineno">  515</span>                <span class="keywordflow">if</span> ((!onSelected) || ((*vi).IsS()))</div>
+<div class="line"><a id="l00516" name="l00516"></a><span class="lineno">  516</span>                {</div>
+<div class="line"><a id="l00517" name="l00517"></a><span class="lineno">  517</span>                    (*vi).C()[0] = math::Clamp&lt;int&gt;((*vi).C()[0] + randomGen.generate(<span class="keywordtype">int</span>(2*pow(2.0f,noiseBits))) - <span class="keywordtype">int</span>(pow(2.0f,noiseBits)),0,255);</div>
+<div class="line"><a id="l00518" name="l00518"></a><span class="lineno">  518</span>                    (*vi).C()[1] = math::Clamp&lt;int&gt;((*vi).C()[1] + randomGen.generate(<span class="keywordtype">int</span>(2*pow(2.0f,noiseBits))) - <span class="keywordtype">int</span>(pow(2.0f,noiseBits)),0,255);</div>
+<div class="line"><a id="l00519" name="l00519"></a><span class="lineno">  519</span>                    (*vi).C()[2] = math::Clamp&lt;int&gt;((*vi).C()[2] + randomGen.generate(<span class="keywordtype">int</span>(2*pow(2.0f,noiseBits))) - <span class="keywordtype">int</span>(pow(2.0f,noiseBits)),0,255);</div>
+<div class="line"><a id="l00520" name="l00520"></a><span class="lineno">  520</span>                }</div>
 <div class="line"><a id="l00521" name="l00521"></a><span class="lineno">  521</span> </div>
-<div class="line"><a id="l00522" name="l00522"></a><span class="lineno">  522</span> </div>
-<div class="line"><a id="l00525" name="l00525"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#ab721bd1046ba6af11835619b460318e9">  525</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#ab721bd1046ba6af11835619b460318e9">PerVertexThresholding</a>(MeshType &amp;m, <span class="keywordtype">float</span> threshold, <span class="keyword">const</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c1 = <a class="code hl_class" href="classvcg_1_1Color4.html">Color4&lt;unsigned char&gt;::Black</a>, <span class="keyword">const</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c2 = <a class="code hl_class" href="classvcg_1_1Color4.html">Color4&lt;unsigned char&gt;::White</a>, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
-<div class="line"><a id="l00526" name="l00526"></a><span class="lineno">  526</span>    {</div>
-<div class="line"><a id="l00527" name="l00527"></a><span class="lineno">  527</span>        RequirePerVertexColor(m);</div>
-<div class="line"><a id="l00528" name="l00528"></a><span class="lineno">  528</span> </div>
-<div class="line"><a id="l00529" name="l00529"></a><span class="lineno">  529</span>        <span class="keywordtype">int</span> counter=0;</div>
-<div class="line"><a id="l00530" name="l00530"></a><span class="lineno">  530</span>        VertexIterator vi;</div>
-<div class="line"><a id="l00531" name="l00531"></a><span class="lineno">  531</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="comment">//scan all the vertex...</span></div>
-<div class="line"><a id="l00532" name="l00532"></a><span class="lineno">  532</span>        {</div>
-<div class="line"><a id="l00533" name="l00533"></a><span class="lineno">  533</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
-<div class="line"><a id="l00534" name="l00534"></a><span class="lineno">  534</span>            {</div>
-<div class="line"><a id="l00535" name="l00535"></a><span class="lineno">  535</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
-<div class="line"><a id="l00536" name="l00536"></a><span class="lineno">  536</span>                {</div>
-<div class="line"><a id="l00537" name="l00537"></a><span class="lineno">  537</span>                    <span class="keywordtype">float</span> value = ComputeLightness((*vi).C());</div>
-<div class="line"><a id="l00538" name="l00538"></a><span class="lineno">  538</span> </div>
-<div class="line"><a id="l00539" name="l00539"></a><span class="lineno">  539</span>                    <span class="keywordflow">if</span>(value&lt;=threshold) (*vi).C() = c1;</div>
-<div class="line"><a id="l00540" name="l00540"></a><span class="lineno">  540</span>                    <span class="keywordflow">else</span> (*vi).C() = c2;</div>
-<div class="line"><a id="l00541" name="l00541"></a><span class="lineno">  541</span>                    ++counter;</div>
-<div class="line"><a id="l00542" name="l00542"></a><span class="lineno">  542</span>                }</div>
-<div class="line"><a id="l00543" name="l00543"></a><span class="lineno">  543</span>            }</div>
-<div class="line"><a id="l00544" name="l00544"></a><span class="lineno">  544</span>        }</div>
-<div class="line"><a id="l00545" name="l00545"></a><span class="lineno">  545</span>        <span class="keywordflow">return</span> counter;</div>
-<div class="line"><a id="l00546" name="l00546"></a><span class="lineno">  546</span>    }</div>
-<div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span> </div>
-<div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span>    <span class="comment">// Computes the lightness value for a specified color. lightness = 0.5*(Max(R,G,B)+Min(R,G,B))</span></div>
-<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span>    <span class="keyword">static</span> <span class="keywordtype">float</span> ComputeLightness(<a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c)</div>
-<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span>    {</div>
-<div class="line"><a id="l00551" name="l00551"></a><span class="lineno">  551</span>        <span class="keywordtype">float</span> min_rgb = (float)math::Min(c[0],c[1],c[2]);</div>
-<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span>        <span class="keywordtype">float</span> max_rgb = (float)math::Max(c[0],c[1],c[2]);</div>
-<div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span>        <span class="keywordflow">return</span> (max_rgb + min_rgb)/2;</div>
-<div class="line"><a id="l00554" name="l00554"></a><span class="lineno">  554</span>    }</div>
-<div class="line"><a id="l00555" name="l00555"></a><span class="lineno">  555</span> </div>
-<div class="line"><a id="l00558" name="l00558"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#a1c4959e8a58c5ab0ee2330fb57ef742f">  558</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#a1c4959e8a58c5ab0ee2330fb57ef742f">PerVertexBrightness</a>(MeshType &amp;m, <span class="keywordtype">float</span> amount, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
-<div class="line"><a id="l00559" name="l00559"></a><span class="lineno">  559</span>    {</div>
-<div class="line"><a id="l00560" name="l00560"></a><span class="lineno">  560</span>        RequirePerVertexColor(m);</div>
-<div class="line"><a id="l00561" name="l00561"></a><span class="lineno">  561</span> </div>
-<div class="line"><a id="l00562" name="l00562"></a><span class="lineno">  562</span>        <span class="keywordtype">int</span> counter=0;</div>
-<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span>        VertexIterator vi;</div>
-<div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="comment">//scan all the vertex...</span></div>
-<div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span>        {</div>
-<div class="line"><a id="l00566" name="l00566"></a><span class="lineno">  566</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
-<div class="line"><a id="l00567" name="l00567"></a><span class="lineno">  567</span>            {</div>
-<div class="line"><a id="l00568" name="l00568"></a><span class="lineno">  568</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
-<div class="line"><a id="l00569" name="l00569"></a><span class="lineno">  569</span>                {</div>
-<div class="line"><a id="l00570" name="l00570"></a><span class="lineno">  570</span>                    (*vi).C() = <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>(</div>
-<div class="line"><a id="l00571" name="l00571"></a><span class="lineno">  571</span>                                    math::Clamp(<span class="keywordtype">int</span>((*vi).C()[0]+amount),0,255),</div>
-<div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span>                            math::Clamp(<span class="keywordtype">int</span>((*vi).C()[1]+amount),0,255),</div>
-<div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span>                            math::Clamp(<span class="keywordtype">int</span>((*vi).C()[2]+amount),0,255),</div>
-<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span>                            255);</div>
-<div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span>                    ++counter;</div>
-<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span>                }</div>
-<div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span>            }</div>
-<div class="line"><a id="l00578" name="l00578"></a><span class="lineno">  578</span>        }</div>
-<div class="line"><a id="l00579" name="l00579"></a><span class="lineno">  579</span>        <span class="keywordflow">return</span> counter;</div>
-<div class="line"><a id="l00580" name="l00580"></a><span class="lineno">  580</span>    }</div>
-<div class="line"><a id="l00581" name="l00581"></a><span class="lineno">  581</span> </div>
-<div class="line"><a id="l00584" name="l00584"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#abd5455869e3a611bf919d03a1aaf866e">  584</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#abd5455869e3a611bf919d03a1aaf866e">PerVertexContrast</a>(MeshType &amp;m, <span class="keywordtype">float</span> factor, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
-<div class="line"><a id="l00585" name="l00585"></a><span class="lineno">  585</span>    {</div>
-<div class="line"><a id="l00586" name="l00586"></a><span class="lineno">  586</span>        RequirePerVertexColor(m);</div>
-<div class="line"><a id="l00587" name="l00587"></a><span class="lineno">  587</span> </div>
-<div class="line"><a id="l00588" name="l00588"></a><span class="lineno">  588</span>        <span class="keywordtype">int</span> counter=0;</div>
-<div class="line"><a id="l00589" name="l00589"></a><span class="lineno">  589</span>        VertexIterator vi;</div>
-<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="comment">//scan all the vertex...</span></div>
-<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span>        {</div>
-<div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
-<div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span>            {</div>
-<div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
-<div class="line"><a id="l00595" name="l00595"></a><span class="lineno">  595</span>                {</div>
-<div class="line"><a id="l00596" name="l00596"></a><span class="lineno">  596</span>                    (*vi).C() = ColorMul((*vi).C(),factor);</div>
-<div class="line"><a id="l00597" name="l00597"></a><span class="lineno">  597</span>                    ++counter;</div>
-<div class="line"><a id="l00598" name="l00598"></a><span class="lineno">  598</span>                }</div>
-<div class="line"><a id="l00599" name="l00599"></a><span class="lineno">  599</span>            }</div>
-<div class="line"><a id="l00600" name="l00600"></a><span class="lineno">  600</span>        }</div>
-<div class="line"><a id="l00601" name="l00601"></a><span class="lineno">  601</span>        <span class="keywordflow">return</span> counter;</div>
-<div class="line"><a id="l00602" name="l00602"></a><span class="lineno">  602</span>    }</div>
-<div class="line"><a id="l00603" name="l00603"></a><span class="lineno">  603</span> </div>
-<div class="line"><a id="l00604" name="l00604"></a><span class="lineno">  604</span>    <span class="comment">//Performs contrast operations on color, i.e expands or compress the histogram around</span></div>
-<div class="line"><a id="l00605" name="l00605"></a><span class="lineno">  605</span>    <span class="comment">//the midpoint value.  NewValue = (OldValue - 128) ◊ factor + 128</span></div>
-<div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span>    <span class="keyword">static</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> ColorMul(<a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c, <span class="keywordtype">float</span> factor)</div>
-<div class="line"><a id="l00607" name="l00607"></a><span class="lineno">  607</span>    {</div>
-<div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span>        <span class="keywordflow">return</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>( ValueMul(c[0], factor), ValueMul(c[1], factor), ValueMul(c[2], factor), 1);</div>
-<div class="line"><a id="l00609" name="l00609"></a><span class="lineno">  609</span>    }</div>
-<div class="line"><a id="l00610" name="l00610"></a><span class="lineno">  610</span> </div>
-<div class="line"><a id="l00611" name="l00611"></a><span class="lineno">  611</span>    <span class="keyword">static</span> <span class="keywordtype">int</span> ValueMul(<span class="keywordtype">int</span> value, <span class="keywordtype">float</span> factor)</div>
-<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span>    {</div>
-<div class="line"><a id="l00613" name="l00613"></a><span class="lineno">  613</span>        <span class="keywordflow">return</span> math::Clamp&lt;int&gt;((<span class="keywordtype">int</span>)((value - 128)*factor + 128), 0, 255);</div>
-<div class="line"><a id="l00614" name="l00614"></a><span class="lineno">  614</span>    }</div>
-<div class="line"><a id="l00615" name="l00615"></a><span class="lineno">  615</span> </div>
-<div class="line"><a id="l00624" name="l00624"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#a085db10b24be2d0dcd9610b9dacce9c5">  624</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#a085db10b24be2d0dcd9610b9dacce9c5">PerVertexBrightnessContrast</a>(MeshType &amp;m, <span class="keywordtype">float</span> brightness, <span class="keywordtype">float</span> contrast, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
-<div class="line"><a id="l00625" name="l00625"></a><span class="lineno">  625</span>    {</div>
-<div class="line"><a id="l00626" name="l00626"></a><span class="lineno">  626</span>        RequirePerVertexColor(m);</div>
-<div class="line"><a id="l00627" name="l00627"></a><span class="lineno">  627</span> </div>
-<div class="line"><a id="l00628" name="l00628"></a><span class="lineno">  628</span>        <span class="keywordtype">int</span> counter=0;</div>
-<div class="line"><a id="l00629" name="l00629"></a><span class="lineno">  629</span>        VertexIterator vi;</div>
-<div class="line"><a id="l00630" name="l00630"></a><span class="lineno">  630</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="comment">//scan all the vertex...</span></div>
-<div class="line"><a id="l00631" name="l00631"></a><span class="lineno">  631</span>        {</div>
-<div class="line"><a id="l00632" name="l00632"></a><span class="lineno">  632</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
-<div class="line"><a id="l00633" name="l00633"></a><span class="lineno">  633</span>            {</div>
-<div class="line"><a id="l00634" name="l00634"></a><span class="lineno">  634</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
-<div class="line"><a id="l00635" name="l00635"></a><span class="lineno">  635</span>                {</div>
-<div class="line"><a id="l00636" name="l00636"></a><span class="lineno">  636</span>                    (*vi).C() = ColorBrightnessContrast((*vi).C(),brightness,contrast);</div>
-<div class="line"><a id="l00637" name="l00637"></a><span class="lineno">  637</span>                    ++counter;</div>
-<div class="line"><a id="l00638" name="l00638"></a><span class="lineno">  638</span>                }</div>
-<div class="line"><a id="l00639" name="l00639"></a><span class="lineno">  639</span>            }</div>
-<div class="line"><a id="l00640" name="l00640"></a><span class="lineno">  640</span>        }</div>
-<div class="line"><a id="l00641" name="l00641"></a><span class="lineno">  641</span>        <span class="keywordflow">return</span> counter;</div>
-<div class="line"><a id="l00642" name="l00642"></a><span class="lineno">  642</span>    }</div>
-<div class="line"><a id="l00643" name="l00643"></a><span class="lineno">  643</span> </div>
-<div class="line"><a id="l00644" name="l00644"></a><span class="lineno">  644</span>    <span class="keyword">static</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> ColorBrightnessContrast(<a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c, <span class="keywordtype">float</span> brightness, <span class="keywordtype">float</span> contrast)</div>
-<div class="line"><a id="l00645" name="l00645"></a><span class="lineno">  645</span>    {</div>
-<div class="line"><a id="l00646" name="l00646"></a><span class="lineno">  646</span>        <span class="keywordflow">return</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>( ValueBrightnessContrast(c[0], brightness, contrast),</div>
-<div class="line"><a id="l00647" name="l00647"></a><span class="lineno">  647</span>                ValueBrightnessContrast(c[1], brightness, contrast),</div>
-<div class="line"><a id="l00648" name="l00648"></a><span class="lineno">  648</span>                ValueBrightnessContrast(c[2], brightness, contrast), 1 );</div>
-<div class="line"><a id="l00649" name="l00649"></a><span class="lineno">  649</span>    }</div>
-<div class="line"><a id="l00650" name="l00650"></a><span class="lineno">  650</span> </div>
-<div class="line"><a id="l00651" name="l00651"></a><span class="lineno">  651</span>    <span class="keyword">static</span> <span class="keywordtype">int</span> ValueBrightnessContrast(<span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> ivalue, <span class="keywordtype">float</span> brightness, <span class="keywordtype">float</span> contrast)</div>
-<div class="line"><a id="l00652" name="l00652"></a><span class="lineno">  652</span>    {</div>
-<div class="line"><a id="l00653" name="l00653"></a><span class="lineno">  653</span>        <span class="keywordtype">float</span> value = float(ivalue)/255.0f;</div>
-<div class="line"><a id="l00654" name="l00654"></a><span class="lineno">  654</span>        <span class="keywordflow">if</span> (brightness &lt; 0.0)  value = value * ( 1.0 + brightness);</div>
-<div class="line"><a id="l00655" name="l00655"></a><span class="lineno">  655</span>        <span class="keywordflow">else</span> value = value + ((1.0 - value) * brightness);</div>
-<div class="line"><a id="l00656" name="l00656"></a><span class="lineno">  656</span>        value = (value - 0.5) * (tan ((contrast + 1) * M_PI/4) ) + 0.5;</div>
-<div class="line"><a id="l00657" name="l00657"></a><span class="lineno">  657</span>        <span class="keywordflow">return</span> math::Clamp&lt;int&gt;(255.0*value, 0, 255);</div>
-<div class="line"><a id="l00658" name="l00658"></a><span class="lineno">  658</span>    }</div>
-<div class="line"><a id="l00659" name="l00659"></a><span class="lineno">  659</span> </div>
-<div class="line"><a id="l00664" name="l00664"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#a78012063fd7a7f71b8ef788c1c5f0dc5">  664</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#a78012063fd7a7f71b8ef788c1c5f0dc5">PerVertexInvert</a>(MeshType &amp;m, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
-<div class="line"><a id="l00665" name="l00665"></a><span class="lineno">  665</span>    {</div>
-<div class="line"><a id="l00666" name="l00666"></a><span class="lineno">  666</span>        RequirePerVertexColor(m);</div>
-<div class="line"><a id="l00667" name="l00667"></a><span class="lineno">  667</span> </div>
-<div class="line"><a id="l00668" name="l00668"></a><span class="lineno">  668</span>        <span class="keywordtype">int</span> counter=0;</div>
-<div class="line"><a id="l00669" name="l00669"></a><span class="lineno">  669</span>        <span class="keywordflow">for</span>(VertexIterator vi=m.vert.begin(); vi!=m.vert.end(); ++vi) <span class="comment">//scan all the vertex...</span></div>
-<div class="line"><a id="l00670" name="l00670"></a><span class="lineno">  670</span>        {</div>
-<div class="line"><a id="l00671" name="l00671"></a><span class="lineno">  671</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
-<div class="line"><a id="l00672" name="l00672"></a><span class="lineno">  672</span>            {</div>
-<div class="line"><a id="l00673" name="l00673"></a><span class="lineno">  673</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
-<div class="line"><a id="l00674" name="l00674"></a><span class="lineno">  674</span>                {</div>
-<div class="line"><a id="l00675" name="l00675"></a><span class="lineno">  675</span>                    <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> &amp;c=(*vi).C();</div>
-<div class="line"><a id="l00676" name="l00676"></a><span class="lineno">  676</span>                    c=<a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>( 255-c[0],255-c[1],255-c[2], 1);</div>
-<div class="line"><a id="l00677" name="l00677"></a><span class="lineno">  677</span>                    ++counter;</div>
-<div class="line"><a id="l00678" name="l00678"></a><span class="lineno">  678</span>                }</div>
-<div class="line"><a id="l00679" name="l00679"></a><span class="lineno">  679</span>            }</div>
-<div class="line"><a id="l00680" name="l00680"></a><span class="lineno">  680</span>        }</div>
-<div class="line"><a id="l00681" name="l00681"></a><span class="lineno">  681</span>        <span class="keywordflow">return</span> counter;</div>
-<div class="line"><a id="l00682" name="l00682"></a><span class="lineno">  682</span>    }</div>
-<div class="line"><a id="l00683" name="l00683"></a><span class="lineno">  683</span> </div>
-<div class="line"><a id="l00687" name="l00687"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#aba3ca9b0af3542221cd64d1c4200bcba">  687</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#aba3ca9b0af3542221cd64d1c4200bcba">PerVertexGamma</a>(MeshType &amp;m, <span class="keywordtype">float</span> gamma, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
-<div class="line"><a id="l00688" name="l00688"></a><span class="lineno">  688</span>    {</div>
-<div class="line"><a id="l00689" name="l00689"></a><span class="lineno">  689</span>        RequirePerVertexColor(m);</div>
-<div class="line"><a id="l00690" name="l00690"></a><span class="lineno">  690</span> </div>
-<div class="line"><a id="l00691" name="l00691"></a><span class="lineno">  691</span>        <span class="keywordtype">int</span> counter=0;</div>
+<div class="line"><a id="l00522" name="l00522"></a><span class="lineno">  522</span>    }</div>
+<div class="line"><a id="l00523" name="l00523"></a><span class="lineno">  523</span> </div>
+<div class="line"><a id="l00524" name="l00524"></a><span class="lineno">  524</span> </div>
+<div class="line"><a id="l00527" name="l00527"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#ab721bd1046ba6af11835619b460318e9">  527</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#ab721bd1046ba6af11835619b460318e9">PerVertexThresholding</a>(MeshType &amp;m, <span class="keywordtype">float</span> threshold, <span class="keyword">const</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c1 = <a class="code hl_class" href="classvcg_1_1Color4.html">Color4&lt;unsigned char&gt;::Black</a>, <span class="keyword">const</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c2 = <a class="code hl_class" href="classvcg_1_1Color4.html">Color4&lt;unsigned char&gt;::White</a>, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
+<div class="line"><a id="l00528" name="l00528"></a><span class="lineno">  528</span>    {</div>
+<div class="line"><a id="l00529" name="l00529"></a><span class="lineno">  529</span>        RequirePerVertexColor(m);</div>
+<div class="line"><a id="l00530" name="l00530"></a><span class="lineno">  530</span> </div>
+<div class="line"><a id="l00531" name="l00531"></a><span class="lineno">  531</span>        <span class="keywordtype">int</span> counter=0;</div>
+<div class="line"><a id="l00532" name="l00532"></a><span class="lineno">  532</span>        VertexIterator vi;</div>
+<div class="line"><a id="l00533" name="l00533"></a><span class="lineno">  533</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="comment">//scan all the vertex...</span></div>
+<div class="line"><a id="l00534" name="l00534"></a><span class="lineno">  534</span>        {</div>
+<div class="line"><a id="l00535" name="l00535"></a><span class="lineno">  535</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
+<div class="line"><a id="l00536" name="l00536"></a><span class="lineno">  536</span>            {</div>
+<div class="line"><a id="l00537" name="l00537"></a><span class="lineno">  537</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
+<div class="line"><a id="l00538" name="l00538"></a><span class="lineno">  538</span>                {</div>
+<div class="line"><a id="l00539" name="l00539"></a><span class="lineno">  539</span>                    <span class="keywordtype">float</span> value = ComputeLightness((*vi).C());</div>
+<div class="line"><a id="l00540" name="l00540"></a><span class="lineno">  540</span> </div>
+<div class="line"><a id="l00541" name="l00541"></a><span class="lineno">  541</span>                    <span class="keywordflow">if</span>(value&lt;=threshold) (*vi).C() = c1;</div>
+<div class="line"><a id="l00542" name="l00542"></a><span class="lineno">  542</span>                    <span class="keywordflow">else</span> (*vi).C() = c2;</div>
+<div class="line"><a id="l00543" name="l00543"></a><span class="lineno">  543</span>                    ++counter;</div>
+<div class="line"><a id="l00544" name="l00544"></a><span class="lineno">  544</span>                }</div>
+<div class="line"><a id="l00545" name="l00545"></a><span class="lineno">  545</span>            }</div>
+<div class="line"><a id="l00546" name="l00546"></a><span class="lineno">  546</span>        }</div>
+<div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span>        <span class="keywordflow">return</span> counter;</div>
+<div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span>    }</div>
+<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span> </div>
+<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span>    <span class="comment">// Computes the lightness value for a specified color. lightness = 0.5*(Max(R,G,B)+Min(R,G,B))</span></div>
+<div class="line"><a id="l00551" name="l00551"></a><span class="lineno">  551</span>    <span class="keyword">static</span> <span class="keywordtype">float</span> ComputeLightness(<a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c)</div>
+<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span>    {</div>
+<div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span>        <span class="keywordtype">float</span> min_rgb = (float)math::Min(c[0],c[1],c[2]);</div>
+<div class="line"><a id="l00554" name="l00554"></a><span class="lineno">  554</span>        <span class="keywordtype">float</span> max_rgb = (float)math::Max(c[0],c[1],c[2]);</div>
+<div class="line"><a id="l00555" name="l00555"></a><span class="lineno">  555</span>        <span class="keywordflow">return</span> (max_rgb + min_rgb)/2;</div>
+<div class="line"><a id="l00556" name="l00556"></a><span class="lineno">  556</span>    }</div>
+<div class="line"><a id="l00557" name="l00557"></a><span class="lineno">  557</span> </div>
+<div class="line"><a id="l00560" name="l00560"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#a1c4959e8a58c5ab0ee2330fb57ef742f">  560</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#a1c4959e8a58c5ab0ee2330fb57ef742f">PerVertexBrightness</a>(MeshType &amp;m, <span class="keywordtype">float</span> amount, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
+<div class="line"><a id="l00561" name="l00561"></a><span class="lineno">  561</span>    {</div>
+<div class="line"><a id="l00562" name="l00562"></a><span class="lineno">  562</span>        RequirePerVertexColor(m);</div>
+<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span> </div>
+<div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span>        <span class="keywordtype">int</span> counter=0;</div>
+<div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span>        VertexIterator vi;</div>
+<div class="line"><a id="l00566" name="l00566"></a><span class="lineno">  566</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="comment">//scan all the vertex...</span></div>
+<div class="line"><a id="l00567" name="l00567"></a><span class="lineno">  567</span>        {</div>
+<div class="line"><a id="l00568" name="l00568"></a><span class="lineno">  568</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
+<div class="line"><a id="l00569" name="l00569"></a><span class="lineno">  569</span>            {</div>
+<div class="line"><a id="l00570" name="l00570"></a><span class="lineno">  570</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
+<div class="line"><a id="l00571" name="l00571"></a><span class="lineno">  571</span>                {</div>
+<div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span>                    (*vi).C() = <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>(</div>
+<div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span>                                    math::Clamp(<span class="keywordtype">int</span>((*vi).C()[0]+amount),0,255),</div>
+<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span>                            math::Clamp(<span class="keywordtype">int</span>((*vi).C()[1]+amount),0,255),</div>
+<div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span>                            math::Clamp(<span class="keywordtype">int</span>((*vi).C()[2]+amount),0,255),</div>
+<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span>                            255);</div>
+<div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span>                    ++counter;</div>
+<div class="line"><a id="l00578" name="l00578"></a><span class="lineno">  578</span>                }</div>
+<div class="line"><a id="l00579" name="l00579"></a><span class="lineno">  579</span>            }</div>
+<div class="line"><a id="l00580" name="l00580"></a><span class="lineno">  580</span>        }</div>
+<div class="line"><a id="l00581" name="l00581"></a><span class="lineno">  581</span>        <span class="keywordflow">return</span> counter;</div>
+<div class="line"><a id="l00582" name="l00582"></a><span class="lineno">  582</span>    }</div>
+<div class="line"><a id="l00583" name="l00583"></a><span class="lineno">  583</span> </div>
+<div class="line"><a id="l00586" name="l00586"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#abd5455869e3a611bf919d03a1aaf866e">  586</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#abd5455869e3a611bf919d03a1aaf866e">PerVertexContrast</a>(MeshType &amp;m, <span class="keywordtype">float</span> factor, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
+<div class="line"><a id="l00587" name="l00587"></a><span class="lineno">  587</span>    {</div>
+<div class="line"><a id="l00588" name="l00588"></a><span class="lineno">  588</span>        RequirePerVertexColor(m);</div>
+<div class="line"><a id="l00589" name="l00589"></a><span class="lineno">  589</span> </div>
+<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span>        <span class="keywordtype">int</span> counter=0;</div>
+<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span>        VertexIterator vi;</div>
+<div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="comment">//scan all the vertex...</span></div>
+<div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span>        {</div>
+<div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
+<div class="line"><a id="l00595" name="l00595"></a><span class="lineno">  595</span>            {</div>
+<div class="line"><a id="l00596" name="l00596"></a><span class="lineno">  596</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
+<div class="line"><a id="l00597" name="l00597"></a><span class="lineno">  597</span>                {</div>
+<div class="line"><a id="l00598" name="l00598"></a><span class="lineno">  598</span>                    (*vi).C() = ColorMul((*vi).C(),factor);</div>
+<div class="line"><a id="l00599" name="l00599"></a><span class="lineno">  599</span>                    ++counter;</div>
+<div class="line"><a id="l00600" name="l00600"></a><span class="lineno">  600</span>                }</div>
+<div class="line"><a id="l00601" name="l00601"></a><span class="lineno">  601</span>            }</div>
+<div class="line"><a id="l00602" name="l00602"></a><span class="lineno">  602</span>        }</div>
+<div class="line"><a id="l00603" name="l00603"></a><span class="lineno">  603</span>        <span class="keywordflow">return</span> counter;</div>
+<div class="line"><a id="l00604" name="l00604"></a><span class="lineno">  604</span>    }</div>
+<div class="line"><a id="l00605" name="l00605"></a><span class="lineno">  605</span> </div>
+<div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span>    <span class="comment">//Performs contrast operations on color, i.e expands or compress the histogram around</span></div>
+<div class="line"><a id="l00607" name="l00607"></a><span class="lineno">  607</span>    <span class="comment">//the midpoint value.  NewValue = (OldValue - 128) ◊ factor + 128</span></div>
+<div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span>    <span class="keyword">static</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> ColorMul(<a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c, <span class="keywordtype">float</span> factor)</div>
+<div class="line"><a id="l00609" name="l00609"></a><span class="lineno">  609</span>    {</div>
+<div class="line"><a id="l00610" name="l00610"></a><span class="lineno">  610</span>        <span class="keywordflow">return</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>( ValueMul(c[0], factor), ValueMul(c[1], factor), ValueMul(c[2], factor), 1);</div>
+<div class="line"><a id="l00611" name="l00611"></a><span class="lineno">  611</span>    }</div>
+<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span> </div>
+<div class="line"><a id="l00613" name="l00613"></a><span class="lineno">  613</span>    <span class="keyword">static</span> <span class="keywordtype">int</span> ValueMul(<span class="keywordtype">int</span> value, <span class="keywordtype">float</span> factor)</div>
+<div class="line"><a id="l00614" name="l00614"></a><span class="lineno">  614</span>    {</div>
+<div class="line"><a id="l00615" name="l00615"></a><span class="lineno">  615</span>        <span class="keywordflow">return</span> math::Clamp&lt;int&gt;((<span class="keywordtype">int</span>)((value - 128)*factor + 128), 0, 255);</div>
+<div class="line"><a id="l00616" name="l00616"></a><span class="lineno">  616</span>    }</div>
+<div class="line"><a id="l00617" name="l00617"></a><span class="lineno">  617</span> </div>
+<div class="line"><a id="l00626" name="l00626"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#a085db10b24be2d0dcd9610b9dacce9c5">  626</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#a085db10b24be2d0dcd9610b9dacce9c5">PerVertexBrightnessContrast</a>(MeshType &amp;m, <span class="keywordtype">float</span> brightness, <span class="keywordtype">float</span> contrast, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
+<div class="line"><a id="l00627" name="l00627"></a><span class="lineno">  627</span>    {</div>
+<div class="line"><a id="l00628" name="l00628"></a><span class="lineno">  628</span>        RequirePerVertexColor(m);</div>
+<div class="line"><a id="l00629" name="l00629"></a><span class="lineno">  629</span> </div>
+<div class="line"><a id="l00630" name="l00630"></a><span class="lineno">  630</span>        <span class="keywordtype">int</span> counter=0;</div>
+<div class="line"><a id="l00631" name="l00631"></a><span class="lineno">  631</span>        VertexIterator vi;</div>
+<div class="line"><a id="l00632" name="l00632"></a><span class="lineno">  632</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="comment">//scan all the vertex...</span></div>
+<div class="line"><a id="l00633" name="l00633"></a><span class="lineno">  633</span>        {</div>
+<div class="line"><a id="l00634" name="l00634"></a><span class="lineno">  634</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
+<div class="line"><a id="l00635" name="l00635"></a><span class="lineno">  635</span>            {</div>
+<div class="line"><a id="l00636" name="l00636"></a><span class="lineno">  636</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
+<div class="line"><a id="l00637" name="l00637"></a><span class="lineno">  637</span>                {</div>
+<div class="line"><a id="l00638" name="l00638"></a><span class="lineno">  638</span>                    (*vi).C() = ColorBrightnessContrast((*vi).C(),brightness,contrast);</div>
+<div class="line"><a id="l00639" name="l00639"></a><span class="lineno">  639</span>                    ++counter;</div>
+<div class="line"><a id="l00640" name="l00640"></a><span class="lineno">  640</span>                }</div>
+<div class="line"><a id="l00641" name="l00641"></a><span class="lineno">  641</span>            }</div>
+<div class="line"><a id="l00642" name="l00642"></a><span class="lineno">  642</span>        }</div>
+<div class="line"><a id="l00643" name="l00643"></a><span class="lineno">  643</span>        <span class="keywordflow">return</span> counter;</div>
+<div class="line"><a id="l00644" name="l00644"></a><span class="lineno">  644</span>    }</div>
+<div class="line"><a id="l00645" name="l00645"></a><span class="lineno">  645</span> </div>
+<div class="line"><a id="l00646" name="l00646"></a><span class="lineno">  646</span>    <span class="keyword">static</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> ColorBrightnessContrast(<a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c, <span class="keywordtype">float</span> brightness, <span class="keywordtype">float</span> contrast)</div>
+<div class="line"><a id="l00647" name="l00647"></a><span class="lineno">  647</span>    {</div>
+<div class="line"><a id="l00648" name="l00648"></a><span class="lineno">  648</span>        <span class="keywordflow">return</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>( ValueBrightnessContrast(c[0], brightness, contrast),</div>
+<div class="line"><a id="l00649" name="l00649"></a><span class="lineno">  649</span>                ValueBrightnessContrast(c[1], brightness, contrast),</div>
+<div class="line"><a id="l00650" name="l00650"></a><span class="lineno">  650</span>                ValueBrightnessContrast(c[2], brightness, contrast), 1 );</div>
+<div class="line"><a id="l00651" name="l00651"></a><span class="lineno">  651</span>    }</div>
+<div class="line"><a id="l00652" name="l00652"></a><span class="lineno">  652</span> </div>
+<div class="line"><a id="l00653" name="l00653"></a><span class="lineno">  653</span>    <span class="keyword">static</span> <span class="keywordtype">int</span> ValueBrightnessContrast(<span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> ivalue, <span class="keywordtype">float</span> brightness, <span class="keywordtype">float</span> contrast)</div>
+<div class="line"><a id="l00654" name="l00654"></a><span class="lineno">  654</span>    {</div>
+<div class="line"><a id="l00655" name="l00655"></a><span class="lineno">  655</span>        <span class="keywordtype">float</span> value = float(ivalue)/255.0f;</div>
+<div class="line"><a id="l00656" name="l00656"></a><span class="lineno">  656</span>        <span class="keywordflow">if</span> (brightness &lt; 0.0)  value = value * ( 1.0 + brightness);</div>
+<div class="line"><a id="l00657" name="l00657"></a><span class="lineno">  657</span>        <span class="keywordflow">else</span> value = value + ((1.0 - value) * brightness);</div>
+<div class="line"><a id="l00658" name="l00658"></a><span class="lineno">  658</span>        value = (value - 0.5) * (tan ((contrast + 1) * M_PI/4) ) + 0.5;</div>
+<div class="line"><a id="l00659" name="l00659"></a><span class="lineno">  659</span>        <span class="keywordflow">return</span> math::Clamp&lt;int&gt;(255.0*value, 0, 255);</div>
+<div class="line"><a id="l00660" name="l00660"></a><span class="lineno">  660</span>    }</div>
+<div class="line"><a id="l00661" name="l00661"></a><span class="lineno">  661</span> </div>
+<div class="line"><a id="l00666" name="l00666"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#a78012063fd7a7f71b8ef788c1c5f0dc5">  666</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#a78012063fd7a7f71b8ef788c1c5f0dc5">PerVertexInvert</a>(MeshType &amp;m, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
+<div class="line"><a id="l00667" name="l00667"></a><span class="lineno">  667</span>    {</div>
+<div class="line"><a id="l00668" name="l00668"></a><span class="lineno">  668</span>        RequirePerVertexColor(m);</div>
+<div class="line"><a id="l00669" name="l00669"></a><span class="lineno">  669</span> </div>
+<div class="line"><a id="l00670" name="l00670"></a><span class="lineno">  670</span>        <span class="keywordtype">int</span> counter=0;</div>
+<div class="line"><a id="l00671" name="l00671"></a><span class="lineno">  671</span>        <span class="keywordflow">for</span>(VertexIterator vi=m.vert.begin(); vi!=m.vert.end(); ++vi) <span class="comment">//scan all the vertex...</span></div>
+<div class="line"><a id="l00672" name="l00672"></a><span class="lineno">  672</span>        {</div>
+<div class="line"><a id="l00673" name="l00673"></a><span class="lineno">  673</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
+<div class="line"><a id="l00674" name="l00674"></a><span class="lineno">  674</span>            {</div>
+<div class="line"><a id="l00675" name="l00675"></a><span class="lineno">  675</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
+<div class="line"><a id="l00676" name="l00676"></a><span class="lineno">  676</span>                {</div>
+<div class="line"><a id="l00677" name="l00677"></a><span class="lineno">  677</span>                    <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> &amp;c=(*vi).C();</div>
+<div class="line"><a id="l00678" name="l00678"></a><span class="lineno">  678</span>                    c=<a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>( 255-c[0],255-c[1],255-c[2], 1);</div>
+<div class="line"><a id="l00679" name="l00679"></a><span class="lineno">  679</span>                    ++counter;</div>
+<div class="line"><a id="l00680" name="l00680"></a><span class="lineno">  680</span>                }</div>
+<div class="line"><a id="l00681" name="l00681"></a><span class="lineno">  681</span>            }</div>
+<div class="line"><a id="l00682" name="l00682"></a><span class="lineno">  682</span>        }</div>
+<div class="line"><a id="l00683" name="l00683"></a><span class="lineno">  683</span>        <span class="keywordflow">return</span> counter;</div>
+<div class="line"><a id="l00684" name="l00684"></a><span class="lineno">  684</span>    }</div>
+<div class="line"><a id="l00685" name="l00685"></a><span class="lineno">  685</span> </div>
+<div class="line"><a id="l00689" name="l00689"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#aba3ca9b0af3542221cd64d1c4200bcba">  689</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#aba3ca9b0af3542221cd64d1c4200bcba">PerVertexGamma</a>(MeshType &amp;m, <span class="keywordtype">float</span> gamma, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
+<div class="line"><a id="l00690" name="l00690"></a><span class="lineno">  690</span>    {</div>
+<div class="line"><a id="l00691" name="l00691"></a><span class="lineno">  691</span>        RequirePerVertexColor(m);</div>
 <div class="line"><a id="l00692" name="l00692"></a><span class="lineno">  692</span> </div>
-<div class="line"><a id="l00693" name="l00693"></a><span class="lineno">  693</span>        VertexIterator vi;</div>
-<div class="line"><a id="l00694" name="l00694"></a><span class="lineno">  694</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="comment">//scan all the vertex...</span></div>
-<div class="line"><a id="l00695" name="l00695"></a><span class="lineno">  695</span>        {</div>
-<div class="line"><a id="l00696" name="l00696"></a><span class="lineno">  696</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
-<div class="line"><a id="l00697" name="l00697"></a><span class="lineno">  697</span>            {</div>
-<div class="line"><a id="l00698" name="l00698"></a><span class="lineno">  698</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
-<div class="line"><a id="l00699" name="l00699"></a><span class="lineno">  699</span>                {</div>
-<div class="line"><a id="l00700" name="l00700"></a><span class="lineno">  700</span>                    (*vi).C() = ColorPow((*vi).C(), 1/gamma);</div>
-<div class="line"><a id="l00701" name="l00701"></a><span class="lineno">  701</span>                    ++counter;</div>
-<div class="line"><a id="l00702" name="l00702"></a><span class="lineno">  702</span>                }</div>
-<div class="line"><a id="l00703" name="l00703"></a><span class="lineno">  703</span>            }</div>
-<div class="line"><a id="l00704" name="l00704"></a><span class="lineno">  704</span>        }</div>
-<div class="line"><a id="l00705" name="l00705"></a><span class="lineno">  705</span>        <span class="keywordflow">return</span> counter;</div>
-<div class="line"><a id="l00706" name="l00706"></a><span class="lineno">  706</span>    }</div>
-<div class="line"><a id="l00707" name="l00707"></a><span class="lineno">  707</span> </div>
-<div class="line"><a id="l00708" name="l00708"></a><span class="lineno">  708</span>    <span class="comment">//computes the standard gamma transformation on a given color, according to NewVal = OldVal^(1/gamma)</span></div>
-<div class="line"><a id="l00709" name="l00709"></a><span class="lineno">  709</span>    <span class="keyword">static</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> ColorPow(<a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c, <span class="keywordtype">float</span> exponent)</div>
-<div class="line"><a id="l00710" name="l00710"></a><span class="lineno">  710</span>    {</div>
-<div class="line"><a id="l00711" name="l00711"></a><span class="lineno">  711</span>        <span class="keywordflow">return</span> <a class="code hl_class" href="classvcg_1_1Color4.html">vcg::Color4b</a>(</div>
-<div class="line"><a id="l00712" name="l00712"></a><span class="lineno">  712</span>                    math::Clamp((<span class="keywordtype">int</span>)( ValuePow(<span class="keywordtype">float</span>(c[0])/255, exponent)*255), 0, 255),</div>
-<div class="line"><a id="l00713" name="l00713"></a><span class="lineno">  713</span>                math::Clamp((<span class="keywordtype">int</span>)( ValuePow(<span class="keywordtype">float</span>(c[1])/255, exponent)*255), 0, 255),</div>
-<div class="line"><a id="l00714" name="l00714"></a><span class="lineno">  714</span>                math::Clamp((<span class="keywordtype">int</span>)( ValuePow(<span class="keywordtype">float</span>(c[2])/255, exponent)*255), 0, 255),</div>
-<div class="line"><a id="l00715" name="l00715"></a><span class="lineno">  715</span>                255);</div>
-<div class="line"><a id="l00716" name="l00716"></a><span class="lineno">  716</span>    }</div>
-<div class="line"><a id="l00717" name="l00717"></a><span class="lineno">  717</span> </div>
-<div class="line"><a id="l00718" name="l00718"></a><span class="lineno">  718</span>    <span class="keyword">static</span> <span class="keywordtype">float</span> ValuePow(<span class="keywordtype">float</span> value, <span class="keywordtype">float</span> exponent)</div>
-<div class="line"><a id="l00719" name="l00719"></a><span class="lineno">  719</span>    {</div>
-<div class="line"><a id="l00720" name="l00720"></a><span class="lineno">  720</span>        <span class="keywordflow">return</span> powf(value, exponent);</div>
-<div class="line"><a id="l00721" name="l00721"></a><span class="lineno">  721</span>    }</div>
-<div class="line"><a id="l00722" name="l00722"></a><span class="lineno">  722</span> </div>
-<div class="line"><a id="l00723" name="l00723"></a><span class="lineno">  723</span>    <span class="comment">//useful bit masks for RGB channels, used for Levels filter.</span></div>
-<div class="line"><a id="l00724" name="l00724"></a><span class="lineno">  724</span>    <span class="keyword">enum</span> rgbChMask {ALL_CHANNELS = 7, RED_CHANNEL = 4, GREEN_CHANNEL = 2, BLUE_CHANNEL = 1, NO_CHANNELS = 0 };</div>
-<div class="line"><a id="l00725" name="l00725"></a><span class="lineno">  725</span> </div>
-<div class="line"><a id="l00734" name="l00734"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#a4e05ed307dfa8e8e4a749bf054002851">  734</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#a4e05ed307dfa8e8e4a749bf054002851">PerVertexLevels</a>(MeshType &amp;m, <span class="keywordtype">float</span> gamma, <span class="keywordtype">float</span> in_min, <span class="keywordtype">float</span> in_max, <span class="keywordtype">float</span> out_min, <span class="keywordtype">float</span> out_max, <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> rgbMask, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
-<div class="line"><a id="l00735" name="l00735"></a><span class="lineno">  735</span>    {</div>
-<div class="line"><a id="l00736" name="l00736"></a><span class="lineno">  736</span>        RequirePerVertexColor(m);</div>
-<div class="line"><a id="l00737" name="l00737"></a><span class="lineno">  737</span> </div>
-<div class="line"><a id="l00738" name="l00738"></a><span class="lineno">  738</span>        <span class="keywordtype">int</span> counter=0;</div>
-<div class="line"><a id="l00739" name="l00739"></a><span class="lineno">  739</span>        VertexIterator vi;</div>
-<div class="line"><a id="l00740" name="l00740"></a><span class="lineno">  740</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="comment">//scan all the vertex...</span></div>
-<div class="line"><a id="l00741" name="l00741"></a><span class="lineno">  741</span>        {</div>
-<div class="line"><a id="l00742" name="l00742"></a><span class="lineno">  742</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
-<div class="line"><a id="l00743" name="l00743"></a><span class="lineno">  743</span>            {</div>
-<div class="line"><a id="l00744" name="l00744"></a><span class="lineno">  744</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
-<div class="line"><a id="l00745" name="l00745"></a><span class="lineno">  745</span>                {</div>
-<div class="line"><a id="l00746" name="l00746"></a><span class="lineno">  746</span>                    (*vi).C() = ColorLevels((*vi).C(), gamma, in_min, in_max, out_min, out_max, rgbMask);</div>
-<div class="line"><a id="l00747" name="l00747"></a><span class="lineno">  747</span>                    ++counter;</div>
-<div class="line"><a id="l00748" name="l00748"></a><span class="lineno">  748</span>                }</div>
-<div class="line"><a id="l00749" name="l00749"></a><span class="lineno">  749</span>            }</div>
-<div class="line"><a id="l00750" name="l00750"></a><span class="lineno">  750</span>        }</div>
-<div class="line"><a id="l00751" name="l00751"></a><span class="lineno">  751</span>        <span class="keywordflow">return</span> counter;</div>
-<div class="line"><a id="l00752" name="l00752"></a><span class="lineno">  752</span>    }</div>
-<div class="line"><a id="l00753" name="l00753"></a><span class="lineno">  753</span> </div>
-<div class="line"><a id="l00754" name="l00754"></a><span class="lineno">  754</span>    <span class="comment">//Performs levels transformation on each channel set to 1 in the rgbMask.</span></div>
-<div class="line"><a id="l00755" name="l00755"></a><span class="lineno">  755</span>    <span class="keyword">static</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> ColorLevels(<a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c, <span class="keywordtype">float</span> gamma, <span class="keywordtype">float</span> in_min, <span class="keywordtype">float</span> in_max, <span class="keywordtype">float</span> out_min, <span class="keywordtype">float</span> out_max, <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> rgbMask)</div>
-<div class="line"><a id="l00756" name="l00756"></a><span class="lineno">  756</span>    {</div>
-<div class="line"><a id="l00757" name="l00757"></a><span class="lineno">  757</span>        <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> r = c[0], g = c[1], b = c[2];</div>
-<div class="line"><a id="l00758" name="l00758"></a><span class="lineno">  758</span>        <span class="keywordflow">if</span>(rgbMask &amp; RED_CHANNEL) r = ValueLevels(c[0], gamma, in_min, in_max, out_min, out_max);</div>
-<div class="line"><a id="l00759" name="l00759"></a><span class="lineno">  759</span>        <span class="keywordflow">if</span>(rgbMask &amp; GREEN_CHANNEL) g = ValueLevels(c[1], gamma, in_min, in_max, out_min, out_max);</div>
-<div class="line"><a id="l00760" name="l00760"></a><span class="lineno">  760</span>        <span class="keywordflow">if</span>(rgbMask &amp; BLUE_CHANNEL) b = ValueLevels(c[2], gamma, in_min, in_max, out_min, out_max);</div>
-<div class="line"><a id="l00761" name="l00761"></a><span class="lineno">  761</span>        <span class="keywordflow">return</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>(r, g, b, 255);</div>
-<div class="line"><a id="l00762" name="l00762"></a><span class="lineno">  762</span>    }</div>
-<div class="line"><a id="l00763" name="l00763"></a><span class="lineno">  763</span> </div>
-<div class="line"><a id="l00764" name="l00764"></a><span class="lineno">  764</span>    <span class="comment">//Transform on levels</span></div>
-<div class="line"><a id="l00765" name="l00765"></a><span class="lineno">  765</span>    <span class="keyword">static</span> <span class="keywordtype">int</span> ValueLevels(<span class="keywordtype">int</span> value, <span class="keywordtype">float</span> gamma, <span class="keywordtype">float</span> in_min, <span class="keywordtype">float</span> in_max, <span class="keywordtype">float</span> out_min, <span class="keywordtype">float</span> out_max)</div>
-<div class="line"><a id="l00766" name="l00766"></a><span class="lineno">  766</span>    {</div>
-<div class="line"><a id="l00767" name="l00767"></a><span class="lineno">  767</span>        <span class="keywordtype">float</span> fvalue = value/255.0f;</div>
-<div class="line"><a id="l00768" name="l00768"></a><span class="lineno">  768</span>        <span class="comment">// normalize</span></div>
-<div class="line"><a id="l00769" name="l00769"></a><span class="lineno">  769</span>        fvalue = math::Clamp&lt;float&gt;(fvalue - in_min, 0.0f, 1.0f) / math::Clamp&lt;float&gt;(in_max - in_min, 1.0f/255.0f, 1.0f);</div>
-<div class="line"><a id="l00770" name="l00770"></a><span class="lineno">  770</span>        <span class="comment">// transform gamma</span></div>
-<div class="line"><a id="l00771" name="l00771"></a><span class="lineno">  771</span>        fvalue = powf(fvalue,1/gamma);</div>
-<div class="line"><a id="l00772" name="l00772"></a><span class="lineno">  772</span>        <span class="comment">// rescale range</span></div>
-<div class="line"><a id="l00773" name="l00773"></a><span class="lineno">  773</span>        fvalue = fvalue * (out_max - out_min) + out_min;</div>
-<div class="line"><a id="l00774" name="l00774"></a><span class="lineno">  774</span>        <span class="comment">//back in interval [0,255] and clamp</span></div>
-<div class="line"><a id="l00775" name="l00775"></a><span class="lineno">  775</span>        <span class="keywordflow">return</span> math::Clamp&lt;int&gt;((<span class="keywordtype">int</span>)(fvalue * 255), 0, 255);</div>
-<div class="line"><a id="l00776" name="l00776"></a><span class="lineno">  776</span>    }</div>
-<div class="line"><a id="l00777" name="l00777"></a><span class="lineno">  777</span> </div>
-<div class="line"><a id="l00783" name="l00783"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#ade71e63f4e8fa51bef86015feb47808c">  783</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#ade71e63f4e8fa51bef86015feb47808c">PerVertexColourisation</a>(MeshType &amp;m, <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c, <span class="keywordtype">float</span> intensity, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
-<div class="line"><a id="l00784" name="l00784"></a><span class="lineno">  784</span>    {</div>
-<div class="line"><a id="l00785" name="l00785"></a><span class="lineno">  785</span>        RequirePerVertexColor(m);</div>
-<div class="line"><a id="l00786" name="l00786"></a><span class="lineno">  786</span> </div>
-<div class="line"><a id="l00787" name="l00787"></a><span class="lineno">  787</span>        <span class="keywordtype">int</span> counter=0;</div>
-<div class="line"><a id="l00788" name="l00788"></a><span class="lineno">  788</span>        VertexIterator vi;</div>
-<div class="line"><a id="l00789" name="l00789"></a><span class="lineno">  789</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi)</div>
-<div class="line"><a id="l00790" name="l00790"></a><span class="lineno">  790</span>        {</div>
-<div class="line"><a id="l00791" name="l00791"></a><span class="lineno">  791</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
-<div class="line"><a id="l00792" name="l00792"></a><span class="lineno">  792</span>            {</div>
-<div class="line"><a id="l00793" name="l00793"></a><span class="lineno">  793</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
-<div class="line"><a id="l00794" name="l00794"></a><span class="lineno">  794</span>                {</div>
-<div class="line"><a id="l00795" name="l00795"></a><span class="lineno">  795</span>                    (*vi).C() = ColorApplyDiff((*vi).C(), c, intensity);</div>
-<div class="line"><a id="l00796" name="l00796"></a><span class="lineno">  796</span>                    ++counter;</div>
-<div class="line"><a id="l00797" name="l00797"></a><span class="lineno">  797</span>                }</div>
-<div class="line"><a id="l00798" name="l00798"></a><span class="lineno">  798</span>            }</div>
-<div class="line"><a id="l00799" name="l00799"></a><span class="lineno">  799</span>        }</div>
-<div class="line"><a id="l00800" name="l00800"></a><span class="lineno">  800</span>        <span class="keywordflow">return</span> counter;</div>
-<div class="line"><a id="l00801" name="l00801"></a><span class="lineno">  801</span>    }</div>
-<div class="line"><a id="l00802" name="l00802"></a><span class="lineno">  802</span> </div>
-<div class="line"><a id="l00803" name="l00803"></a><span class="lineno">  803</span>    <span class="comment">// Perform colourisation operation.</span></div>
-<div class="line"><a id="l00804" name="l00804"></a><span class="lineno">  804</span>    <span class="comment">// For each channel C:</span></div>
-<div class="line"><a id="l00805" name="l00805"></a><span class="lineno">  805</span>    <span class="comment">// newC = origC + intensity * (newC - origC)</span></div>
-<div class="line"><a id="l00806" name="l00806"></a><span class="lineno">  806</span>    <span class="keyword">static</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> ColorApplyDiff(<a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> old_color, <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> new_color, <span class="keywordtype">float</span> intensity)</div>
-<div class="line"><a id="l00807" name="l00807"></a><span class="lineno">  807</span>    {</div>
-<div class="line"><a id="l00808" name="l00808"></a><span class="lineno">  808</span>        <span class="keywordflow">return</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>( ValueApplyDiff(old_color[0], new_color[0], intensity),</div>
-<div class="line"><a id="l00809" name="l00809"></a><span class="lineno">  809</span>                ValueApplyDiff(old_color[1], new_color[1], intensity),</div>
-<div class="line"><a id="l00810" name="l00810"></a><span class="lineno">  810</span>                ValueApplyDiff(old_color[2], new_color[2], intensity), 255);</div>
-<div class="line"><a id="l00811" name="l00811"></a><span class="lineno">  811</span>    }</div>
-<div class="line"><a id="l00812" name="l00812"></a><span class="lineno">  812</span> </div>
-<div class="line"><a id="l00813" name="l00813"></a><span class="lineno">  813</span>    <span class="keyword">static</span> <span class="keywordtype">int</span> ValueApplyDiff(<span class="keywordtype">int</span> old_value, <span class="keywordtype">int</span> new_value, <span class="keywordtype">float</span> intensity)</div>
-<div class="line"><a id="l00814" name="l00814"></a><span class="lineno">  814</span>    {</div>
-<div class="line"><a id="l00815" name="l00815"></a><span class="lineno">  815</span>        <span class="keywordflow">return</span>  math::Clamp&lt;int&gt;((<span class="keywordtype">int</span>)(old_value + intensity * (new_value - old_value)), 0, 255);</div>
-<div class="line"><a id="l00816" name="l00816"></a><span class="lineno">  816</span>    }</div>
-<div class="line"><a id="l00817" name="l00817"></a><span class="lineno">  817</span> </div>
-<div class="line"><a id="l00818" name="l00818"></a><span class="lineno">  818</span>    <span class="comment">//An useful ENUM to hold all desaturation methods.</span></div>
-<div class="line"><a id="l00819" name="l00819"></a><span class="lineno">  819</span>    <span class="keyword">enum</span> DesaturationMethods {M_LIGHTNESS = 0, M_LUMINOSITY = 1, M_AVERAGE = 2};</div>
-<div class="line"><a id="l00820" name="l00820"></a><span class="lineno">  820</span> </div>
-<div class="line"><a id="l00830" name="l00830"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#a9a3d164722739d87a3bf966c5cfd4210">  830</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#a9a3d164722739d87a3bf966c5cfd4210">PerVertexDesaturation</a>(MeshType &amp;m, <span class="keywordtype">int</span> method, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
-<div class="line"><a id="l00831" name="l00831"></a><span class="lineno">  831</span>    {</div>
-<div class="line"><a id="l00832" name="l00832"></a><span class="lineno">  832</span>        RequirePerVertexColor(m);</div>
-<div class="line"><a id="l00833" name="l00833"></a><span class="lineno">  833</span> </div>
-<div class="line"><a id="l00834" name="l00834"></a><span class="lineno">  834</span>        <span class="keywordtype">int</span> counter=0;</div>
-<div class="line"><a id="l00835" name="l00835"></a><span class="lineno">  835</span>        VertexIterator vi;</div>
-<div class="line"><a id="l00836" name="l00836"></a><span class="lineno">  836</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="comment">//scan all the vertex...</span></div>
-<div class="line"><a id="l00837" name="l00837"></a><span class="lineno">  837</span>        {</div>
-<div class="line"><a id="l00838" name="l00838"></a><span class="lineno">  838</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
-<div class="line"><a id="l00839" name="l00839"></a><span class="lineno">  839</span>            {</div>
-<div class="line"><a id="l00840" name="l00840"></a><span class="lineno">  840</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
-<div class="line"><a id="l00841" name="l00841"></a><span class="lineno">  841</span>                {</div>
-<div class="line"><a id="l00842" name="l00842"></a><span class="lineno">  842</span>                    (*vi).C() = ColorDesaturate((*vi).C(), method);</div>
-<div class="line"><a id="l00843" name="l00843"></a><span class="lineno">  843</span>                    ++counter;</div>
-<div class="line"><a id="l00844" name="l00844"></a><span class="lineno">  844</span>                }</div>
-<div class="line"><a id="l00845" name="l00845"></a><span class="lineno">  845</span>            }</div>
-<div class="line"><a id="l00846" name="l00846"></a><span class="lineno">  846</span>        }</div>
-<div class="line"><a id="l00847" name="l00847"></a><span class="lineno">  847</span>        <span class="keywordflow">return</span> counter;</div>
-<div class="line"><a id="l00848" name="l00848"></a><span class="lineno">  848</span>    }</div>
-<div class="line"><a id="l00849" name="l00849"></a><span class="lineno">  849</span> </div>
-<div class="line"><a id="l00850" name="l00850"></a><span class="lineno">  850</span>    <span class="comment">//Desature the color. Ausiliary functions to calculate lightness/luminosity/average.</span></div>
-<div class="line"><a id="l00851" name="l00851"></a><span class="lineno">  851</span>    <span class="keyword">static</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> ColorDesaturate(<a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c, <span class="keywordtype">int</span> method)</div>
-<div class="line"><a id="l00852" name="l00852"></a><span class="lineno">  852</span>    {</div>
-<div class="line"><a id="l00853" name="l00853"></a><span class="lineno">  853</span>        <span class="keywordflow">switch</span>(method){</div>
-<div class="line"><a id="l00854" name="l00854"></a><span class="lineno">  854</span>            <span class="keywordflow">case</span> M_LIGHTNESS:{</div>
-<div class="line"><a id="l00855" name="l00855"></a><span class="lineno">  855</span>                <span class="keywordtype">int</span> val = (int)ComputeLightness(c);</div>
-<div class="line"><a id="l00856" name="l00856"></a><span class="lineno">  856</span>                <span class="keywordflow">return</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>( val, val, val, 255);</div>
-<div class="line"><a id="l00857" name="l00857"></a><span class="lineno">  857</span>            }</div>
-<div class="line"><a id="l00858" name="l00858"></a><span class="lineno">  858</span>            <span class="keywordflow">case</span> M_AVERAGE:{</div>
-<div class="line"><a id="l00859" name="l00859"></a><span class="lineno">  859</span>                <span class="keywordtype">int</span> val = (int)ComputeAvgLightness(c);</div>
-<div class="line"><a id="l00860" name="l00860"></a><span class="lineno">  860</span>                <span class="keywordflow">return</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>( val, val, val, 255);</div>
-<div class="line"><a id="l00861" name="l00861"></a><span class="lineno">  861</span>            }</div>
-<div class="line"><a id="l00862" name="l00862"></a><span class="lineno">  862</span>            <span class="keywordflow">case</span> M_LUMINOSITY:{</div>
-<div class="line"><a id="l00863" name="l00863"></a><span class="lineno">  863</span>                <span class="keywordtype">int</span> val = (int)ComputeLuminosity(c);</div>
-<div class="line"><a id="l00864" name="l00864"></a><span class="lineno">  864</span>                <span class="keywordflow">return</span> Color4b( val, val, val, 255);</div>
-<div class="line"><a id="l00865" name="l00865"></a><span class="lineno">  865</span>            }</div>
-<div class="line"><a id="l00866" name="l00866"></a><span class="lineno">  866</span>            <span class="keywordflow">default</span>: assert(0);</div>
-<div class="line"><a id="l00867" name="l00867"></a><span class="lineno">  867</span>        }</div>
-<div class="line"><a id="l00868" name="l00868"></a><span class="lineno">  868</span>        <span class="keywordflow">return</span> Color4b(255, 255, 255, 255);</div>
-<div class="line"><a id="l00869" name="l00869"></a><span class="lineno">  869</span>    }</div>
-<div class="line"><a id="l00870" name="l00870"></a><span class="lineno">  870</span> </div>
-<div class="line"><a id="l00871" name="l00871"></a><span class="lineno">  871</span>    <span class="comment">//ausiliary function to compute average lightness. value = (R+G+B)/3</span></div>
-<div class="line"><a id="l00872" name="l00872"></a><span class="lineno">  872</span>    <span class="keyword">static</span> <span class="keywordtype">float</span> ComputeAvgLightness(Color4b c)</div>
-<div class="line"><a id="l00873" name="l00873"></a><span class="lineno">  873</span>    {</div>
-<div class="line"><a id="l00874" name="l00874"></a><span class="lineno">  874</span>        <span class="keywordflow">return</span> float(c[0]+c[1]+c[2])/3.0f;</div>
-<div class="line"><a id="l00875" name="l00875"></a><span class="lineno">  875</span>    }</div>
-<div class="line"><a id="l00876" name="l00876"></a><span class="lineno">  876</span> </div>
-<div class="line"><a id="l00877" name="l00877"></a><span class="lineno">  877</span>    <span class="comment">//ausiliary function to compute luminosity. value = 0.21*R+0.71*G+0.7*B</span></div>
-<div class="line"><a id="l00878" name="l00878"></a><span class="lineno">  878</span>    <span class="keyword">static</span> <span class="keywordtype">float</span> ComputeLuminosity(Color4b c)</div>
-<div class="line"><a id="l00879" name="l00879"></a><span class="lineno">  879</span>    {</div>
-<div class="line"><a id="l00880" name="l00880"></a><span class="lineno">  880</span>        <span class="keywordflow">return</span> float(0.2126f*c[0]+0.7152f*c[1]+0.0722f*c[2]);</div>
-<div class="line"><a id="l00881" name="l00881"></a><span class="lineno">  881</span>    }</div>
-<div class="line"><a id="l00882" name="l00882"></a><span class="lineno">  882</span> </div>
-<div class="line"><a id="l00888" name="l00888"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#a05760afdeaba59b7536e140b289897de">  888</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#a05760afdeaba59b7536e140b289897de">PerVertexEqualize</a>(MeshType &amp;m, <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> rgbMask, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
-<div class="line"><a id="l00889" name="l00889"></a><span class="lineno">  889</span>    {</div>
-<div class="line"><a id="l00890" name="l00890"></a><span class="lineno">  890</span>        RequirePerVertexColor(m);</div>
-<div class="line"><a id="l00891" name="l00891"></a><span class="lineno">  891</span> </div>
-<div class="line"><a id="l00892" name="l00892"></a><span class="lineno">  892</span>        <span class="comment">//declares , resets and set up 4 histograms, for Red, Green, Blue and Lightness</span></div>
-<div class="line"><a id="l00893" name="l00893"></a><span class="lineno">  893</span>        Histogramf Hl, Hr, Hg, Hb;</div>
-<div class="line"><a id="l00894" name="l00894"></a><span class="lineno">  894</span>        Hl.Clear(); Hr.Clear(); Hg.Clear(); Hb.Clear();</div>
-<div class="line"><a id="l00895" name="l00895"></a><span class="lineno">  895</span>        Hl.SetRange(0, 255, 255); Hr.SetRange(0, 255, 255); Hg.SetRange(0, 255, 255); Hb.SetRange(0, 255, 255);</div>
-<div class="line"><a id="l00896" name="l00896"></a><span class="lineno">  896</span> </div>
-<div class="line"><a id="l00897" name="l00897"></a><span class="lineno">  897</span>        <span class="keywordtype">int</span> counter=0;</div>
-<div class="line"><a id="l00898" name="l00898"></a><span class="lineno">  898</span>        VertexIterator vi;</div>
-<div class="line"><a id="l00899" name="l00899"></a><span class="lineno">  899</span> </div>
-<div class="line"><a id="l00900" name="l00900"></a><span class="lineno">  900</span>        <span class="comment">//Scan the mesh to build the histograms</span></div>
-<div class="line"><a id="l00901" name="l00901"></a><span class="lineno">  901</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="comment">//scan all the vertex...</span></div>
-<div class="line"><a id="l00902" name="l00902"></a><span class="lineno">  902</span>        {</div>
-<div class="line"><a id="l00903" name="l00903"></a><span class="lineno">  903</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
-<div class="line"><a id="l00904" name="l00904"></a><span class="lineno">  904</span>            {</div>
-<div class="line"><a id="l00905" name="l00905"></a><span class="lineno">  905</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, put it in the histograms</span></div>
-<div class="line"><a id="l00906" name="l00906"></a><span class="lineno">  906</span>                {</div>
-<div class="line"><a id="l00907" name="l00907"></a><span class="lineno">  907</span>                    <span class="keywordtype">float</span> v = ComputeLightness((*vi).C())+0.5; <span class="comment">//compute and round lightness value</span></div>
-<div class="line"><a id="l00908" name="l00908"></a><span class="lineno">  908</span>                    Hl.Add(v); Hr.Add((<span class="keywordtype">float</span>)(*vi).C()[0]); Hg.Add((<span class="keywordtype">float</span>)(*vi).C()[1]); Hb.Add((<span class="keywordtype">float</span>)(*vi).C()[2]);</div>
-<div class="line"><a id="l00909" name="l00909"></a><span class="lineno">  909</span>                }</div>
-<div class="line"><a id="l00910" name="l00910"></a><span class="lineno">  910</span>            }</div>
-<div class="line"><a id="l00911" name="l00911"></a><span class="lineno">  911</span>        }</div>
-<div class="line"><a id="l00912" name="l00912"></a><span class="lineno">  912</span> </div>
-<div class="line"><a id="l00913" name="l00913"></a><span class="lineno">  913</span>        <span class="comment">//for each histogram, compute the cumulative distribution function, and build a lookup table</span></div>
-<div class="line"><a id="l00914" name="l00914"></a><span class="lineno">  914</span>        <span class="keywordtype">int</span> cdf_l[256], cdf_r[256], cdf_g[256], cdf_b[256];</div>
-<div class="line"><a id="l00915" name="l00915"></a><span class="lineno">  915</span>        cdf_l[0] = Hl.BinCount(0); cdf_r[0] = Hr.BinCount(0); cdf_g[0] = Hg.BinCount(0); cdf_b[0] = Hb.BinCount(0);</div>
-<div class="line"><a id="l00916" name="l00916"></a><span class="lineno">  916</span>        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=1; i&lt;256; i++){</div>
-<div class="line"><a id="l00917" name="l00917"></a><span class="lineno">  917</span>            cdf_l[i] = Hl.BinCount(<span class="keywordtype">float</span>(i)) + cdf_l[i-1];</div>
-<div class="line"><a id="l00918" name="l00918"></a><span class="lineno">  918</span>            cdf_r[i] = Hr.BinCount(<span class="keywordtype">float</span>(i)) + cdf_r[i-1];</div>
-<div class="line"><a id="l00919" name="l00919"></a><span class="lineno">  919</span>            cdf_g[i] = Hg.BinCount(<span class="keywordtype">float</span>(i)) + cdf_g[i-1];</div>
-<div class="line"><a id="l00920" name="l00920"></a><span class="lineno">  920</span>            cdf_b[i] = Hb.BinCount(<span class="keywordtype">float</span>(i)) + cdf_b[i-1];</div>
-<div class="line"><a id="l00921" name="l00921"></a><span class="lineno">  921</span>        }</div>
-<div class="line"><a id="l00922" name="l00922"></a><span class="lineno">  922</span> </div>
-<div class="line"><a id="l00923" name="l00923"></a><span class="lineno">  923</span>        <span class="comment">//this loop aaplies the transformation to colors</span></div>
-<div class="line"><a id="l00924" name="l00924"></a><span class="lineno">  924</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="comment">//scan all the vertex...</span></div>
-<div class="line"><a id="l00925" name="l00925"></a><span class="lineno">  925</span>        {</div>
-<div class="line"><a id="l00926" name="l00926"></a><span class="lineno">  926</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
-<div class="line"><a id="l00927" name="l00927"></a><span class="lineno">  927</span>            {</div>
-<div class="line"><a id="l00928" name="l00928"></a><span class="lineno">  928</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
-<div class="line"><a id="l00929" name="l00929"></a><span class="lineno">  929</span>                {</div>
-<div class="line"><a id="l00930" name="l00930"></a><span class="lineno">  930</span>                    (*vi).C()=ColorEqualize((*vi).C(), cdf_l, cdf_r, cdf_g, cdf_b, rgbMask);</div>
-<div class="line"><a id="l00931" name="l00931"></a><span class="lineno">  931</span>                    ++counter;</div>
-<div class="line"><a id="l00932" name="l00932"></a><span class="lineno">  932</span>                }</div>
-<div class="line"><a id="l00933" name="l00933"></a><span class="lineno">  933</span>            }</div>
-<div class="line"><a id="l00934" name="l00934"></a><span class="lineno">  934</span>        }</div>
-<div class="line"><a id="l00935" name="l00935"></a><span class="lineno">  935</span>        <span class="keywordflow">return</span> counter;</div>
-<div class="line"><a id="l00936" name="l00936"></a><span class="lineno">  936</span>    }</div>
-<div class="line"><a id="l00937" name="l00937"></a><span class="lineno">  937</span> </div>
-<div class="line"><a id="l00938" name="l00938"></a><span class="lineno">  938</span>    <span class="comment">//Applies equalization to the components of the color according to rgbmask</span></div>
-<div class="line"><a id="l00939" name="l00939"></a><span class="lineno">  939</span>    <span class="keyword">static</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> ColorEqualize(<a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c, <span class="keywordtype">int</span> cdf_l[256], <span class="keywordtype">int</span> cdf_r[256], <span class="keywordtype">int</span> cdf_g[256], <span class="keywordtype">int</span> cdf_b[256], <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> rgbMask)</div>
-<div class="line"><a id="l00940" name="l00940"></a><span class="lineno">  940</span>    {</div>
-<div class="line"><a id="l00941" name="l00941"></a><span class="lineno">  941</span>        <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> r = c[0], g = c[1], b = c[2];</div>
-<div class="line"><a id="l00942" name="l00942"></a><span class="lineno">  942</span>        <span class="keywordflow">if</span>(rgbMask == NO_CHANNELS) <span class="comment">//in this case, equalization is done on lightness</span></div>
-<div class="line"><a id="l00943" name="l00943"></a><span class="lineno">  943</span>        {</div>
-<div class="line"><a id="l00944" name="l00944"></a><span class="lineno">  944</span>            <span class="keywordtype">int</span> v = ValueEqualize(cdf_l[(<span class="keywordtype">int</span>)(ComputeLightness(c)+0.5f)], cdf_l[0], cdf_l[255]);</div>
-<div class="line"><a id="l00945" name="l00945"></a><span class="lineno">  945</span>            <span class="keywordflow">return</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>(v, v, v, 255); <span class="comment">//return the equalized gray color</span></div>
-<div class="line"><a id="l00946" name="l00946"></a><span class="lineno">  946</span>        }</div>
-<div class="line"><a id="l00947" name="l00947"></a><span class="lineno">  947</span>        <span class="keywordflow">if</span>(rgbMask &amp; RED_CHANNEL) r = ValueEqualize(cdf_r[c[0]], cdf_r[0], cdf_r[255]); <span class="comment">//Equalizes red</span></div>
-<div class="line"><a id="l00948" name="l00948"></a><span class="lineno">  948</span>        <span class="keywordflow">if</span>(rgbMask &amp; GREEN_CHANNEL) g = ValueEqualize(cdf_g[c[1]], cdf_g[0], cdf_g[255]); <span class="comment">//Equalizes green</span></div>
-<div class="line"><a id="l00949" name="l00949"></a><span class="lineno">  949</span>        <span class="keywordflow">if</span>(rgbMask &amp; BLUE_CHANNEL) b = ValueEqualize(cdf_b[c[2]], cdf_b[0], cdf_b[255]); <span class="comment">//Equalizes blue</span></div>
-<div class="line"><a id="l00950" name="l00950"></a><span class="lineno">  950</span>        <span class="keywordflow">return</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>(r, g, b, 255); <span class="comment">//return the equalized color</span></div>
-<div class="line"><a id="l00951" name="l00951"></a><span class="lineno">  951</span>    }</div>
-<div class="line"><a id="l00952" name="l00952"></a><span class="lineno">  952</span> </div>
-<div class="line"><a id="l00953" name="l00953"></a><span class="lineno">  953</span>    <span class="comment">//Compute the equalized value</span></div>
-<div class="line"><a id="l00954" name="l00954"></a><span class="lineno">  954</span>    <span class="keyword">static</span> <span class="keywordtype">int</span> ValueEqualize(<span class="keywordtype">int</span> cdfValue, <span class="keywordtype">int</span> cdfMin, <span class="keywordtype">int</span> cdfMax)</div>
-<div class="line"><a id="l00955" name="l00955"></a><span class="lineno">  955</span>    {</div>
-<div class="line"><a id="l00956" name="l00956"></a><span class="lineno">  956</span>        <span class="keywordflow">return</span> int(<span class="keywordtype">float</span>((cdfValue - cdfMin)/<span class="keywordtype">float</span>(cdfMax - cdfMin)) * 255.0f);</div>
-<div class="line"><a id="l00957" name="l00957"></a><span class="lineno">  957</span>    }</div>
-<div class="line"><a id="l00958" name="l00958"></a><span class="lineno">  958</span> </div>
-<div class="line"><a id="l00964" name="l00964"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#a0ce56710f2dd8d0d0fb2f3b278d76569">  964</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#a0ce56710f2dd8d0d0fb2f3b278d76569">PerVertexWhiteBalance</a>(MeshType &amp;m, <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> userColor, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
-<div class="line"><a id="l00965" name="l00965"></a><span class="lineno">  965</span>    {</div>
-<div class="line"><a id="l00966" name="l00966"></a><span class="lineno">  966</span>        RequirePerVertexColor(m);</div>
-<div class="line"><a id="l00967" name="l00967"></a><span class="lineno">  967</span> </div>
-<div class="line"><a id="l00968" name="l00968"></a><span class="lineno">  968</span>        <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> unbalancedWhite= userColor;</div>
-<div class="line"><a id="l00969" name="l00969"></a><span class="lineno">  969</span>        <span class="keywordtype">int</span> counter=0;</div>
-<div class="line"><a id="l00970" name="l00970"></a><span class="lineno">  970</span>        VertexIterator vi;</div>
-<div class="line"><a id="l00971" name="l00971"></a><span class="lineno">  971</span> </div>
-<div class="line"><a id="l00972" name="l00972"></a><span class="lineno">  972</span>        <span class="comment">//in this loop the transformation is applied to the mesh</span></div>
-<div class="line"><a id="l00973" name="l00973"></a><span class="lineno">  973</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="comment">//scan all the vertex...</span></div>
-<div class="line"><a id="l00974" name="l00974"></a><span class="lineno">  974</span>        {</div>
-<div class="line"><a id="l00975" name="l00975"></a><span class="lineno">  975</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
-<div class="line"><a id="l00976" name="l00976"></a><span class="lineno">  976</span>            {</div>
-<div class="line"><a id="l00977" name="l00977"></a><span class="lineno">  977</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
-<div class="line"><a id="l00978" name="l00978"></a><span class="lineno">  978</span>                {</div>
-<div class="line"><a id="l00979" name="l00979"></a><span class="lineno">  979</span>                    (*vi).C()=ColorWhiteBalance((*vi).C(),unbalancedWhite);</div>
-<div class="line"><a id="l00980" name="l00980"></a><span class="lineno">  980</span>                    ++counter;</div>
-<div class="line"><a id="l00981" name="l00981"></a><span class="lineno">  981</span>                }</div>
-<div class="line"><a id="l00982" name="l00982"></a><span class="lineno">  982</span>            }</div>
-<div class="line"><a id="l00983" name="l00983"></a><span class="lineno">  983</span>        }</div>
-<div class="line"><a id="l00984" name="l00984"></a><span class="lineno">  984</span>        <span class="keywordflow">return</span> counter;</div>
-<div class="line"><a id="l00985" name="l00985"></a><span class="lineno">  985</span>    }</div>
-<div class="line"><a id="l00986" name="l00986"></a><span class="lineno">  986</span> </div>
-<div class="line"><a id="l00987" name="l00987"></a><span class="lineno">  987</span>    <span class="comment">//Balnce the white of the color, applying a correction factor based on the unbalancedWhite color.</span></div>
-<div class="line"><a id="l00988" name="l00988"></a><span class="lineno">  988</span>    <span class="keyword">static</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> ColorWhiteBalance(<a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c, <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> unbalancedWhite)</div>
-<div class="line"><a id="l00989" name="l00989"></a><span class="lineno">  989</span>    {</div>
-<div class="line"><a id="l00990" name="l00990"></a><span class="lineno">  990</span>        <span class="comment">//sanity check to avoid division by zero...</span></div>
-<div class="line"><a id="l00991" name="l00991"></a><span class="lineno">  991</span>        <span class="keywordflow">if</span>(unbalancedWhite[0]==0) unbalancedWhite[0]=1;</div>
-<div class="line"><a id="l00992" name="l00992"></a><span class="lineno">  992</span>        <span class="keywordflow">if</span>(unbalancedWhite[1]==0) unbalancedWhite[1]=1;</div>
-<div class="line"><a id="l00993" name="l00993"></a><span class="lineno">  993</span>        <span class="keywordflow">if</span>(unbalancedWhite[2]==0) unbalancedWhite[2]=1;</div>
-<div class="line"><a id="l00994" name="l00994"></a><span class="lineno">  994</span> </div>
-<div class="line"><a id="l00995" name="l00995"></a><span class="lineno">  995</span>        <span class="keywordflow">return</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>(</div>
-<div class="line"><a id="l00996" name="l00996"></a><span class="lineno">  996</span>                    math::Clamp&lt;int&gt;((<span class="keywordtype">int</span>)(c[0]*(255.0f/unbalancedWhite[0])), 0, 255),</div>
-<div class="line"><a id="l00997" name="l00997"></a><span class="lineno">  997</span>                math::Clamp&lt;int&gt;((<span class="keywordtype">int</span>)(c[1]*(255.0f/unbalancedWhite[1])), 0, 255),</div>
-<div class="line"><a id="l00998" name="l00998"></a><span class="lineno">  998</span>                math::Clamp&lt;int&gt;((<span class="keywordtype">int</span>)(c[2]*(255.0f/unbalancedWhite[2])), 0, 255),</div>
-<div class="line"><a id="l00999" name="l00999"></a><span class="lineno">  999</span>                255);</div>
-<div class="line"><a id="l01000" name="l01000"></a><span class="lineno"> 1000</span>    }</div>
-<div class="line"><a id="l01001" name="l01001"></a><span class="lineno"> 1001</span> </div>
-<div class="line"><a id="l01002" name="l01002"></a><span class="lineno"> 1002</span>};</div>
+<div class="line"><a id="l00693" name="l00693"></a><span class="lineno">  693</span>        <span class="keywordtype">int</span> counter=0;</div>
+<div class="line"><a id="l00694" name="l00694"></a><span class="lineno">  694</span> </div>
+<div class="line"><a id="l00695" name="l00695"></a><span class="lineno">  695</span>        VertexIterator vi;</div>
+<div class="line"><a id="l00696" name="l00696"></a><span class="lineno">  696</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="comment">//scan all the vertex...</span></div>
+<div class="line"><a id="l00697" name="l00697"></a><span class="lineno">  697</span>        {</div>
+<div class="line"><a id="l00698" name="l00698"></a><span class="lineno">  698</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
+<div class="line"><a id="l00699" name="l00699"></a><span class="lineno">  699</span>            {</div>
+<div class="line"><a id="l00700" name="l00700"></a><span class="lineno">  700</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
+<div class="line"><a id="l00701" name="l00701"></a><span class="lineno">  701</span>                {</div>
+<div class="line"><a id="l00702" name="l00702"></a><span class="lineno">  702</span>                    (*vi).C() = ColorPow((*vi).C(), 1/gamma);</div>
+<div class="line"><a id="l00703" name="l00703"></a><span class="lineno">  703</span>                    ++counter;</div>
+<div class="line"><a id="l00704" name="l00704"></a><span class="lineno">  704</span>                }</div>
+<div class="line"><a id="l00705" name="l00705"></a><span class="lineno">  705</span>            }</div>
+<div class="line"><a id="l00706" name="l00706"></a><span class="lineno">  706</span>        }</div>
+<div class="line"><a id="l00707" name="l00707"></a><span class="lineno">  707</span>        <span class="keywordflow">return</span> counter;</div>
+<div class="line"><a id="l00708" name="l00708"></a><span class="lineno">  708</span>    }</div>
+<div class="line"><a id="l00709" name="l00709"></a><span class="lineno">  709</span> </div>
+<div class="line"><a id="l00710" name="l00710"></a><span class="lineno">  710</span>    <span class="comment">//computes the standard gamma transformation on a given color, according to NewVal = OldVal^(1/gamma)</span></div>
+<div class="line"><a id="l00711" name="l00711"></a><span class="lineno">  711</span>    <span class="keyword">static</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> ColorPow(<a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c, <span class="keywordtype">float</span> exponent)</div>
+<div class="line"><a id="l00712" name="l00712"></a><span class="lineno">  712</span>    {</div>
+<div class="line"><a id="l00713" name="l00713"></a><span class="lineno">  713</span>        <span class="keywordflow">return</span> <a class="code hl_class" href="classvcg_1_1Color4.html">vcg::Color4b</a>(</div>
+<div class="line"><a id="l00714" name="l00714"></a><span class="lineno">  714</span>                    math::Clamp((<span class="keywordtype">int</span>)( ValuePow(<span class="keywordtype">float</span>(c[0])/255, exponent)*255), 0, 255),</div>
+<div class="line"><a id="l00715" name="l00715"></a><span class="lineno">  715</span>                math::Clamp((<span class="keywordtype">int</span>)( ValuePow(<span class="keywordtype">float</span>(c[1])/255, exponent)*255), 0, 255),</div>
+<div class="line"><a id="l00716" name="l00716"></a><span class="lineno">  716</span>                math::Clamp((<span class="keywordtype">int</span>)( ValuePow(<span class="keywordtype">float</span>(c[2])/255, exponent)*255), 0, 255),</div>
+<div class="line"><a id="l00717" name="l00717"></a><span class="lineno">  717</span>                255);</div>
+<div class="line"><a id="l00718" name="l00718"></a><span class="lineno">  718</span>    }</div>
+<div class="line"><a id="l00719" name="l00719"></a><span class="lineno">  719</span> </div>
+<div class="line"><a id="l00720" name="l00720"></a><span class="lineno">  720</span>    <span class="keyword">static</span> <span class="keywordtype">float</span> ValuePow(<span class="keywordtype">float</span> value, <span class="keywordtype">float</span> exponent)</div>
+<div class="line"><a id="l00721" name="l00721"></a><span class="lineno">  721</span>    {</div>
+<div class="line"><a id="l00722" name="l00722"></a><span class="lineno">  722</span>        <span class="keywordflow">return</span> powf(value, exponent);</div>
+<div class="line"><a id="l00723" name="l00723"></a><span class="lineno">  723</span>    }</div>
+<div class="line"><a id="l00724" name="l00724"></a><span class="lineno">  724</span> </div>
+<div class="line"><a id="l00725" name="l00725"></a><span class="lineno">  725</span>    <span class="comment">//useful bit masks for RGB channels, used for Levels filter.</span></div>
+<div class="line"><a id="l00726" name="l00726"></a><span class="lineno">  726</span>    <span class="keyword">enum</span> rgbChMask {ALL_CHANNELS = 7, RED_CHANNEL = 4, GREEN_CHANNEL = 2, BLUE_CHANNEL = 1, NO_CHANNELS = 0 };</div>
+<div class="line"><a id="l00727" name="l00727"></a><span class="lineno">  727</span> </div>
+<div class="line"><a id="l00736" name="l00736"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#a4e05ed307dfa8e8e4a749bf054002851">  736</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#a4e05ed307dfa8e8e4a749bf054002851">PerVertexLevels</a>(MeshType &amp;m, <span class="keywordtype">float</span> gamma, <span class="keywordtype">float</span> in_min, <span class="keywordtype">float</span> in_max, <span class="keywordtype">float</span> out_min, <span class="keywordtype">float</span> out_max, <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> rgbMask, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
+<div class="line"><a id="l00737" name="l00737"></a><span class="lineno">  737</span>    {</div>
+<div class="line"><a id="l00738" name="l00738"></a><span class="lineno">  738</span>        RequirePerVertexColor(m);</div>
+<div class="line"><a id="l00739" name="l00739"></a><span class="lineno">  739</span> </div>
+<div class="line"><a id="l00740" name="l00740"></a><span class="lineno">  740</span>        <span class="keywordtype">int</span> counter=0;</div>
+<div class="line"><a id="l00741" name="l00741"></a><span class="lineno">  741</span>        VertexIterator vi;</div>
+<div class="line"><a id="l00742" name="l00742"></a><span class="lineno">  742</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="comment">//scan all the vertex...</span></div>
+<div class="line"><a id="l00743" name="l00743"></a><span class="lineno">  743</span>        {</div>
+<div class="line"><a id="l00744" name="l00744"></a><span class="lineno">  744</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
+<div class="line"><a id="l00745" name="l00745"></a><span class="lineno">  745</span>            {</div>
+<div class="line"><a id="l00746" name="l00746"></a><span class="lineno">  746</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
+<div class="line"><a id="l00747" name="l00747"></a><span class="lineno">  747</span>                {</div>
+<div class="line"><a id="l00748" name="l00748"></a><span class="lineno">  748</span>                    (*vi).C() = ColorLevels((*vi).C(), gamma, in_min, in_max, out_min, out_max, rgbMask);</div>
+<div class="line"><a id="l00749" name="l00749"></a><span class="lineno">  749</span>                    ++counter;</div>
+<div class="line"><a id="l00750" name="l00750"></a><span class="lineno">  750</span>                }</div>
+<div class="line"><a id="l00751" name="l00751"></a><span class="lineno">  751</span>            }</div>
+<div class="line"><a id="l00752" name="l00752"></a><span class="lineno">  752</span>        }</div>
+<div class="line"><a id="l00753" name="l00753"></a><span class="lineno">  753</span>        <span class="keywordflow">return</span> counter;</div>
+<div class="line"><a id="l00754" name="l00754"></a><span class="lineno">  754</span>    }</div>
+<div class="line"><a id="l00755" name="l00755"></a><span class="lineno">  755</span> </div>
+<div class="line"><a id="l00756" name="l00756"></a><span class="lineno">  756</span>    <span class="comment">//Performs levels transformation on each channel set to 1 in the rgbMask.</span></div>
+<div class="line"><a id="l00757" name="l00757"></a><span class="lineno">  757</span>    <span class="keyword">static</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> ColorLevels(<a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c, <span class="keywordtype">float</span> gamma, <span class="keywordtype">float</span> in_min, <span class="keywordtype">float</span> in_max, <span class="keywordtype">float</span> out_min, <span class="keywordtype">float</span> out_max, <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> rgbMask)</div>
+<div class="line"><a id="l00758" name="l00758"></a><span class="lineno">  758</span>    {</div>
+<div class="line"><a id="l00759" name="l00759"></a><span class="lineno">  759</span>        <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> r = c[0], g = c[1], b = c[2];</div>
+<div class="line"><a id="l00760" name="l00760"></a><span class="lineno">  760</span>        <span class="keywordflow">if</span>(rgbMask &amp; RED_CHANNEL) r = ValueLevels(c[0], gamma, in_min, in_max, out_min, out_max);</div>
+<div class="line"><a id="l00761" name="l00761"></a><span class="lineno">  761</span>        <span class="keywordflow">if</span>(rgbMask &amp; GREEN_CHANNEL) g = ValueLevels(c[1], gamma, in_min, in_max, out_min, out_max);</div>
+<div class="line"><a id="l00762" name="l00762"></a><span class="lineno">  762</span>        <span class="keywordflow">if</span>(rgbMask &amp; BLUE_CHANNEL) b = ValueLevels(c[2], gamma, in_min, in_max, out_min, out_max);</div>
+<div class="line"><a id="l00763" name="l00763"></a><span class="lineno">  763</span>        <span class="keywordflow">return</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>(r, g, b, 255);</div>
+<div class="line"><a id="l00764" name="l00764"></a><span class="lineno">  764</span>    }</div>
+<div class="line"><a id="l00765" name="l00765"></a><span class="lineno">  765</span> </div>
+<div class="line"><a id="l00766" name="l00766"></a><span class="lineno">  766</span>    <span class="comment">//Transform on levels</span></div>
+<div class="line"><a id="l00767" name="l00767"></a><span class="lineno">  767</span>    <span class="keyword">static</span> <span class="keywordtype">int</span> ValueLevels(<span class="keywordtype">int</span> value, <span class="keywordtype">float</span> gamma, <span class="keywordtype">float</span> in_min, <span class="keywordtype">float</span> in_max, <span class="keywordtype">float</span> out_min, <span class="keywordtype">float</span> out_max)</div>
+<div class="line"><a id="l00768" name="l00768"></a><span class="lineno">  768</span>    {</div>
+<div class="line"><a id="l00769" name="l00769"></a><span class="lineno">  769</span>        <span class="keywordtype">float</span> fvalue = value/255.0f;</div>
+<div class="line"><a id="l00770" name="l00770"></a><span class="lineno">  770</span>        <span class="comment">// normalize</span></div>
+<div class="line"><a id="l00771" name="l00771"></a><span class="lineno">  771</span>        fvalue = math::Clamp&lt;float&gt;(fvalue - in_min, 0.0f, 1.0f) / math::Clamp&lt;float&gt;(in_max - in_min, 1.0f/255.0f, 1.0f);</div>
+<div class="line"><a id="l00772" name="l00772"></a><span class="lineno">  772</span>        <span class="comment">// transform gamma</span></div>
+<div class="line"><a id="l00773" name="l00773"></a><span class="lineno">  773</span>        fvalue = powf(fvalue,1/gamma);</div>
+<div class="line"><a id="l00774" name="l00774"></a><span class="lineno">  774</span>        <span class="comment">// rescale range</span></div>
+<div class="line"><a id="l00775" name="l00775"></a><span class="lineno">  775</span>        fvalue = fvalue * (out_max - out_min) + out_min;</div>
+<div class="line"><a id="l00776" name="l00776"></a><span class="lineno">  776</span>        <span class="comment">//back in interval [0,255] and clamp</span></div>
+<div class="line"><a id="l00777" name="l00777"></a><span class="lineno">  777</span>        <span class="keywordflow">return</span> math::Clamp&lt;int&gt;((<span class="keywordtype">int</span>)(fvalue * 255), 0, 255);</div>
+<div class="line"><a id="l00778" name="l00778"></a><span class="lineno">  778</span>    }</div>
+<div class="line"><a id="l00779" name="l00779"></a><span class="lineno">  779</span> </div>
+<div class="line"><a id="l00785" name="l00785"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#ade71e63f4e8fa51bef86015feb47808c">  785</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#ade71e63f4e8fa51bef86015feb47808c">PerVertexColourisation</a>(MeshType &amp;m, <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c, <span class="keywordtype">float</span> intensity, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
+<div class="line"><a id="l00786" name="l00786"></a><span class="lineno">  786</span>    {</div>
+<div class="line"><a id="l00787" name="l00787"></a><span class="lineno">  787</span>        RequirePerVertexColor(m);</div>
+<div class="line"><a id="l00788" name="l00788"></a><span class="lineno">  788</span> </div>
+<div class="line"><a id="l00789" name="l00789"></a><span class="lineno">  789</span>        <span class="keywordtype">int</span> counter=0;</div>
+<div class="line"><a id="l00790" name="l00790"></a><span class="lineno">  790</span>        VertexIterator vi;</div>
+<div class="line"><a id="l00791" name="l00791"></a><span class="lineno">  791</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi)</div>
+<div class="line"><a id="l00792" name="l00792"></a><span class="lineno">  792</span>        {</div>
+<div class="line"><a id="l00793" name="l00793"></a><span class="lineno">  793</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
+<div class="line"><a id="l00794" name="l00794"></a><span class="lineno">  794</span>            {</div>
+<div class="line"><a id="l00795" name="l00795"></a><span class="lineno">  795</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
+<div class="line"><a id="l00796" name="l00796"></a><span class="lineno">  796</span>                {</div>
+<div class="line"><a id="l00797" name="l00797"></a><span class="lineno">  797</span>                    (*vi).C() = ColorApplyDiff((*vi).C(), c, intensity);</div>
+<div class="line"><a id="l00798" name="l00798"></a><span class="lineno">  798</span>                    ++counter;</div>
+<div class="line"><a id="l00799" name="l00799"></a><span class="lineno">  799</span>                }</div>
+<div class="line"><a id="l00800" name="l00800"></a><span class="lineno">  800</span>            }</div>
+<div class="line"><a id="l00801" name="l00801"></a><span class="lineno">  801</span>        }</div>
+<div class="line"><a id="l00802" name="l00802"></a><span class="lineno">  802</span>        <span class="keywordflow">return</span> counter;</div>
+<div class="line"><a id="l00803" name="l00803"></a><span class="lineno">  803</span>    }</div>
+<div class="line"><a id="l00804" name="l00804"></a><span class="lineno">  804</span> </div>
+<div class="line"><a id="l00805" name="l00805"></a><span class="lineno">  805</span>    <span class="comment">// Perform colourisation operation.</span></div>
+<div class="line"><a id="l00806" name="l00806"></a><span class="lineno">  806</span>    <span class="comment">// For each channel C:</span></div>
+<div class="line"><a id="l00807" name="l00807"></a><span class="lineno">  807</span>    <span class="comment">// newC = origC + intensity * (newC - origC)</span></div>
+<div class="line"><a id="l00808" name="l00808"></a><span class="lineno">  808</span>    <span class="keyword">static</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> ColorApplyDiff(<a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> old_color, <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> new_color, <span class="keywordtype">float</span> intensity)</div>
+<div class="line"><a id="l00809" name="l00809"></a><span class="lineno">  809</span>    {</div>
+<div class="line"><a id="l00810" name="l00810"></a><span class="lineno">  810</span>        <span class="keywordflow">return</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>( ValueApplyDiff(old_color[0], new_color[0], intensity),</div>
+<div class="line"><a id="l00811" name="l00811"></a><span class="lineno">  811</span>                ValueApplyDiff(old_color[1], new_color[1], intensity),</div>
+<div class="line"><a id="l00812" name="l00812"></a><span class="lineno">  812</span>                ValueApplyDiff(old_color[2], new_color[2], intensity), 255);</div>
+<div class="line"><a id="l00813" name="l00813"></a><span class="lineno">  813</span>    }</div>
+<div class="line"><a id="l00814" name="l00814"></a><span class="lineno">  814</span> </div>
+<div class="line"><a id="l00815" name="l00815"></a><span class="lineno">  815</span>    <span class="keyword">static</span> <span class="keywordtype">int</span> ValueApplyDiff(<span class="keywordtype">int</span> old_value, <span class="keywordtype">int</span> new_value, <span class="keywordtype">float</span> intensity)</div>
+<div class="line"><a id="l00816" name="l00816"></a><span class="lineno">  816</span>    {</div>
+<div class="line"><a id="l00817" name="l00817"></a><span class="lineno">  817</span>        <span class="keywordflow">return</span>  math::Clamp&lt;int&gt;((<span class="keywordtype">int</span>)(old_value + intensity * (new_value - old_value)), 0, 255);</div>
+<div class="line"><a id="l00818" name="l00818"></a><span class="lineno">  818</span>    }</div>
+<div class="line"><a id="l00819" name="l00819"></a><span class="lineno">  819</span> </div>
+<div class="line"><a id="l00820" name="l00820"></a><span class="lineno">  820</span>    <span class="comment">//An useful ENUM to hold all desaturation methods.</span></div>
+<div class="line"><a id="l00821" name="l00821"></a><span class="lineno">  821</span>    <span class="keyword">enum</span> DesaturationMethods {M_LIGHTNESS = 0, M_LUMINOSITY = 1, M_AVERAGE = 2};</div>
+<div class="line"><a id="l00822" name="l00822"></a><span class="lineno">  822</span> </div>
+<div class="line"><a id="l00832" name="l00832"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#a9a3d164722739d87a3bf966c5cfd4210">  832</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#a9a3d164722739d87a3bf966c5cfd4210">PerVertexDesaturation</a>(MeshType &amp;m, <span class="keywordtype">int</span> method, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
+<div class="line"><a id="l00833" name="l00833"></a><span class="lineno">  833</span>    {</div>
+<div class="line"><a id="l00834" name="l00834"></a><span class="lineno">  834</span>        RequirePerVertexColor(m);</div>
+<div class="line"><a id="l00835" name="l00835"></a><span class="lineno">  835</span> </div>
+<div class="line"><a id="l00836" name="l00836"></a><span class="lineno">  836</span>        <span class="keywordtype">int</span> counter=0;</div>
+<div class="line"><a id="l00837" name="l00837"></a><span class="lineno">  837</span>        VertexIterator vi;</div>
+<div class="line"><a id="l00838" name="l00838"></a><span class="lineno">  838</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="comment">//scan all the vertex...</span></div>
+<div class="line"><a id="l00839" name="l00839"></a><span class="lineno">  839</span>        {</div>
+<div class="line"><a id="l00840" name="l00840"></a><span class="lineno">  840</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
+<div class="line"><a id="l00841" name="l00841"></a><span class="lineno">  841</span>            {</div>
+<div class="line"><a id="l00842" name="l00842"></a><span class="lineno">  842</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
+<div class="line"><a id="l00843" name="l00843"></a><span class="lineno">  843</span>                {</div>
+<div class="line"><a id="l00844" name="l00844"></a><span class="lineno">  844</span>                    (*vi).C() = ColorDesaturate((*vi).C(), method);</div>
+<div class="line"><a id="l00845" name="l00845"></a><span class="lineno">  845</span>                    ++counter;</div>
+<div class="line"><a id="l00846" name="l00846"></a><span class="lineno">  846</span>                }</div>
+<div class="line"><a id="l00847" name="l00847"></a><span class="lineno">  847</span>            }</div>
+<div class="line"><a id="l00848" name="l00848"></a><span class="lineno">  848</span>        }</div>
+<div class="line"><a id="l00849" name="l00849"></a><span class="lineno">  849</span>        <span class="keywordflow">return</span> counter;</div>
+<div class="line"><a id="l00850" name="l00850"></a><span class="lineno">  850</span>    }</div>
+<div class="line"><a id="l00851" name="l00851"></a><span class="lineno">  851</span> </div>
+<div class="line"><a id="l00852" name="l00852"></a><span class="lineno">  852</span>    <span class="comment">//Desature the color. Ausiliary functions to calculate lightness/luminosity/average.</span></div>
+<div class="line"><a id="l00853" name="l00853"></a><span class="lineno">  853</span>    <span class="keyword">static</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> ColorDesaturate(<a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c, <span class="keywordtype">int</span> method)</div>
+<div class="line"><a id="l00854" name="l00854"></a><span class="lineno">  854</span>    {</div>
+<div class="line"><a id="l00855" name="l00855"></a><span class="lineno">  855</span>        <span class="keywordflow">switch</span>(method){</div>
+<div class="line"><a id="l00856" name="l00856"></a><span class="lineno">  856</span>            <span class="keywordflow">case</span> M_LIGHTNESS:{</div>
+<div class="line"><a id="l00857" name="l00857"></a><span class="lineno">  857</span>                <span class="keywordtype">int</span> val = (int)ComputeLightness(c);</div>
+<div class="line"><a id="l00858" name="l00858"></a><span class="lineno">  858</span>                <span class="keywordflow">return</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>( val, val, val, 255);</div>
+<div class="line"><a id="l00859" name="l00859"></a><span class="lineno">  859</span>            }</div>
+<div class="line"><a id="l00860" name="l00860"></a><span class="lineno">  860</span>            <span class="keywordflow">case</span> M_AVERAGE:{</div>
+<div class="line"><a id="l00861" name="l00861"></a><span class="lineno">  861</span>                <span class="keywordtype">int</span> val = (int)ComputeAvgLightness(c);</div>
+<div class="line"><a id="l00862" name="l00862"></a><span class="lineno">  862</span>                <span class="keywordflow">return</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>( val, val, val, 255);</div>
+<div class="line"><a id="l00863" name="l00863"></a><span class="lineno">  863</span>            }</div>
+<div class="line"><a id="l00864" name="l00864"></a><span class="lineno">  864</span>            <span class="keywordflow">case</span> M_LUMINOSITY:{</div>
+<div class="line"><a id="l00865" name="l00865"></a><span class="lineno">  865</span>                <span class="keywordtype">int</span> val = (int)ComputeLuminosity(c);</div>
+<div class="line"><a id="l00866" name="l00866"></a><span class="lineno">  866</span>                <span class="keywordflow">return</span> Color4b( val, val, val, 255);</div>
+<div class="line"><a id="l00867" name="l00867"></a><span class="lineno">  867</span>            }</div>
+<div class="line"><a id="l00868" name="l00868"></a><span class="lineno">  868</span>            <span class="keywordflow">default</span>: assert(0);</div>
+<div class="line"><a id="l00869" name="l00869"></a><span class="lineno">  869</span>        }</div>
+<div class="line"><a id="l00870" name="l00870"></a><span class="lineno">  870</span>        <span class="keywordflow">return</span> Color4b(255, 255, 255, 255);</div>
+<div class="line"><a id="l00871" name="l00871"></a><span class="lineno">  871</span>    }</div>
+<div class="line"><a id="l00872" name="l00872"></a><span class="lineno">  872</span> </div>
+<div class="line"><a id="l00873" name="l00873"></a><span class="lineno">  873</span>    <span class="comment">//ausiliary function to compute average lightness. value = (R+G+B)/3</span></div>
+<div class="line"><a id="l00874" name="l00874"></a><span class="lineno">  874</span>    <span class="keyword">static</span> <span class="keywordtype">float</span> ComputeAvgLightness(Color4b c)</div>
+<div class="line"><a id="l00875" name="l00875"></a><span class="lineno">  875</span>    {</div>
+<div class="line"><a id="l00876" name="l00876"></a><span class="lineno">  876</span>        <span class="keywordflow">return</span> float(c[0]+c[1]+c[2])/3.0f;</div>
+<div class="line"><a id="l00877" name="l00877"></a><span class="lineno">  877</span>    }</div>
+<div class="line"><a id="l00878" name="l00878"></a><span class="lineno">  878</span> </div>
+<div class="line"><a id="l00879" name="l00879"></a><span class="lineno">  879</span>    <span class="comment">//ausiliary function to compute luminosity. value = 0.21*R+0.71*G+0.7*B</span></div>
+<div class="line"><a id="l00880" name="l00880"></a><span class="lineno">  880</span>    <span class="keyword">static</span> <span class="keywordtype">float</span> ComputeLuminosity(Color4b c)</div>
+<div class="line"><a id="l00881" name="l00881"></a><span class="lineno">  881</span>    {</div>
+<div class="line"><a id="l00882" name="l00882"></a><span class="lineno">  882</span>        <span class="keywordflow">return</span> float(0.2126f*c[0]+0.7152f*c[1]+0.0722f*c[2]);</div>
+<div class="line"><a id="l00883" name="l00883"></a><span class="lineno">  883</span>    }</div>
+<div class="line"><a id="l00884" name="l00884"></a><span class="lineno">  884</span> </div>
+<div class="line"><a id="l00890" name="l00890"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#a05760afdeaba59b7536e140b289897de">  890</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#a05760afdeaba59b7536e140b289897de">PerVertexEqualize</a>(MeshType &amp;m, <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> rgbMask, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
+<div class="line"><a id="l00891" name="l00891"></a><span class="lineno">  891</span>    {</div>
+<div class="line"><a id="l00892" name="l00892"></a><span class="lineno">  892</span>        RequirePerVertexColor(m);</div>
+<div class="line"><a id="l00893" name="l00893"></a><span class="lineno">  893</span> </div>
+<div class="line"><a id="l00894" name="l00894"></a><span class="lineno">  894</span>        <span class="comment">//declares , resets and set up 4 histograms, for Red, Green, Blue and Lightness</span></div>
+<div class="line"><a id="l00895" name="l00895"></a><span class="lineno">  895</span>        Histogramf Hl, Hr, Hg, Hb;</div>
+<div class="line"><a id="l00896" name="l00896"></a><span class="lineno">  896</span>        Hl.Clear(); Hr.Clear(); Hg.Clear(); Hb.Clear();</div>
+<div class="line"><a id="l00897" name="l00897"></a><span class="lineno">  897</span>        Hl.SetRange(0, 255, 255); Hr.SetRange(0, 255, 255); Hg.SetRange(0, 255, 255); Hb.SetRange(0, 255, 255);</div>
+<div class="line"><a id="l00898" name="l00898"></a><span class="lineno">  898</span> </div>
+<div class="line"><a id="l00899" name="l00899"></a><span class="lineno">  899</span>        <span class="keywordtype">int</span> counter=0;</div>
+<div class="line"><a id="l00900" name="l00900"></a><span class="lineno">  900</span>        VertexIterator vi;</div>
+<div class="line"><a id="l00901" name="l00901"></a><span class="lineno">  901</span> </div>
+<div class="line"><a id="l00902" name="l00902"></a><span class="lineno">  902</span>        <span class="comment">//Scan the mesh to build the histograms</span></div>
+<div class="line"><a id="l00903" name="l00903"></a><span class="lineno">  903</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="comment">//scan all the vertex...</span></div>
+<div class="line"><a id="l00904" name="l00904"></a><span class="lineno">  904</span>        {</div>
+<div class="line"><a id="l00905" name="l00905"></a><span class="lineno">  905</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
+<div class="line"><a id="l00906" name="l00906"></a><span class="lineno">  906</span>            {</div>
+<div class="line"><a id="l00907" name="l00907"></a><span class="lineno">  907</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, put it in the histograms</span></div>
+<div class="line"><a id="l00908" name="l00908"></a><span class="lineno">  908</span>                {</div>
+<div class="line"><a id="l00909" name="l00909"></a><span class="lineno">  909</span>                    <span class="keywordtype">float</span> v = ComputeLightness((*vi).C())+0.5; <span class="comment">//compute and round lightness value</span></div>
+<div class="line"><a id="l00910" name="l00910"></a><span class="lineno">  910</span>                    Hl.Add(v); Hr.Add((<span class="keywordtype">float</span>)(*vi).C()[0]); Hg.Add((<span class="keywordtype">float</span>)(*vi).C()[1]); Hb.Add((<span class="keywordtype">float</span>)(*vi).C()[2]);</div>
+<div class="line"><a id="l00911" name="l00911"></a><span class="lineno">  911</span>                }</div>
+<div class="line"><a id="l00912" name="l00912"></a><span class="lineno">  912</span>            }</div>
+<div class="line"><a id="l00913" name="l00913"></a><span class="lineno">  913</span>        }</div>
+<div class="line"><a id="l00914" name="l00914"></a><span class="lineno">  914</span> </div>
+<div class="line"><a id="l00915" name="l00915"></a><span class="lineno">  915</span>        <span class="comment">//for each histogram, compute the cumulative distribution function, and build a lookup table</span></div>
+<div class="line"><a id="l00916" name="l00916"></a><span class="lineno">  916</span>        <span class="keywordtype">int</span> cdf_l[256], cdf_r[256], cdf_g[256], cdf_b[256];</div>
+<div class="line"><a id="l00917" name="l00917"></a><span class="lineno">  917</span>        cdf_l[0] = Hl.BinCount(0); cdf_r[0] = Hr.BinCount(0); cdf_g[0] = Hg.BinCount(0); cdf_b[0] = Hb.BinCount(0);</div>
+<div class="line"><a id="l00918" name="l00918"></a><span class="lineno">  918</span>        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=1; i&lt;256; i++){</div>
+<div class="line"><a id="l00919" name="l00919"></a><span class="lineno">  919</span>            cdf_l[i] = Hl.BinCount(<span class="keywordtype">float</span>(i)) + cdf_l[i-1];</div>
+<div class="line"><a id="l00920" name="l00920"></a><span class="lineno">  920</span>            cdf_r[i] = Hr.BinCount(<span class="keywordtype">float</span>(i)) + cdf_r[i-1];</div>
+<div class="line"><a id="l00921" name="l00921"></a><span class="lineno">  921</span>            cdf_g[i] = Hg.BinCount(<span class="keywordtype">float</span>(i)) + cdf_g[i-1];</div>
+<div class="line"><a id="l00922" name="l00922"></a><span class="lineno">  922</span>            cdf_b[i] = Hb.BinCount(<span class="keywordtype">float</span>(i)) + cdf_b[i-1];</div>
+<div class="line"><a id="l00923" name="l00923"></a><span class="lineno">  923</span>        }</div>
+<div class="line"><a id="l00924" name="l00924"></a><span class="lineno">  924</span> </div>
+<div class="line"><a id="l00925" name="l00925"></a><span class="lineno">  925</span>        <span class="comment">//this loop aaplies the transformation to colors</span></div>
+<div class="line"><a id="l00926" name="l00926"></a><span class="lineno">  926</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="comment">//scan all the vertex...</span></div>
+<div class="line"><a id="l00927" name="l00927"></a><span class="lineno">  927</span>        {</div>
+<div class="line"><a id="l00928" name="l00928"></a><span class="lineno">  928</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
+<div class="line"><a id="l00929" name="l00929"></a><span class="lineno">  929</span>            {</div>
+<div class="line"><a id="l00930" name="l00930"></a><span class="lineno">  930</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
+<div class="line"><a id="l00931" name="l00931"></a><span class="lineno">  931</span>                {</div>
+<div class="line"><a id="l00932" name="l00932"></a><span class="lineno">  932</span>                    (*vi).C()=ColorEqualize((*vi).C(), cdf_l, cdf_r, cdf_g, cdf_b, rgbMask);</div>
+<div class="line"><a id="l00933" name="l00933"></a><span class="lineno">  933</span>                    ++counter;</div>
+<div class="line"><a id="l00934" name="l00934"></a><span class="lineno">  934</span>                }</div>
+<div class="line"><a id="l00935" name="l00935"></a><span class="lineno">  935</span>            }</div>
+<div class="line"><a id="l00936" name="l00936"></a><span class="lineno">  936</span>        }</div>
+<div class="line"><a id="l00937" name="l00937"></a><span class="lineno">  937</span>        <span class="keywordflow">return</span> counter;</div>
+<div class="line"><a id="l00938" name="l00938"></a><span class="lineno">  938</span>    }</div>
+<div class="line"><a id="l00939" name="l00939"></a><span class="lineno">  939</span> </div>
+<div class="line"><a id="l00940" name="l00940"></a><span class="lineno">  940</span>    <span class="comment">//Applies equalization to the components of the color according to rgbmask</span></div>
+<div class="line"><a id="l00941" name="l00941"></a><span class="lineno">  941</span>    <span class="keyword">static</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> ColorEqualize(<a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c, <span class="keywordtype">int</span> cdf_l[256], <span class="keywordtype">int</span> cdf_r[256], <span class="keywordtype">int</span> cdf_g[256], <span class="keywordtype">int</span> cdf_b[256], <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> rgbMask)</div>
+<div class="line"><a id="l00942" name="l00942"></a><span class="lineno">  942</span>    {</div>
+<div class="line"><a id="l00943" name="l00943"></a><span class="lineno">  943</span>        <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> r = c[0], g = c[1], b = c[2];</div>
+<div class="line"><a id="l00944" name="l00944"></a><span class="lineno">  944</span>        <span class="keywordflow">if</span>(rgbMask == NO_CHANNELS) <span class="comment">//in this case, equalization is done on lightness</span></div>
+<div class="line"><a id="l00945" name="l00945"></a><span class="lineno">  945</span>        {</div>
+<div class="line"><a id="l00946" name="l00946"></a><span class="lineno">  946</span>            <span class="keywordtype">int</span> v = ValueEqualize(cdf_l[(<span class="keywordtype">int</span>)(ComputeLightness(c)+0.5f)], cdf_l[0], cdf_l[255]);</div>
+<div class="line"><a id="l00947" name="l00947"></a><span class="lineno">  947</span>            <span class="keywordflow">return</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>(v, v, v, 255); <span class="comment">//return the equalized gray color</span></div>
+<div class="line"><a id="l00948" name="l00948"></a><span class="lineno">  948</span>        }</div>
+<div class="line"><a id="l00949" name="l00949"></a><span class="lineno">  949</span>        <span class="keywordflow">if</span>(rgbMask &amp; RED_CHANNEL) r = ValueEqualize(cdf_r[c[0]], cdf_r[0], cdf_r[255]); <span class="comment">//Equalizes red</span></div>
+<div class="line"><a id="l00950" name="l00950"></a><span class="lineno">  950</span>        <span class="keywordflow">if</span>(rgbMask &amp; GREEN_CHANNEL) g = ValueEqualize(cdf_g[c[1]], cdf_g[0], cdf_g[255]); <span class="comment">//Equalizes green</span></div>
+<div class="line"><a id="l00951" name="l00951"></a><span class="lineno">  951</span>        <span class="keywordflow">if</span>(rgbMask &amp; BLUE_CHANNEL) b = ValueEqualize(cdf_b[c[2]], cdf_b[0], cdf_b[255]); <span class="comment">//Equalizes blue</span></div>
+<div class="line"><a id="l00952" name="l00952"></a><span class="lineno">  952</span>        <span class="keywordflow">return</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>(r, g, b, 255); <span class="comment">//return the equalized color</span></div>
+<div class="line"><a id="l00953" name="l00953"></a><span class="lineno">  953</span>    }</div>
+<div class="line"><a id="l00954" name="l00954"></a><span class="lineno">  954</span> </div>
+<div class="line"><a id="l00955" name="l00955"></a><span class="lineno">  955</span>    <span class="comment">//Compute the equalized value</span></div>
+<div class="line"><a id="l00956" name="l00956"></a><span class="lineno">  956</span>    <span class="keyword">static</span> <span class="keywordtype">int</span> ValueEqualize(<span class="keywordtype">int</span> cdfValue, <span class="keywordtype">int</span> cdfMin, <span class="keywordtype">int</span> cdfMax)</div>
+<div class="line"><a id="l00957" name="l00957"></a><span class="lineno">  957</span>    {</div>
+<div class="line"><a id="l00958" name="l00958"></a><span class="lineno">  958</span>        <span class="keywordflow">return</span> int(<span class="keywordtype">float</span>((cdfValue - cdfMin)/<span class="keywordtype">float</span>(cdfMax - cdfMin)) * 255.0f);</div>
+<div class="line"><a id="l00959" name="l00959"></a><span class="lineno">  959</span>    }</div>
+<div class="line"><a id="l00960" name="l00960"></a><span class="lineno">  960</span> </div>
+<div class="line"><a id="l00966" name="l00966"></a><span class="lineno"><a class="line" href="classvcg_1_1tri_1_1UpdateColor.html#a0ce56710f2dd8d0d0fb2f3b278d76569">  966</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classvcg_1_1tri_1_1UpdateColor.html#a0ce56710f2dd8d0d0fb2f3b278d76569">PerVertexWhiteBalance</a>(MeshType &amp;m, <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> userColor, <span class="keyword">const</span> <span class="keywordtype">bool</span> ProcessSelected=<span class="keyword">false</span>)</div>
+<div class="line"><a id="l00967" name="l00967"></a><span class="lineno">  967</span>    {</div>
+<div class="line"><a id="l00968" name="l00968"></a><span class="lineno">  968</span>        RequirePerVertexColor(m);</div>
+<div class="line"><a id="l00969" name="l00969"></a><span class="lineno">  969</span> </div>
+<div class="line"><a id="l00970" name="l00970"></a><span class="lineno">  970</span>        <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> unbalancedWhite= userColor;</div>
+<div class="line"><a id="l00971" name="l00971"></a><span class="lineno">  971</span>        <span class="keywordtype">int</span> counter=0;</div>
+<div class="line"><a id="l00972" name="l00972"></a><span class="lineno">  972</span>        VertexIterator vi;</div>
+<div class="line"><a id="l00973" name="l00973"></a><span class="lineno">  973</span> </div>
+<div class="line"><a id="l00974" name="l00974"></a><span class="lineno">  974</span>        <span class="comment">//in this loop the transformation is applied to the mesh</span></div>
+<div class="line"><a id="l00975" name="l00975"></a><span class="lineno">  975</span>        <span class="keywordflow">for</span>(vi=m.vert.begin();vi!=m.vert.end();++vi) <span class="comment">//scan all the vertex...</span></div>
+<div class="line"><a id="l00976" name="l00976"></a><span class="lineno">  976</span>        {</div>
+<div class="line"><a id="l00977" name="l00977"></a><span class="lineno">  977</span>            <span class="keywordflow">if</span>(!(*vi).IsD()) <span class="comment">//if it has not been deleted...</span></div>
+<div class="line"><a id="l00978" name="l00978"></a><span class="lineno">  978</span>            {</div>
+<div class="line"><a id="l00979" name="l00979"></a><span class="lineno">  979</span>                <span class="keywordflow">if</span>(!ProcessSelected || (*vi).IsS()) <span class="comment">//if this vertex has been selected, do transormation</span></div>
+<div class="line"><a id="l00980" name="l00980"></a><span class="lineno">  980</span>                {</div>
+<div class="line"><a id="l00981" name="l00981"></a><span class="lineno">  981</span>                    (*vi).C()=ColorWhiteBalance((*vi).C(),unbalancedWhite);</div>
+<div class="line"><a id="l00982" name="l00982"></a><span class="lineno">  982</span>                    ++counter;</div>
+<div class="line"><a id="l00983" name="l00983"></a><span class="lineno">  983</span>                }</div>
+<div class="line"><a id="l00984" name="l00984"></a><span class="lineno">  984</span>            }</div>
+<div class="line"><a id="l00985" name="l00985"></a><span class="lineno">  985</span>        }</div>
+<div class="line"><a id="l00986" name="l00986"></a><span class="lineno">  986</span>        <span class="keywordflow">return</span> counter;</div>
+<div class="line"><a id="l00987" name="l00987"></a><span class="lineno">  987</span>    }</div>
+<div class="line"><a id="l00988" name="l00988"></a><span class="lineno">  988</span> </div>
+<div class="line"><a id="l00989" name="l00989"></a><span class="lineno">  989</span>    <span class="comment">//Balnce the white of the color, applying a correction factor based on the unbalancedWhite color.</span></div>
+<div class="line"><a id="l00990" name="l00990"></a><span class="lineno">  990</span>    <span class="keyword">static</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> ColorWhiteBalance(<a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> c, <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a> unbalancedWhite)</div>
+<div class="line"><a id="l00991" name="l00991"></a><span class="lineno">  991</span>    {</div>
+<div class="line"><a id="l00992" name="l00992"></a><span class="lineno">  992</span>        <span class="comment">//sanity check to avoid division by zero...</span></div>
+<div class="line"><a id="l00993" name="l00993"></a><span class="lineno">  993</span>        <span class="keywordflow">if</span>(unbalancedWhite[0]==0) unbalancedWhite[0]=1;</div>
+<div class="line"><a id="l00994" name="l00994"></a><span class="lineno">  994</span>        <span class="keywordflow">if</span>(unbalancedWhite[1]==0) unbalancedWhite[1]=1;</div>
+<div class="line"><a id="l00995" name="l00995"></a><span class="lineno">  995</span>        <span class="keywordflow">if</span>(unbalancedWhite[2]==0) unbalancedWhite[2]=1;</div>
+<div class="line"><a id="l00996" name="l00996"></a><span class="lineno">  996</span> </div>
+<div class="line"><a id="l00997" name="l00997"></a><span class="lineno">  997</span>        <span class="keywordflow">return</span> <a class="code hl_class" href="classvcg_1_1Color4.html">Color4b</a>(</div>
+<div class="line"><a id="l00998" name="l00998"></a><span class="lineno">  998</span>                    math::Clamp&lt;int&gt;((<span class="keywordtype">int</span>)(c[0]*(255.0f/unbalancedWhite[0])), 0, 255),</div>
+<div class="line"><a id="l00999" name="l00999"></a><span class="lineno">  999</span>                math::Clamp&lt;int&gt;((<span class="keywordtype">int</span>)(c[1]*(255.0f/unbalancedWhite[1])), 0, 255),</div>
+<div class="line"><a id="l01000" name="l01000"></a><span class="lineno"> 1000</span>                math::Clamp&lt;int&gt;((<span class="keywordtype">int</span>)(c[2]*(255.0f/unbalancedWhite[2])), 0, 255),</div>
+<div class="line"><a id="l01001" name="l01001"></a><span class="lineno"> 1001</span>                255);</div>
+<div class="line"><a id="l01002" name="l01002"></a><span class="lineno"> 1002</span>    }</div>
 <div class="line"><a id="l01003" name="l01003"></a><span class="lineno"> 1003</span> </div>
-<div class="line"><a id="l01004" name="l01004"></a><span class="lineno"> 1004</span>}<span class="comment">// end namespace</span></div>
-<div class="line"><a id="l01005" name="l01005"></a><span class="lineno"> 1005</span>}<span class="comment">// end namespace</span></div>
-<div class="line"><a id="l01006" name="l01006"></a><span class="lineno"> 1006</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l01004" name="l01004"></a><span class="lineno"> 1004</span>};</div>
+<div class="line"><a id="l01005" name="l01005"></a><span class="lineno"> 1005</span> </div>
+<div class="line"><a id="l01006" name="l01006"></a><span class="lineno"> 1006</span>}<span class="comment">// end namespace</span></div>
+<div class="line"><a id="l01007" name="l01007"></a><span class="lineno"> 1007</span>}<span class="comment">// end namespace</span></div>
+<div class="line"><a id="l01008" name="l01008"></a><span class="lineno"> 1008</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassvcg_1_1Color4_html"><div class="ttname"><a href="classvcg_1_1Color4.html">vcg::Color4</a></div><div class="ttdef"><b>Definition:</b> color4.h:41</div></div>
 <div class="ttc" id="aclassvcg_1_1Color4_html_a6f81ca21ee1b60304a98ab053353493f"><div class="ttname"><a href="classvcg_1_1Color4.html#a6f81ca21ee1b60304a98ab053353493f">vcg::Color4::Scatter</a></div><div class="ttdeci">static Color4 Scatter(int range, int value, float Sat=.3f, float Val=.9f)</div><div class="ttdef"><b>Definition:</b> color4.h:233</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1Clean_html"><div class="ttname"><a href="classvcg_1_1tri_1_1Clean.html">vcg::tri::Clean</a></div><div class="ttdoc">Class of static functions to clean//restore meshs.</div><div class="ttdef"><b>Definition:</b> clean.h:165</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1ConnectedComponentIterator_html"><div class="ttname"><a href="classvcg_1_1tri_1_1ConnectedComponentIterator.html">vcg::tri::ConnectedComponentIterator</a></div><div class="ttdef"><b>Definition:</b> clean.h:105</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_1_1ColorAvgInfo_html"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor_1_1ColorAvgInfo.html">vcg::tri::UpdateColor::ColorAvgInfo</a></div><div class="ttdef"><b>Definition:</b> color.h:72</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html">vcg::tri::UpdateColor</a></div><div class="ttdoc">Generation and processing of per-vertex and per-face colors according to various strategy.</div><div class="ttdef"><b>Definition:</b> color.h:54</div></div>
-<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a05760afdeaba59b7536e140b289897de"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a05760afdeaba59b7536e140b289897de">vcg::tri::UpdateColor::PerVertexEqualize</a></div><div class="ttdeci">static int PerVertexEqualize(MeshType &amp;m, unsigned int rgbMask, const bool ProcessSelected=false)</div><div class="ttdoc">Histogram Color Equalization.</div><div class="ttdef"><b>Definition:</b> color.h:888</div></div>
+<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a05760afdeaba59b7536e140b289897de"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a05760afdeaba59b7536e140b289897de">vcg::tri::UpdateColor::PerVertexEqualize</a></div><div class="ttdeci">static int PerVertexEqualize(MeshType &amp;m, unsigned int rgbMask, const bool ProcessSelected=false)</div><div class="ttdoc">Histogram Color Equalization.</div><div class="ttdef"><b>Definition:</b> color.h:890</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a082e4d311c7ab8405503cb00ffa26568"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a082e4d311c7ab8405503cb00ffa26568">vcg::tri::UpdateColor::PerFaceQualityGray</a></div><div class="ttdeci">static void PerFaceQualityGray(MeshType &amp;m, ScalarType minq=0, ScalarType maxq=0)</div><div class="ttdoc">This function colores all the faces of a mesh with a gray shade dependent on the quality.</div><div class="ttdef"><b>Definition:</b> color.h:345</div></div>
-<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a085db10b24be2d0dcd9610b9dacce9c5"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a085db10b24be2d0dcd9610b9dacce9c5">vcg::tri::UpdateColor::PerVertexBrightnessContrast</a></div><div class="ttdeci">static int PerVertexBrightnessContrast(MeshType &amp;m, float brightness, float contrast, const bool ProcessSelected=false)</div><div class="ttdoc">Apply Brightness and Contrast filter to the mesh, with the given contrast factor and brightness amoun...</div><div class="ttdef"><b>Definition:</b> color.h:624</div></div>
-<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a0ce56710f2dd8d0d0fb2f3b278d76569"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a0ce56710f2dd8d0d0fb2f3b278d76569">vcg::tri::UpdateColor::PerVertexWhiteBalance</a></div><div class="ttdeci">static int PerVertexWhiteBalance(MeshType &amp;m, Color4b userColor, const bool ProcessSelected=false)</div><div class="ttdoc">Simple white balancing filter.</div><div class="ttdef"><b>Definition:</b> color.h:964</div></div>
+<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a085db10b24be2d0dcd9610b9dacce9c5"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a085db10b24be2d0dcd9610b9dacce9c5">vcg::tri::UpdateColor::PerVertexBrightnessContrast</a></div><div class="ttdeci">static int PerVertexBrightnessContrast(MeshType &amp;m, float brightness, float contrast, const bool ProcessSelected=false)</div><div class="ttdoc">Apply Brightness and Contrast filter to the mesh, with the given contrast factor and brightness amoun...</div><div class="ttdef"><b>Definition:</b> color.h:626</div></div>
+<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a0ce56710f2dd8d0d0fb2f3b278d76569"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a0ce56710f2dd8d0d0fb2f3b278d76569">vcg::tri::UpdateColor::PerVertexWhiteBalance</a></div><div class="ttdeci">static int PerVertexWhiteBalance(MeshType &amp;m, Color4b userColor, const bool ProcessSelected=false)</div><div class="ttdoc">Simple white balancing filter.</div><div class="ttdef"><b>Definition:</b> color.h:966</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a14b531c90895b949c0454f5aadfe50aa"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a14b531c90895b949c0454f5aadfe50aa">vcg::tri::UpdateColor::PerTetraConstant</a></div><div class="ttdeci">static int PerTetraConstant(MeshType &amp;m, Color4b vs=Color4b::White, bool selected=false)</div><div class="ttdoc">This function colors all (or the selected) tetras of a mesh.</div><div class="ttdef"><b>Definition:</b> color.h:118</div></div>
-<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a1c4959e8a58c5ab0ee2330fb57ef742f"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a1c4959e8a58c5ab0ee2330fb57ef742f">vcg::tri::UpdateColor::PerVertexBrightness</a></div><div class="ttdeci">static int PerVertexBrightness(MeshType &amp;m, float amount, const bool ProcessSelected=false)</div><div class="ttdoc">Apply the brightness filter, with the given amount, to the mesh.</div><div class="ttdef"><b>Definition:</b> color.h:558</div></div>
+<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a1c4959e8a58c5ab0ee2330fb57ef742f"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a1c4959e8a58c5ab0ee2330fb57ef742f">vcg::tri::UpdateColor::PerVertexBrightness</a></div><div class="ttdeci">static int PerVertexBrightness(MeshType &amp;m, float amount, const bool ProcessSelected=false)</div><div class="ttdoc">Apply the brightness filter, with the given amount, to the mesh.</div><div class="ttdef"><b>Definition:</b> color.h:560</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a25ae8dde59a51d6bd7cc4c5ac9085b09"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a25ae8dde59a51d6bd7cc4c5ac9085b09">vcg::tri::UpdateColor::PerVertexQualityGray</a></div><div class="ttdeci">static void PerVertexQualityGray(MeshType &amp;m, ScalarType minq=0, ScalarType maxq=0)</div><div class="ttdoc">This function colores all the vertices of a mesh with a gray shade dependent on the quality.</div><div class="ttdef"><b>Definition:</b> color.h:326</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a27ae1586ae70d470ff984f609128a029"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a27ae1586ae70d470ff984f609128a029">vcg::tri::UpdateColor::PerVertexBorderFlag</a></div><div class="ttdeci">static void PerVertexBorderFlag(MeshType &amp;m, Color4b BorderColor=Color4b::Blue, Color4b InternalColor=Color4b::White, Color4b MixColor=Color4b::Cyan)</div><div class="ttdoc">Color the vertexes of the mesh that are on the border.</div><div class="ttdef"><b>Definition:</b> color.h:371</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a4858173fa32aabd5f7df336da1051504"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a4858173fa32aabd5f7df336da1051504">vcg::tri::UpdateColor::PerFaceQualityRamp</a></div><div class="ttdeci">static void PerFaceQualityRamp(MeshType &amp;m, ScalarType minq=0, ScalarType maxq=0, bool selected=false, vcg::ColorMap cmap=vcg::ColorMap::RGB)</div><div class="ttdoc">This function colores all the faces of a mesh with a hue color shade dependent on the quality.</div><div class="ttdef"><b>Definition:</b> color.h:285</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a497e510ad2ca8ac564277241f573e709"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a497e510ad2ca8ac564277241f573e709">vcg::tri::UpdateColor::PerFaceFromVertex</a></div><div class="ttdeci">static void PerFaceFromVertex(MeshType &amp;m)</div><div class="ttdoc">Transfer vertex color onto face color Plain average of the color of the vertexes on a given face.</div><div class="ttdef"><b>Definition:</b> color.h:203</div></div>
-<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a4e05ed307dfa8e8e4a749bf054002851"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a4e05ed307dfa8e8e4a749bf054002851">vcg::tri::UpdateColor::PerVertexLevels</a></div><div class="ttdeci">static int PerVertexLevels(MeshType &amp;m, float gamma, float in_min, float in_max, float out_min, float out_max, unsigned char rgbMask, const bool ProcessSelected=false)</div><div class="ttdoc">Adjusts color levels of the mesh.</div><div class="ttdef"><b>Definition:</b> color.h:734</div></div>
+<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a4e05ed307dfa8e8e4a749bf054002851"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a4e05ed307dfa8e8e4a749bf054002851">vcg::tri::UpdateColor::PerVertexLevels</a></div><div class="ttdeci">static int PerVertexLevels(MeshType &amp;m, float gamma, float in_min, float in_max, float out_min, float out_max, unsigned char rgbMask, const bool ProcessSelected=false)</div><div class="ttdoc">Adjusts color levels of the mesh.</div><div class="ttdef"><b>Definition:</b> color.h:736</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a56a59514ad8ea772b5626ea222437fd3"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a56a59514ad8ea772b5626ea222437fd3">vcg::tri::UpdateColor::PerFaceRandomConnectedComponent</a></div><div class="ttdeci">static void PerFaceRandomConnectedComponent(MeshType &amp;m)</div><div class="ttdoc">This function colores the faces of connected components of a mesh randomly.</div><div class="ttdef"><b>Definition:</b> color.h:401</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a5751fbf60dd963604e65a543df1a4f91"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a5751fbf60dd963604e65a543df1a4f91">vcg::tri::UpdateColor::PerTetraQualityRamp</a></div><div class="ttdeci">static void PerTetraQualityRamp(MeshType &amp;m, ScalarType minq=0., ScalarType maxq=0., bool selected=false, vcg::ColorMap cmap=vcg::ColorMap::RGB)</div><div class="ttdoc">This function colores all the faces of a mesh with a hue color shade dependent on the quality.</div><div class="ttdef"><b>Definition:</b> color.h:264</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a69f42003cfcd8b3e36b059d493008920"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a69f42003cfcd8b3e36b059d493008920">vcg::tri::UpdateColor::PerVertexFromFace</a></div><div class="ttdeci">static void PerVertexFromFace(MeshType &amp;m)</div><div class="ttdoc">Transfer face color onto vertex color.</div><div class="ttdef"><b>Definition:</b> color.h:169</div></div>
-<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a78012063fd7a7f71b8ef788c1c5f0dc5"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a78012063fd7a7f71b8ef788c1c5f0dc5">vcg::tri::UpdateColor::PerVertexInvert</a></div><div class="ttdeci">static int PerVertexInvert(MeshType &amp;m, const bool ProcessSelected=false)</div><div class="ttdoc">Invert the colors of the mesh.</div><div class="ttdef"><b>Definition:</b> color.h:664</div></div>
+<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a78012063fd7a7f71b8ef788c1c5f0dc5"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a78012063fd7a7f71b8ef788c1c5f0dc5">vcg::tri::UpdateColor::PerVertexInvert</a></div><div class="ttdeci">static int PerVertexInvert(MeshType &amp;m, const bool ProcessSelected=false)</div><div class="ttdoc">Invert the colors of the mesh.</div><div class="ttdef"><b>Definition:</b> color.h:666</div></div>
+<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a7a4dcae2ad89e72e8868e37038fe827e"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a7a4dcae2ad89e72e8868e37038fe827e">vcg::tri::UpdateColor::PerVertexAddNoise</a></div><div class="ttdeci">static void PerVertexAddNoise(MeshType &amp;m, int noiseBits, bool onSelected=false, int randSeed=0)</div><div class="ttdoc">Simple Noise adding function. It simply add signed noise to the color of the mesh....</div><div class="ttdef"><b>Definition:</b> color.h:503</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a7bd055773dffa7d625680af48989a8eb"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a7bd055773dffa7d625680af48989a8eb">vcg::tri::UpdateColor::PerVertexFromTetra</a></div><div class="ttdeci">static void PerVertexFromTetra(MeshType &amp;m)</div><div class="ttdoc">Transfer tetra color onto vertex color.</div><div class="ttdef"><b>Definition:</b> color.h:137</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a7e6b6584c78f20ecac447cbda16d0e3b"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a7e6b6584c78f20ecac447cbda16d0e3b">vcg::tri::UpdateColor::PerVertexPerlinColoring</a></div><div class="ttdeci">static void PerVertexPerlinColoring(MeshType &amp;m, ScalarType period, CoordType offset=CoordType(0, 0, 0), Color4b color1=Color4b::Black, Color4b color2=Color4b::White, bool onSelected=false)</div><div class="ttdoc">Perlin Color mixing.</div><div class="ttdef"><b>Definition:</b> color.h:477</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a7f96c1bd4fe4f30263615eadd1651dfe"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a7f96c1bd4fe4f30263615eadd1651dfe">vcg::tri::UpdateColor::PerVertexConstant</a></div><div class="ttdeci">static int PerVertexConstant(MeshType &amp;m, Color4b vs=Color4b::White, bool selected=false)</div><div class="ttdoc">This function colors all (or the selected) the vertices of a mesh.</div><div class="ttdef"><b>Definition:</b> color.h:83</div></div>
-<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a9a3d164722739d87a3bf966c5cfd4210"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a9a3d164722739d87a3bf966c5cfd4210">vcg::tri::UpdateColor::PerVertexDesaturation</a></div><div class="ttdeci">static int PerVertexDesaturation(MeshType &amp;m, int method, const bool ProcessSelected=false)</div><div class="ttdoc">Desaturates the mesh according the a chosen desaturation method.</div><div class="ttdef"><b>Definition:</b> color.h:830</div></div>
+<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_a9a3d164722739d87a3bf966c5cfd4210"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#a9a3d164722739d87a3bf966c5cfd4210">vcg::tri::UpdateColor::PerVertexDesaturation</a></div><div class="ttdeci">static int PerVertexDesaturation(MeshType &amp;m, int method, const bool ProcessSelected=false)</div><div class="ttdoc">Desaturates the mesh according the a chosen desaturation method.</div><div class="ttdef"><b>Definition:</b> color.h:832</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_ab085c648fc19f217a5263616372be6d0"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#ab085c648fc19f217a5263616372be6d0">vcg::tri::UpdateColor::PerVertexQualityRampParula</a></div><div class="ttdeci">static void PerVertexQualityRampParula(MeshType &amp;m, ScalarType minq=0., ScalarType maxq=0.)</div><div class="ttdoc">This function colores all the faces of a mesh with a hue color shade dependent on the quality.</div><div class="ttdef"><b>Definition:</b> color.h:244</div></div>
-<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_ab721bd1046ba6af11835619b460318e9"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#ab721bd1046ba6af11835619b460318e9">vcg::tri::UpdateColor::PerVertexThresholding</a></div><div class="ttdeci">static int PerVertexThresholding(MeshType &amp;m, float threshold, const Color4b c1=Color4&lt; unsigned char &gt;::Black, const Color4b c2=Color4&lt; unsigned char &gt;::White, const bool ProcessSelected=false)</div><div class="ttdoc">Reduces vertex color the mesh to two colors according to a threshold.</div><div class="ttdef"><b>Definition:</b> color.h:525</div></div>
+<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_ab721bd1046ba6af11835619b460318e9"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#ab721bd1046ba6af11835619b460318e9">vcg::tri::UpdateColor::PerVertexThresholding</a></div><div class="ttdeci">static int PerVertexThresholding(MeshType &amp;m, float threshold, const Color4b c1=Color4&lt; unsigned char &gt;::Black, const Color4b c2=Color4&lt; unsigned char &gt;::White, const bool ProcessSelected=false)</div><div class="ttdoc">Reduces vertex color the mesh to two colors according to a threshold.</div><div class="ttdef"><b>Definition:</b> color.h:527</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_ab98878adc1da0be9ba4210a0d5432bfa"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#ab98878adc1da0be9ba4210a0d5432bfa">vcg::tri::UpdateColor::PerEdgeQualityRamp</a></div><div class="ttdeci">static void PerEdgeQualityRamp(MeshType &amp;m, ScalarType minq=0, ScalarType maxq=0, bool selected=false, vcg::ColorMap cmap=vcg::ColorMap::RGB)</div><div class="ttdoc">This function colores all the edges of a mesh with a hue color shade dependent on the quality.</div><div class="ttdef"><b>Definition:</b> color.h:306</div></div>
-<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_aba3ca9b0af3542221cd64d1c4200bcba"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#aba3ca9b0af3542221cd64d1c4200bcba">vcg::tri::UpdateColor::PerVertexGamma</a></div><div class="ttdeci">static int PerVertexGamma(MeshType &amp;m, float gamma, const bool ProcessSelected=false)</div><div class="ttdoc">Apply the gamma correction filter, with the given gamma exponet, to the mesh.</div><div class="ttdef"><b>Definition:</b> color.h:687</div></div>
-<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_abd5455869e3a611bf919d03a1aaf866e"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#abd5455869e3a611bf919d03a1aaf866e">vcg::tri::UpdateColor::PerVertexContrast</a></div><div class="ttdeci">static int PerVertexContrast(MeshType &amp;m, float factor, const bool ProcessSelected=false)</div><div class="ttdoc">Apply Contrast filter to the mesh with the given contrast factor.</div><div class="ttdef"><b>Definition:</b> color.h:584</div></div>
+<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_aba3ca9b0af3542221cd64d1c4200bcba"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#aba3ca9b0af3542221cd64d1c4200bcba">vcg::tri::UpdateColor::PerVertexGamma</a></div><div class="ttdeci">static int PerVertexGamma(MeshType &amp;m, float gamma, const bool ProcessSelected=false)</div><div class="ttdoc">Apply the gamma correction filter, with the given gamma exponet, to the mesh.</div><div class="ttdef"><b>Definition:</b> color.h:689</div></div>
+<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_abd5455869e3a611bf919d03a1aaf866e"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#abd5455869e3a611bf919d03a1aaf866e">vcg::tri::UpdateColor::PerVertexContrast</a></div><div class="ttdeci">static int PerVertexContrast(MeshType &amp;m, float factor, const bool ProcessSelected=false)</div><div class="ttdoc">Apply Contrast filter to the mesh with the given contrast factor.</div><div class="ttdef"><b>Definition:</b> color.h:586</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_ac8d32dc3ed0c84b25527c60f4c94ca7a"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#ac8d32dc3ed0c84b25527c60f4c94ca7a">vcg::tri::UpdateColor::PerVertexPerlinNoise</a></div><div class="ttdeci">static void PerVertexPerlinNoise(MeshType &amp;m, CoordType period, CoordType offset=CoordType(0, 0, 0), bool onSelected=false)</div><div class="ttdoc">Perlin Noise.</div><div class="ttdef"><b>Definition:</b> color.h:450</div></div>
-<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_ade71e63f4e8fa51bef86015feb47808c"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#ade71e63f4e8fa51bef86015feb47808c">vcg::tri::UpdateColor::PerVertexColourisation</a></div><div class="ttdeci">static int PerVertexColourisation(MeshType &amp;m, Color4b c, float intensity, const bool ProcessSelected=false)</div><div class="ttdoc">Colorize the mesh toward a given color.</div><div class="ttdef"><b>Definition:</b> color.h:783</div></div>
+<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_ade71e63f4e8fa51bef86015feb47808c"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#ade71e63f4e8fa51bef86015feb47808c">vcg::tri::UpdateColor::PerVertexColourisation</a></div><div class="ttdeci">static int PerVertexColourisation(MeshType &amp;m, Color4b c, float intensity, const bool ProcessSelected=false)</div><div class="ttdoc">Colorize the mesh toward a given color.</div><div class="ttdef"><b>Definition:</b> color.h:785</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_ae2046ff8392ea14cf6506994b31ea651"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#ae2046ff8392ea14cf6506994b31ea651">vcg::tri::UpdateColor::PerFaceConstant</a></div><div class="ttdeci">static int PerFaceConstant(MeshType &amp;m, Color4b vs=Color4b::White, bool selected=false)</div><div class="ttdoc">This function colors all (or the selected) faces of a mesh.</div><div class="ttdef"><b>Definition:</b> color.h:101</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_ae4803a9b87d43e0de27b376fd057677c"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#ae4803a9b87d43e0de27b376fd057677c">vcg::tri::UpdateColor::PerFaceRandom</a></div><div class="ttdeci">static void PerFaceRandom(MeshType &amp;m)</div><div class="ttdoc">This function colores the face of a mesh randomly.</div><div class="ttdef"><b>Definition:</b> color.h:423</div></div>
-<div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_aea3218581647f9eddaeaa42cc555f02f"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#aea3218581647f9eddaeaa42cc555f02f">vcg::tri::UpdateColor::PerVertexAddNoise</a></div><div class="ttdeci">static void PerVertexAddNoise(MeshType &amp;m, int noiseBits, bool onSelected=false)</div><div class="ttdoc">Simple Noise adding function. It simply add signed noise to the color of the mesh....</div><div class="ttdef"><b>Definition:</b> color.h:503</div></div>
 <div class="ttc" id="aclassvcg_1_1tri_1_1UpdateColor_html_aee00a31c741de64e6524a90f5369c3ff"><div class="ttname"><a href="classvcg_1_1tri_1_1UpdateColor.html#aee00a31c741de64e6524a90f5369c3ff">vcg::tri::UpdateColor::PerVertexQualityRamp</a></div><div class="ttdeci">static void PerVertexQualityRamp(MeshType &amp;m, ScalarType minq=0., ScalarType maxq=0., vcg::ColorMap cmap=vcg::ColorMap::RGB)</div><div class="ttdoc">This function colores all the faces of a mesh with a hue color shade dependent on the quality.</div><div class="ttdef"><b>Definition:</b> color.h:222</div></div>
 <div class="ttc" id="agroup__trimesh_html_ga189dbfba130073459cdb1c46e7694d65"><div class="ttname"><a href="group__trimesh.html#ga189dbfba130073459cdb1c46e7694d65">vcg::tri::ForEachTetra</a></div><div class="ttdeci">void ForEachTetra(const MeshType &amp;m, Callable action)</div><div class="ttdef"><b>Definition:</b> foreach.h:270</div></div>
 <div class="ttc" id="agroup__trimesh_html_gaa5468c62fb324fa87f551337e95da273"><div class="ttname"><a href="group__trimesh.html#gaa5468c62fb324fa87f551337e95da273">vcg::tri::ForEachVertex</a></div><div class="ttdeci">void ForEachVertex(const MeshType &amp;m, Callable action)</div><div class="ttdef"><b>Definition:</b> foreach.h:126</div></div>
@@ -983,7 +985,7 @@ $(function() {
 <!-- HTML footer for doxygen 1.9.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated by&#160;<a href="https://www.doxygen.org/index.html">doxygen</a> 1.9.6 on Tue Aug 11 2026 20:07:16
+Generated by&#160;<a href="https://www.doxygen.org/index.html">doxygen</a> 1.9.6 on Thu Aug 13 2026 06:54:58
 </small></address>
 </body>
 </html>
