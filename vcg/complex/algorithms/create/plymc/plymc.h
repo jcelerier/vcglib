@@ -89,7 +89,7 @@ public:
 
   class MCVertex  : public Vertex< MCUsedTypes, vertex::Coord3f, vertex::Color4b, vertex::Mark, vertex::VFAdj, vertex::BitFlags, vertex::Qualityf>{};
   class MCEdge : public Edge<MCUsedTypes,edge::VertexRef>{};
-  class MCFace    : public Face< MCUsedTypes, face::InfoOcf, face::VertexRef, face::FFAdjOcf, face::VFAdjOcf, face::BitFlags> {};
+  class MCFace    : public Face< MCUsedTypes, face::InfoOcf, face::VertexRef, face::Normal3f, face::FFAdjOcf, face::VFAdjOcf, face::BitFlags> {};
   class MCMesh	: public vcg::tri::TriMesh< std::vector< MCVertex>, face::vector_ocf< MCFace > > {};
 
 
@@ -511,7 +511,7 @@ bool Process(vcg::CallBackPos *cb=0)
                 p.OutNameSimpVec.push_back(filename+std::string(".d.ply"));
                 me.face.EnableVFAdjacency();
                 MCSimplify<MCMesh>(me, VV.voxel[0]/4.0);
-                tri::Allocator<MCMesh>::CompactFaceVector(me);
+                tri::Allocator<MCMesh>::CompactEveryVector(me);
                 me.face.EnableFFAdjacency();
                 tri::Clean<MCMesh>::RemoveTVertexByFlip(me,20,true);
                 tri::Clean<MCMesh>::RemoveFaceFoldByFlip(me);

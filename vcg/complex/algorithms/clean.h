@@ -1615,55 +1615,154 @@ public:
 		return true;
 	}
 
-	// Search and remove small single triangle folds
-	// - a face has normal opposite to all other faces
-	// - choose the edge that brings to the face f1 containing the vertex opposite to that edge.
-	static int RemoveFaceFoldByFlip(MeshType &m, float normalThresholdDeg=175, bool repeat=true)
+	/** Repair isolated triangular folds by flipping their supporting edge.
+	 *
+	 * A face is considered an isolated fold when its normal forms an angle larger
+	 * than normalThresholdDeg with the normal of each of its three edge-neighbours.
+	 * For each edge, flipping its diagonal would replace the face and that neighbour
+	 * with two new triangles. The flip is accepted only if the new triangles are not
+	 * folded against each other or against any triangles across the four outer edges
+	 * of the pair. It therefore removes at least the three original relations without
+	 * creating new ones, which prevents oscillation.
+	 *
+	 * Face selection/visited bits are deliberately not used as scratch storage.
+	 * Polygonal meshes and meshes with enabled per-wedge texture coordinates are
+	 * rejected because a flip cannot preserve polygon boundaries or UV seams.
+	 *
+	 * The caller must provide a compact, consistently oriented, 2-manifold triangle
+	 * mesh with per-face normals. FF adjacency is rebuilt by default; callers which
+	 * have just computed it can pass updateTopology=false. With repeat=false each
+	 * face is examined once; repeat=true also revisits every affected neighbourhood.
+	 */
+	static int RemoveFaceFoldByFlip(
+		MeshType &m,
+		float normalThresholdDeg=175,
+		bool repeat=true,
+		bool updateTopology=true)
 	{
 		RequireFFAdjacency(m);
-		RequirePerVertexMark(m);
-		//Counters for logging and convergence
-		int count, total = 0;
+		RequireCompactness(m);
+		RequirePerFaceNormal(m);
+		RequireTriangularMesh(m);
+		if (m.fn == 0 || !IsBitTriOnly(m) || m.face.front().IsWedgeTexCoordEnabled())
+			return 0;
 
-		do {
+		if (updateTopology)
 			tri::UpdateTopology<MeshType>::FaceFace(m);
-			tri::UnMarkAll(m);
-			count = 0;
+		if (CountNonManifoldEdgeFF(m) > 0)
+			return 0;
+		UpdateNormal<MeshType>::PerFaceNormalized(m);
+		const ScalarType thresholdCos = math::Cos(math::ToRad(math::Clamp(
+			ScalarType(normalThresholdDeg), ScalarType(0), ScalarType(180))));
+		const ScalarType barycentricEps = ScalarType(0.0001);
 
-			ScalarType NormalThrRad = math::ToRad(normalThresholdDeg);
-			ScalarType eps = ScalarType(0.0001); // this epsilon value is in absolute value. It is a distance from edge in baricentric coords.
-			//detection stage
-			for(FaceIterator fi=m.face.begin();fi!= m.face.end();++fi ) if(!(*fi).IsV())
-			{ Point3<ScalarType> NN = vcg::TriangleNormal((*fi)).Normalize();
-				if( vcg::AngleN(NN,TriangleNormal(*(*fi).FFp(0)).Normalize()) > NormalThrRad &&
-				    vcg::AngleN(NN,TriangleNormal(*(*fi).FFp(1)).Normalize()) > NormalThrRad &&
-				    vcg::AngleN(NN,TriangleNormal(*(*fi).FFp(2)).Normalize()) > NormalThrRad )
-				{
-					(*fi).SetS();
-					//(*fi).C()=Color4b(Color4b::Red);
-					// now search the best edge to flip
-					for(int i=0;i<3;i++)
-					{
-						Point3<ScalarType> &p=(*fi).P2(i);
-						Point3<ScalarType> L;
-						bool ret = vcg::InterpolationParameters((*(*fi).FFp(i)),TriangleNormal(*(*fi).FFp(i)),p,L);
-						if(ret && L[0]>eps && L[1]>eps && L[2]>eps)
-						{
-							(*fi).FFp(i)->SetS();
-							(*fi).FFp(i)->SetV();
-							//(*fi).FFp(i)->C()=Color4b(Color4b::Green);
-							if(face::CheckFlipEdge<FaceType>( *fi, i ))  {
-								face::FlipEdge<FaceType>( *fi, i );
-								++count; ++total;
-							}
-						}
-					}
+		auto isFold = [&](const auto &a, const auto &b) {
+			return a * b < thresholdCos;
+		};
+		auto isFoldedAcrossEdge = [&](FaceType &f, int edge, const CoordType &normal) {
+			if (face::IsBorder(f, edge)) return false;
+			const auto &adjacentNormal = f.FFp(edge)->N();
+			return adjacentNormal.SquaredNorm() == ScalarType(0)
+				|| isFold(normal, adjacentNormal);
+		};
+
+		std::vector<size_t> queue(m.fn);
+		std::vector<unsigned char> queued(m.fn, 1);
+		for (size_t i = 0; i < queue.size(); ++i) queue[i] = i;
+		auto enqueue = [&](FacePointer fp) {
+			const size_t index = tri::Index(m, fp);
+			if (queued[index]) return;
+			queued[index] = 1;
+			queue.push_back(index);
+		};
+
+		int total = 0;
+		while (!queue.empty()) {
+			const size_t faceIndex = queue.back();
+			queue.pop_back();
+			queued[faceIndex] = 0;
+			FaceType &f = m.face[faceIndex];
+
+			const auto &fNormal = f.N();
+			if (fNormal.SquaredNorm() == ScalarType(0))
+				continue;
+
+			bool isolatedFold = true;
+			for (int edge = 0; edge < 3; ++edge) {
+				if (face::IsBorder(f, edge)) {
+					isolatedFold = false;
+					break;
+				}
+				const auto &adjacentNormal = f.FFp(edge)->N();
+				if (adjacentNormal.SquaredNorm() == ScalarType(0)
+					|| !isFold(fNormal, adjacentNormal)) {
+					isolatedFold = false;
+					break;
 				}
 			}
+			if (!isolatedFold)
+				continue;
 
-			// tri::UpdateNormal<MeshType>::PerFace(m);
+			int flipEdge = -1;
+			for (int edge = 0; edge < 3; ++edge) {
+				FacePointer g = f.FFp(edge);
+				const int oppositeEdge = f.FFi(edge);
+				if (!face::CheckFlipEdge<FaceType>(f, edge))
+					continue;
+
+				CoordType barycentric;
+				if (!vcg::InterpolationParameters(
+						*g, TriangleNormal(*g), f.P2(edge), barycentric))
+					continue;
+				if (barycentric[0] <= barycentricEps
+					|| barycentric[1] <= barycentricEps
+					|| barycentric[2] <= barycentricEps)
+					continue;
+
+				const CoordType newFNormal =
+					Normal(f.P0(edge), g->P2(oppositeEdge), f.P2(edge)).Normalize();
+				const CoordType newGNormal =
+					Normal(f.P1(edge), f.P2(edge), g->P2(oppositeEdge)).Normalize();
+
+				// After the flip: f-next moves to g, while g-next moves to f.
+				if (newFNormal.SquaredNorm() == ScalarType(0)
+					|| newGNormal.SquaredNorm() == ScalarType(0)
+					|| isFold(newFNormal, newGNormal)
+					|| isFoldedAcrossEdge(f, f.Next(edge), newGNormal)
+					|| isFoldedAcrossEdge(f, f.Prev(edge), newFNormal)
+					|| isFoldedAcrossEdge(*g, g->Next(oppositeEdge), newFNormal)
+					|| isFoldedAcrossEdge(*g, g->Prev(oppositeEdge), newGNormal))
+					continue;
+
+				flipEdge = edge;
+				break;
+			}
+
+			if (flipEdge < 0)
+				continue;
+
+			FacePointer g = f.FFp(flipEdge);
+			const int oppositeEdge = f.FFi(flipEdge);
+			const bool fNextSelected = f.IsFaceEdgeS(f.Next(flipEdge));
+			const bool gNextSelected = g->IsFaceEdgeS(g->Next(oppositeEdge));
+			face::FlipEdge<FaceType>(f, flipEdge);
+			f.N() = NormalizedTriangleNormal(f);
+			g->N() = NormalizedTriangleNormal(*g);
+			// Preserve the four boundary-edge flags; the newly created diagonal is unselected.
+			if (gNextSelected) f.SetFaceEdgeS(flipEdge); else f.ClearFaceEdgeS(flipEdge);
+			if (fNextSelected) g->SetFaceEdgeS(oppositeEdge); else g->ClearFaceEdgeS(oppositeEdge);
+			f.ClearFaceEdgeS(f.Next(flipEdge));
+			g->ClearFaceEdgeS(g->Next(oppositeEdge));
+			++total;
+			if (repeat) {
+				enqueue(&f);
+				enqueue(g);
+				for (int edge = 0; edge < 3; ++edge) {
+					enqueue(f.FFp(edge));
+					enqueue(g->FFp(edge));
+				}
+			}
 		}
-		while( repeat && count );
 		return total;
 	}
 
