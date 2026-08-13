@@ -34,6 +34,8 @@ namespace vcg{
 
         RTCDevice device = rtcNewDevice(nullptr);
         RTCScene scene = nullptr;
+        // Derived from the mesh bounding box in loadVCGMeshInScene; see rayEpsilon.
+        float autoRayEpsilon = 1e-4f;
         public:
             // Number of chunks the face array is split into for progress reporting.
             // Higher values give more frequent callback updates and finer cancellation
@@ -43,10 +45,25 @@ namespace vcg{
             // Minimum ray distance (tnear) used when shooting rays from face barycenters.
             // Acts as a self-intersection offset: the ray starts this far from the surface
             // so it does not immediately hit the face it originates from.
-            // Increase for meshes with large absolute scale; decrease for very fine geometry.
-            float rayEpsilon = 1e-4f;
+            //
+            // Zero - the default - derives it from the mesh bounding box, which is what
+            // you almost always want. The barycenter is computed in float, so its distance
+            // from the true face plane is a few ULPs of the coordinate magnitude and thus
+            // grows with the absolute scale of the mesh. A fixed offset silently stops
+            // working on meshes far from the origin: every ray then hits its own face and
+            // the surface reads as fully occluded (scattered black faces).
+            //
+            // Set a positive value to override with an absolute distance.
+            float rayEpsilon = 0.0f;
 
             EmbreeAdaptor() : scene(rtcNewScene(device)) {}
+
+            // Self-intersection offset actually used by the algorithms: the explicit
+            // rayEpsilon when the caller set one, otherwise the value derived from the
+            // mesh bounding box at scene load. See rayEpsilon.
+            float effectiveRayEpsilon() const {
+                return rayEpsilon > 0.0f ? rayEpsilon : autoRayEpsilon;
+            }
 
             // preprocess=true recomputes normals/bbox/flags on the mesh (needed by
             // the AO/SDF/obscurance algorithms). Pass false for pure ray-cast use
@@ -102,7 +119,9 @@ namespace vcg{
                 Point3f b = vcg::Barycenter(m.face[i]);
                 Point3f dir = normalizedDir;
 
-                rayhit = setRayValues(b, dir, 4);
+                // Was a hardcoded tnear of 4: an absolute distance that skips the
+                // whole model on a small mesh and self-intersects on a large one.
+                rayhit = setRayValues(b, dir, effectiveRayEpsilon());
 
                 RTCRayQueryContext context;
                 rtcInitRayQueryContext(&context);
@@ -145,13 +164,14 @@ namespace vcg{
         */
         public:
          bool segmentUnoccluded(Point3f from, Point3f to){
+            const float epsilon = effectiveRayEpsilon();
             Point3f dir = to - from;
             const float dist = dir.Norm();
-            if (dist <= rayEpsilon)
+            if (dist <= epsilon)
                 return true;
             dir /= dist;
 
-            RTCRayHit rayhit = setRayValues(from, dir, rayEpsilon, dist - rayEpsilon);
+            RTCRayHit rayhit = setRayValues(from, dir, epsilon, dist - epsilon);
             RTCRayQueryContext context;
             rtcInitRayQueryContext(&context);
             RTCIntersectArguments intersectArgs;
@@ -183,6 +203,19 @@ namespace vcg{
                 tri::UpdateNormal<MeshType>::PerFaceNormalized(m);
                 tri::UpdateBounding<MeshType>::Box(m);
                 tri::UpdateFlags<MeshType>::FaceClearV(m);
+            } else {
+                // Positions are all the ray-cast paths read, but the derived epsilon
+                // below still needs a bounding box.
+                tri::UpdateBounding<MeshType>::Box(m);
+            }
+
+            // A few ULPs of the coordinate magnitude is the actual requirement; the
+            // diagonal is the available proxy for it, and 1e-5 of it leaves ~2 orders
+            // of magnitude of headroom over float precision while staying far below
+            // any real feature size. The floor keeps tnear positive on a degenerate box.
+            {
+                const float diag = m.bbox.IsNull() ? 0.0f : m.bbox.Diag();
+                autoRayEpsilon = std::max(diag * 1e-5f, 1e-6f);
             }
 
             float* vb = (float*) rtcSetNewGeometryBuffer(geometry, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, 3*sizeof(float), m.VN());
@@ -251,12 +284,13 @@ namespace vcg{
             }
             const int blockSize = (cb != nullptr) ? std::max(1, faceCount / callbackChunkCount) : faceCount;
             bool interrupted = false;
+            const float epsilon = effectiveRayEpsilon();
 
             auto computeFace = [&](int i) {
                 RTCRayHit rayhit = initRayValues();
                 Point3f b = vcg::Barycenter(inputM.face[i]);
                 updateRayOrigin(rayhit, b);
-                rayhit.ray.tnear  = rayEpsilon;
+                rayhit.ray.tnear  = epsilon;
 
                 Point3f bN;
                 int accRays=0;
@@ -359,12 +393,13 @@ namespace vcg{
             }
             const int blockSize = (cb != nullptr) ? std::max(1, faceCount / callbackChunkCount) : faceCount;
             bool interrupted = false;
+            const float epsilon = effectiveRayEpsilon();
 
             auto computeFace = [&](int i) {
                 RTCRayHit rayhit = initRayValues();
                 Point3f b = vcg::Barycenter(inputM.face[i]);
                 updateRayOrigin(rayhit, b);
-                rayhit.ray.tnear  = rayEpsilon;
+                rayhit.ray.tnear  = epsilon;
 
                 for(int r = 0; r<int(unifDirVec.size()); r++){
                     Point3f dir = unifDirVec[r];
@@ -447,13 +482,14 @@ namespace vcg{
             const int faceCount = inputM.FN();
             const int blockSize = (cb != nullptr) ? std::max(1, faceCount / callbackChunkCount) : faceCount;
             bool interrupted = false;
+            const float epsilon = effectiveRayEpsilon();
 
             for (int i = 0; i < faceCount; i++)
             {
                 RTCRayHit rayhit = initRayValues();
                 Point3f b = vcg::Barycenter(inputM.face[i]);
                 updateRayOrigin(rayhit, b);
-                rayhit.ray.tnear  = rayEpsilon;
+                rayhit.ray.tnear  = epsilon;
 
                 float weight_sum = 0;
                 float weighted_sum = 0;
