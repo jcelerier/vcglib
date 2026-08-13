@@ -18,10 +18,11 @@ var searchData=
   ['removeduplicateface_15',['RemoveDuplicateFace',['../classvcg_1_1tri_1_1Clean.html#a1712f5ff687aebbc9aa7df35fa289a47',1,'vcg::tri::Clean']]],
   ['removeduplicatevert_5fcompare_16',['RemoveDuplicateVert_Compare',['../classvcg_1_1tri_1_1Clean_1_1RemoveDuplicateVert__Compare.html',1,'vcg::tri::Clean']]],
   ['removeduplicatevertex_17',['RemoveDuplicateVertex',['../classvcg_1_1tri_1_1Clean.html#a247f421da724cbbf49b96a55ddb9d69c',1,'vcg::tri::Clean']]],
-  ['removehedge_18',['RemoveHEdge',['../classvcg_1_1tri_1_1UpdateHalfEdges.html#a2830c62b38109829ede471f1ae535594',1,'vcg::tri::UpdateHalfEdges']]],
-  ['removehugeconnectedcomponentsdiameter_19',['RemoveHugeConnectedComponentsDiameter',['../classvcg_1_1tri_1_1Clean.html#a60fc39a381fa860ca7363c869600e5d5',1,'vcg::tri::Clean']]],
-  ['removenonmanifoldface_20',['RemoveNonManifoldFace',['../classvcg_1_1tri_1_1Clean.html#ae30a7c2d3e76fbd3a4a0a15b5f778517',1,'vcg::tri::Clean']]],
-  ['removesmallconnectedcomponentsdiameter_21',['RemoveSmallConnectedComponentsDiameter',['../classvcg_1_1tri_1_1Clean.html#a3e031c0f99e3bb2ec1ad0ae221eb3262',1,'vcg::tri::Clean']]],
-  ['removeunreferencedvertex_22',['RemoveUnreferencedVertex',['../classvcg_1_1tri_1_1Clean.html#a57758cbd28403a39c00821a813e4b14a',1,'vcg::tri::Clean']]],
-  ['rrparam_23',['RRParam',['../classvcg_1_1tri_1_1SurfaceSampling_1_1RRParam.html',1,'vcg::tri::SurfaceSampling']]]
+  ['removefacefoldbyflip_18',['RemoveFaceFoldByFlip',['../classvcg_1_1tri_1_1Clean.html#a0749897a96ae081ae1a28b2794d1d3e0',1,'vcg::tri::Clean']]],
+  ['removehedge_19',['RemoveHEdge',['../classvcg_1_1tri_1_1UpdateHalfEdges.html#a2830c62b38109829ede471f1ae535594',1,'vcg::tri::UpdateHalfEdges']]],
+  ['removehugeconnectedcomponentsdiameter_20',['RemoveHugeConnectedComponentsDiameter',['../classvcg_1_1tri_1_1Clean.html#a60fc39a381fa860ca7363c869600e5d5',1,'vcg::tri::Clean']]],
+  ['removenonmanifoldface_21',['RemoveNonManifoldFace',['../classvcg_1_1tri_1_1Clean.html#ae30a7c2d3e76fbd3a4a0a15b5f778517',1,'vcg::tri::Clean']]],
+  ['removesmallconnectedcomponentsdiameter_22',['RemoveSmallConnectedComponentsDiameter',['../classvcg_1_1tri_1_1Clean.html#a3e031c0f99e3bb2ec1ad0ae221eb3262',1,'vcg::tri::Clean']]],
+  ['removeunreferencedvertex_23',['RemoveUnreferencedVertex',['../classvcg_1_1tri_1_1Clean.html#a57758cbd28403a39c00821a813e4b14a',1,'vcg::tri::Clean']]],
+  ['rrparam_24',['RRParam',['../classvcg_1_1tri_1_1SurfaceSampling_1_1RRParam.html',1,'vcg::tri::SurfaceSampling']]]
 ];

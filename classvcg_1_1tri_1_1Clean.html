@@ -288,9 +288,8 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>FlipMesh</b> (
 <tr class="separator:a8ff69b00e5ccdcf378d86a7bfcae01a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a22965295b885261f87122a0fd89bf30a"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classvcg_1_1tri_1_1Clean.html#a22965295b885261f87122a0fd89bf30a">FlipNormalOutside</a> (MeshType &amp;m)</td></tr>
 <tr class="separator:a22965295b885261f87122a0fd89bf30a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2591e33917a9ed1f369c9d3a1399dda1"><td class="memItemLeft" align="right" valign="top"><a id="a2591e33917a9ed1f369c9d3a1399dda1" name="a2591e33917a9ed1f369c9d3a1399dda1"></a>
-static int&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveFaceFoldByFlip</b> (MeshType &amp;m, float normalThresholdDeg=175, bool repeat=true)</td></tr>
-<tr class="separator:a2591e33917a9ed1f369c9d3a1399dda1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0749897a96ae081ae1a28b2794d1d3e0"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classvcg_1_1tri_1_1Clean.html#a0749897a96ae081ae1a28b2794d1d3e0">RemoveFaceFoldByFlip</a> (MeshType &amp;m, float normalThresholdDeg=175, bool repeat=true, bool updateTopology=true)</td></tr>
+<tr class="separator:a0749897a96ae081ae1a28b2794d1d3e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7bbf0f9d04cdad95c8e0a778c38dab75"><td class="memItemLeft" align="right" valign="top"><a id="a7bbf0f9d04cdad95c8e0a778c38dab75" name="a7bbf0f9d04cdad95c8e0a778c38dab75"></a>
 static int&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveTVertexByFlip</b> (MeshType &amp;m, float threshold=40, bool repeat=true)</td></tr>
 <tr class="separator:a7bbf0f9d04cdad95c8e0a778c38dab75"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1196,6 +1195,60 @@ template&lt;class CleanMeshType &gt; </div>
 
 </div>
 </div>
+<a id="a0749897a96ae081ae1a28b2794d1d3e0" name="a0749897a96ae081ae1a28b2794d1d3e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0749897a96ae081ae1a28b2794d1d3e0">&#9670;&#160;</a></span>RemoveFaceFoldByFlip()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class CleanMeshType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int <a class="el" href="classvcg_1_1tri_1_1Clean.html">vcg::tri::Clean</a>&lt; CleanMeshType &gt;::RemoveFaceFoldByFlip </td>
+          <td>(</td>
+          <td class="paramtype">MeshType &amp;&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>normalThresholdDeg</em> = <code>175</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>repeat</em> = <code>true</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>updateTopology</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Repair isolated triangular folds by flipping their supporting edge.</p>
+<p>A face is considered an isolated fold when its normal forms an angle larger than normalThresholdDeg with the normal of each of its three edge-neighbours. For each edge, flipping its diagonal would replace the face and that neighbour with two new triangles. The flip is accepted only if the new triangles are not folded against each other or against any triangles across the four outer edges of the pair. It therefore removes at least the three original relations without creating new ones, which prevents oscillation.</p>
+<p>Face selection/visited bits are deliberately not used as scratch storage. Polygonal meshes and meshes with enabled per-wedge texture coordinates are rejected because a flip cannot preserve polygon boundaries or UV seams.</p>
+<p>The caller must provide a compact, consistently oriented, 2-manifold triangle mesh with per-face normals. FF adjacency is rebuilt by default; callers which have just computed it can pass updateTopology=false. With repeat=false each face is examined once; repeat=true also revisits every affected neighbourhood. </p>
+
+</div>
+</div>
 <a id="a57758cbd28403a39c00821a813e4b14a" name="a57758cbd28403a39c00821a813e4b14a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a57758cbd28403a39c00821a813e4b14a">&#9670;&#160;</a></span>RemoveUnreferencedVertex()</h2>
 
@@ -1366,7 +1419,7 @@ template&lt;class CleanMeshType &gt; </div>
 <!-- HTML footer for doxygen 1.9.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated by&#160;<a href="https://www.doxygen.org/index.html">doxygen</a> 1.9.6 on Thu Aug 13 2026 06:54:58
+Generated by&#160;<a href="https://www.doxygen.org/index.html">doxygen</a> 1.9.6 on Thu Aug 13 2026 10:00:17
 </small></address>
 </body>
 </html>
