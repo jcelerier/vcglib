@@ -24,6 +24,8 @@
 #ifndef __VCG_RandomGenerator
 #define __VCG_RandomGenerator
 
+#include <algorithm>
+#include <cmath>
 #include <vcg/math/base.h>
 
 namespace vcg {
@@ -123,6 +125,30 @@ vcg::Point3<ScalarType> GeneratePointOnUnitSphereUniform(GeneratorType &rnd)
   p[1]= ScalarType(2 * y * sqrt(1-s));
   p[2]= ScalarType(1-2*s);
   return p;
+}
+
+/** \brief Generate a uniformly distributed point on a unit-sphere cap.
+ *
+ * The cap is centred on axis and bounded by halfAngleRad. Sampling the axial
+ * coordinate uniformly in [cos(halfAngleRad), 1] makes the distribution uniform
+ * in surface area, without the poor acceptance rate of rejection sampling on a
+ * narrow cap.
+ */
+template <class ScalarType, class GeneratorType>
+vcg::Point3<ScalarType> GeneratePointOnUnitSphereCapUniform(
+    GeneratorType &rnd,
+    ScalarType halfAngleRad,
+    vcg::Point3<ScalarType> axis = vcg::Point3<ScalarType>(0, 1, 0))
+{
+  if(axis.SquaredNorm() == 0) axis = vcg::Point3<ScalarType>(0, 1, 0);
+  axis.Normalize();
+  const ScalarType angle = std::max(ScalarType(0), std::min(ScalarType(M_PI), halfAngleRad));
+  const ScalarType z = ScalarType(1) - ScalarType(rnd.generate01()) * (ScalarType(1) - std::cos(angle));
+  const ScalarType r = std::sqrt(std::max(ScalarType(0), ScalarType(1) - z*z));
+  const ScalarType phi = ScalarType(2*M_PI) * ScalarType(rnd.generate01());
+  vcg::Point3<ScalarType> u, v;
+  GetUV(axis, u, v);
+  return axis*z + u*(r*std::cos(phi)) + v*(r*std::sin(phi));
 }
 
 /// \brief generate a point inside a unit sphere with uniform distribution

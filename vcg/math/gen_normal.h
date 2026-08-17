@@ -82,23 +82,26 @@ static void Fibonacci(int n, std::vector<Point3x > &NN)
 
 static void UniformCone(int vn, std::vector<Point3<ScalarType > > &NN, ScalarType AngleRad, Point3x dir=Point3x(0,1,0))
 {
-  assert(AngleRad>0 && AngleRad<M_PI);
-  std::vector<Point3<ScalarType > > NNT;
   NN.clear();
-  // To compute the number of points we need to know the area of 
-  // the spherical cap and then use the ratio with the total surface of the sphere 
-  ScalarType Height= 1.0 - cos(AngleRad); // height is measured from top...
-  ScalarType CapArea = 2.0*M_PI*Height;   // Surface is the one of the tangent cylinder
-  ScalarType Ratio = CapArea / (4.0*M_PI);
+  if(vn <= 0) return;
 
- // printf("----------AngleRad %f Angledeg %f ratio %f vn %i vn2 %i \n",AngleRad,math::ToDeg(AngleRad),Ratio,vn,int(vn/Ratio));
-  Fibonacci(vn/Ratio,NNT);
- // printf("asked %i got %i (expecting %i instead of %i)\n", int(vn/Ratio), int(NNT.size()), int(NNT.size()*Ratio), vn);
+  // Generate the spherical cap directly.  The previous implementation made a
+  // full Fibonacci sphere and discarded points outside the cap; its temporary
+  // allocation grew as 1/(1-cos(angle)) and became prohibitive for narrow cones.
+  if(dir.SquaredNorm() == 0) dir = Point3x(0,1,0);
+  const ScalarType angle = std::max(ScalarType(0), std::min(ScalarType(M_PI), AngleRad));
+  const ScalarType cosAngle = cos(angle);
+  Point3x u, v;
+  GetUV(dir, u, v);
+  const ScalarType goldenAngle = ScalarType(M_PI) * (ScalarType(3) - std::sqrt(ScalarType(5)));
 
-  ScalarType cosAngle = cos(AngleRad);
-  for(auto ni : NNT)
+  NN.resize(vn);
+  for(int i=0; i<vn; ++i)
   {
-    if(dir.dot(ni) >= cosAngle) NN.push_back(ni);
+    const ScalarType z = ScalarType(1) - (ScalarType(1)-cosAngle) * (ScalarType(i)+ScalarType(0.5)) / ScalarType(vn);
+    const ScalarType r = std::sqrt(std::max(ScalarType(0), ScalarType(1)-z*z));
+    const ScalarType phi = goldenAngle * ScalarType(i);
+    NN[i] = dir*z + u*(r*cos(phi)) + v*(r*sin(phi));
   }
  }
 
