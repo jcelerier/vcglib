@@ -441,8 +441,11 @@ template <class MeshType>
  * @brief Build a spherical cap from a hexagon refined on the sphere.
  * @tparam MeshType Triangular mesh type.
  * @param in Output mesh (cleared and filled).
- * @param angleRad Angular aperture (cap diameter) in radians.
- * @param subdiv Number of refinement steps on the initial hexagon.
+ * @param angleRad Full angular diameter of the cap in radians, i.e. twice the
+ * polar half-angle. A value of pi would produce a hemisphere, where this
+ * disk-based construction becomes degenerate; use values in (0, pi).
+ * @param subdiv Number of refinement steps on the initial six triangles; each
+ * step multiplies the face count by four.
  */
 void SphericalCap(MeshType &in, float angleRad, const int subdiv = 3 )
 {
@@ -473,15 +476,15 @@ void SphericalCap(MeshType &in, float angleRad, const int subdiv = 3 )
     tri::Smooth<MeshType>::VertexCoordLaplacian(in,10,true);
   }
 
-  float angleHalfRad = angleRad /2.0f;
-  float width = sin(angleHalfRad);
+  const float halfAngleRad = angleRad / 2.0f;
+  const float width = sin(halfAngleRad);
   tri::UpdatePosition<MeshType>::Scale(in,width);
   tri::Allocator<MeshType>::CompactEveryVector(in);
   for(VertexIterator vi=in.vert.begin(); vi!=in.vert.end();++vi)
   {
     float cosVi =  vi->P().Norm();
     float angVi = asin (cosVi);
-    vi->P()[2] = cos(angVi) -  cos(angleHalfRad);
+    vi->P()[2] = cos(angVi) - cos(halfAngleRad);
   }
 }
 
