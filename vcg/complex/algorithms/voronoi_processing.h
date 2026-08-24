@@ -124,6 +124,8 @@ static void SeedToVertexConversion(MeshType &m,std::vector<CoordType> &seedPVec,
     HashVertexGrid HG;
     HG.Set(m.vert.begin(),m.vert.end());
 
+    // Sensible first guess for how far a seed may reasonably be from a vertex. It is a
+    // fast path, not a hard limit: see the fallback below.
     const float dist_upper_bound=m.bbox.Diag()/10.0;
 
     typename std::vector<CoordType>::iterator pi;
@@ -132,6 +134,20 @@ static void SeedToVertexConversion(MeshType &m,std::vector<CoordType> &seedPVec,
             ScalarType dist;
             VertexPointer vp;
             vp=tri::GetClosestVertex<MeshType,HashVertexGrid>(m, HG, *pi, dist_upper_bound, dist);
+            if(!vp)
+                {
+                    // Coarse tessellation. The bound above is scaled to the bounding box,
+                    // which measures the object rather than its triangulation: a seed
+                    // lying on a large face can be farther from every vertex than
+                    // diag/10. On a unit box the bound is 0.17 while a face centre is
+                    // 0.71 from the nearest vertex, so every seed would be discarded.
+                    //
+                    // Retrying only the seeds that found nothing keeps the tight bound
+                    // wherever it can be met -- a global bound widened to the coarsest
+                    // face would weaken the test across the whole mesh, which matters on
+                    // meshes that mix coarse and fine regions.
+                    vp=tri::GetClosestVertex<MeshType,HashVertexGrid>(m, HG, *pi, m.bbox.Diag(), dist);
+                }
             if(vp)
                 {
                     seedVVec.push_back(vp);
@@ -229,6 +245,7 @@ static void FaceAssociateRegion(MeshType &m)
   }
   tri::UpdateTopology<MeshType>::FaceFace(m);
   int unassCnt=0;
+  int prevUnassCnt=-1;
   do
   {
     unassCnt=0;
@@ -249,6 +266,12 @@ static void FaceAssociateRegion(MeshType &m)
         if(faceSources[fi]==0) unassCnt++;
       }
     }
+    // Guard against making no progress. A face whose neighbours are all unassigned
+    // keeps std::max(0,0,0)==0, so if a connected component contains no seed at all
+    // the loop above is a fixed point and would spin for ever. Stop instead, leaving
+    // those faces unassigned for the caller to notice.
+    if(unassCnt==prevUnassCnt) break;
+    prevUnassCnt=unassCnt;
   }
   while(unassCnt>0);
 }

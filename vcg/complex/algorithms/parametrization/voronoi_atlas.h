@@ -226,6 +226,16 @@ public:
     }
   } while (m.fn>0);
 
+  // Nothing was parametrized: every region failed IsFeasible(), which happens when no
+  // region is homeomorphic to a disk -- on a very coarse closed mesh a single region can
+  // cover the whole surface. The packer asserts on an empty input rather than tolerating
+  // it, so return the empty result and let the caller report it.
+  if(uvBorders.empty())
+  {
+    pp.vas.regionNum = 0;
+    return;
+  }
+
   std::vector<Similarity2f> trVec;
   Point2f finalSize;
   //PolyPacker<float>::WritePolyVec(uvBorders,"borders.poly");
