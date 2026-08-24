@@ -1868,48 +1868,48 @@ static bool cb_read_ascii( GZFILE fp, void * mem, PropDescriptor * d )
 
 const int SKIP_MAX_BUF = 512;
 
-static bool cb_skip_list_bin1( GZFILE fp, void * /*mem*/, PropDescriptor * /*d*/ )
+// Discard one binary list property: a uchar count followed by n elements of
+// elemSize bytes. The count reaches 255, so a single pb_fread of n*elemSize bytes
+// overruns skip_buf as soon as the list is longer than SKIP_MAX_BUF/elemSize --
+// 128 entries for uint32 lists, 64 for 8-byte ones. That is a stack smash driven
+// straight from file contents, so the skip is chunked instead.
+// An empty list is not an error either: the old code asked fread for zero items,
+// got zero back and reported failure.
+static bool cb_skip_list_bin( GZFILE fp, int elemSize )
 {
   char skip_buf[SKIP_MAX_BUF];
   uchar n;
 		// Solo indici uchar
 	if( pb_fread(&n,1,1,fp)==0 ) return false;
 
-	if( pb_fread(skip_buf,1,n,fp)==0) return false;
+	size_t remaining = size_t(n) * size_t(elemSize);
+	while( remaining > 0 )
+	{
+		const size_t chunk = (remaining < size_t(SKIP_MAX_BUF)) ? remaining : size_t(SKIP_MAX_BUF);
+		if( pb_fread(skip_buf,1,chunk,fp)!=chunk ) return false;
+		remaining -= chunk;
+	}
 	return true;
+}
+
+static bool cb_skip_list_bin1( GZFILE fp, void * /*mem*/, PropDescriptor * /*d*/ )
+{
+	return cb_skip_list_bin(fp,1);
 }
 
 static bool cb_skip_list_bin2( GZFILE fp, void * /*mem*/, PropDescriptor * /*d*/ )
 {
-  char skip_buf[SKIP_MAX_BUF];
-  uchar n;
-		// Solo indici uchar
-	if( pb_fread(&n,1,1,fp)==0 ) return false;
-
-	if( pb_fread(skip_buf,2,n,fp)==0) return false;
-	return true;
+	return cb_skip_list_bin(fp,2);
 }
 
 static bool cb_skip_list_bin4( GZFILE fp, void * /*mem*/, PropDescriptor * /*d*/ )
 {
-  char skip_buf[SKIP_MAX_BUF];
-  uchar n;
-		// Solo indici uchar
-	if( pb_fread(&n,1,1,fp)==0 ) return false;
-
-	if( pb_fread(skip_buf,4,n,fp)==0) return false;
-	return true;
+	return cb_skip_list_bin(fp,4);
 }
 
 static bool cb_skip_list_bin8( GZFILE fp, void * /*mem*/, PropDescriptor * /*d*/ )
 {
-  char skip_buf[SKIP_MAX_BUF];
-  uchar n;
-		// Solo indici uchar
-	if( pb_fread(&n,1,1,fp)==0 ) return false;
-
-	if( pb_fread(skip_buf,8,n,fp)==0) return false;
-	return true;
+	return cb_skip_list_bin(fp,8);
 }
 
 static bool cb_skip_list_ascii ( GZFILE fp, void * /*mem*/, PropDescriptor * /*d*/ )
