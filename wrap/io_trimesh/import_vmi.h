@@ -37,6 +37,7 @@
 
 #include <wrap/io_trimesh/io_mask.h>
 #include <wrap/callback.h>
+#include <limits>
 /*
     VMI VCG Mesh Image.
     The vmi image file consists of a header containing the description of the vertex and face type,
@@ -245,16 +246,38 @@ namespace io {
     class ImporterVMI: public AttrAll<OpenMeshType,A0,A1,A2,A3,A4>
     {
 
-        static void ReadString(std::string & out){
-            unsigned int l; Read(&l,4,1);
-            char * buf = new char[l+1];
-            Read(buf,1,l);buf[l]='\0';
-            out = std::string(buf);
-            delete [] buf;
+        static bool ReadString(std::string & out){
+            static const unsigned int MAX_STRING_LENGTH = 1024 * 1024;
+            unsigned int l = 0;
+            out.clear();
+            if(ReadFailed()) return false;
+            if(Read(&l,sizeof(l),1) != 1) {
+                ReadFailed() = true;
+                return false;
             }
+            if(l > MAX_STRING_LENGTH) {
+                ReadFailed() = true;
+                return false;
+            }
+            out.resize(l);
+            if(l != 0 && Read(&out[0],1,l) != static_cast<int>(l)) {
+                out.clear();
+                ReadFailed() = true;
+                return false;
+            }
+            return true;
+        }
 
-        static void ReadInt( unsigned int & i){ Read(&i,1,4);}
-        static void ReadFloat( float & v){ Read(&v,1,sizeof(float));}
+        static void ReadInt( unsigned int & i){
+            i = 0;
+            if(ReadFailed()) return;
+            if(Read(&i,sizeof(i),1) != 1) ReadFailed() = true;
+        }
+        static void ReadFloat( float & v){
+            v = 0;
+            if(ReadFailed()) return;
+            if(Read(&v,sizeof(v),1) != 1) ReadFailed() = true;
+        }
 
 
          static int   LoadVertexOcfMask( ){
@@ -551,7 +574,8 @@ namespace io {
                 VMI_NO_ERROR = 0,
                 VMI_INCOMPATIBLE_VERTEX_TYPE,
                 VMI_INCOMPATIBLE_FACE_TYPE,
-                VMI_FAILED_OPEN
+                VMI_FAILED_OPEN,
+                VMI_MALFORMED_FILE
        };
 
         /*!
@@ -566,10 +590,11 @@ namespace io {
                 "No errors",
                 "The file has a incompatible vertex signature",
                 "The file has a incompatible Face signature",
-                "General failure of the file opening"
+                "General failure of the file opening",
+                "The file is malformed or truncated"
             };
 
-            if(message_code>4 || message_code<0)
+            if(message_code>VMI_MALFORMED_FILE || message_code<0)
                 return "Unknown error";
             else
                 return error_msg[message_code];
@@ -587,19 +612,28 @@ namespace io {
                                 int & mask){
             std::string name;
             unsigned int nameFsize,nameVsize,i;
+            static const unsigned int MAX_TYPE_COMPONENTS = 1024;
+
+            ReadFailed() = false;
 
             ReadString( name); ReadInt( nameFsize);
+            if(ReadFailed() || nameFsize > MAX_TYPE_COMPONENTS) return false;
 
             for(i=0; i < nameFsize; ++i)
                 {ReadString(  name);fnameF.push_back( name );mask |= FaceMaskBitFromString(name);}
+            if(ReadFailed()) return false;
             mask |= LoadFaceOcfMask();
+            if(ReadFailed()) return false;
 
             ReadString( name); ReadInt( faceSize);
             ReadString(  name); ReadInt( nameVsize);
+            if(ReadFailed() || nameVsize > MAX_TYPE_COMPONENTS) return false;
 
             for(i=0; i < nameVsize; ++i)
                 {ReadString(  name) ;fnameV.push_back( name);mask |= VertexMaskBitFromString(name);}
+            if(ReadFailed()) return false;
             mask |= LoadVertexOcfMask();
+            if(ReadFailed()) return false;
 
             ReadString( name);
             ReadInt( vertSize);
@@ -610,15 +644,17 @@ namespace io {
             for(unsigned int i =0; i < 2; ++i){ReadFloat( float_value); bbox.max[i]=float_value;}
 
             ReadString( name);
-            assert(strstr( name.c_str(),"end_header")!=NULL);
-            return true;
+            return !ReadFailed() && name.find("end_header") != std::string::npos;
         }
 
 
         static bool GetHeader(const char * filename,std::vector<std::string>& nameV, std::vector<std::string>& nameF, unsigned int & vertSize, unsigned int &faceSize,vcg::Box3f & bbox,int & mask){
                 F() = fopen(filename,"rb");
+                if(!F()) return false;
+                In_mode() = 1;
                 bool res =  GetHeader(nameV, nameF, vertSize, faceSize,bbox,mask);
                 fclose(F());
+                F() = 0;
                 return res;
     }
 
@@ -628,8 +664,24 @@ namespace io {
 
 
         static unsigned int & pos(){static unsigned int  p = 0; return p;}
-        static int Read_sim(const void * , size_t size, size_t count ){ pos() += size * count;return size * count; }
-        static int Read_mem( void *dst , size_t size, size_t count ){ memcpy(dst,&In_mem()[pos()],size*count); pos() += size * count;return size * count; }
+        static bool & ReadFailed(){static bool failed = false; return failed;}
+        static int Read_sim(const void * , size_t size, size_t count ){
+            if(size != 0 && count > (std::numeric_limits<unsigned int>::max() - pos()) / size) {
+                ReadFailed() = true;
+                return 0;
+            }
+            pos() += static_cast<unsigned int>(size * count);
+            return static_cast<int>(count);
+        }
+        static int Read_mem( void *dst , size_t size, size_t count ){
+            if(size != 0 && count > (std::numeric_limits<unsigned int>::max() - pos()) / size) {
+                ReadFailed() = true;
+                return 0;
+            }
+            memcpy(dst,&In_mem()[pos()],size*count);
+            pos() += static_cast<unsigned int>(size * count);
+            return static_cast<int>(count);
+        }
 
 
         static int Read( void * dst,  size_t size, size_t count){
@@ -647,10 +699,14 @@ namespace io {
             std::vector<std::string>  nameF;
             unsigned int   vertSize, faceSize;
             vcg::Box3f bbox;
+            mask = 0;
             F() = fopen(f,"rb");
+            if(!F()) return false;
             In_mode() = 1;
-            GetHeader(nameV,nameF,vertSize, faceSize, bbox, mask);
-            return true;
+            bool result = GetHeader(nameV,nameF,vertSize, faceSize, bbox, mask);
+            fclose(F());
+            F() = 0;
+            return result;
         }
 
         static bool LoadMaskFromMem(  const char * ptr, int & mask){
@@ -658,11 +714,11 @@ namespace io {
             std::vector<std::string>  nameF;
             unsigned int   vertSize, faceSize;
             vcg::Box3f bbox;
+            mask = 0;
             In_mode() = 0;
             pos() = 0;
             In_mem() = ptr;
-            GetHeader(nameV,nameF,vertSize, faceSize, bbox, mask);
-            return true;
+            return GetHeader(nameV,nameF,vertSize, faceSize, bbox, mask);
         }
 
         static int Open(OpenMeshType &m, const char * filename, int & mask,CallBackPos  * /*cb*/ = 0 )       {
@@ -672,6 +728,7 @@ namespace io {
             if(F()==NULL)	return 1; // 1 is the error code for cant'open, see the ErrorMsg function
             int res = Deserialize(m,mask);
             fclose(F());
+            F() = 0;
             return  res;
         }
         static int ReadFromMem(  OpenMeshType &m, int & mask,char * ptr){
@@ -693,7 +750,8 @@ namespace io {
 
             /* read the header */
       vcg::Box3f lbbox;
-      GetHeader(fnameV, fnameF, vertSize, faceSize,lbbox,mask);
+      if(!GetHeader(fnameV, fnameF, vertSize, faceSize,lbbox,mask))
+          return VMI_MALFORMED_FILE;
       m.bbox.Import(lbbox);
             /* read the mesh type */
             OpenMeshType::FaceType::Name(nameF);
