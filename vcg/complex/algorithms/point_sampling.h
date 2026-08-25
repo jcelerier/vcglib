@@ -989,6 +989,16 @@ static void VertexCrease(MeshType & m, VertexSampler &ps)
 }
 
 
+// AddFace() takes the sample's *barycentric* coordinates inside the face, not a
+// position: the sampler reconstructs the point as v0*b[0]+v1*b[1]+v2*b[2]. Passing
+// Barycenter(f), which is a world-space point, made every sample land on an arbitrary
+// linear combination of the corners -- on a unit sphere, radii from 0.10 to 1.72
+// instead of ~0.996. The face centroid in barycentric coordinates is simply (1/3,1/3,1/3).
+static inline CoordType CentroidBarycentricCoord()
+{
+    return CoordType(ScalarType(1.0/3.0), ScalarType(1.0/3.0), ScalarType(1.0/3.0));
+}
+
 static void FaceUniform(MeshType & m, VertexSampler &ps, int sampleNum)
 {
     if(sampleNum>=m.fn) {
@@ -1000,7 +1010,7 @@ static void FaceUniform(MeshType & m, VertexSampler &ps, int sampleNum)
     FillAndShuffleFacePointerVector(m,faceVec);
 
     for(int i =0; i< sampleNum; ++i)
-        ps.AddFace(*faceVec[i],Barycenter(*faceVec[i]));
+        ps.AddFace(*faceVec[i],CentroidBarycentricCoord());
 }
 
 static void AllFace(MeshType & m, VertexSampler &ps)
@@ -1009,7 +1019,7 @@ static void AllFace(MeshType & m, VertexSampler &ps)
     for(fi=m.face.begin();fi!=m.face.end();++fi)
                 if(!(*fi).IsD())
                 {
-                    ps.AddFace(*fi,Barycenter(*fi));
+                    ps.AddFace(*fi,CentroidBarycentricCoord());
                 }
 }
 
